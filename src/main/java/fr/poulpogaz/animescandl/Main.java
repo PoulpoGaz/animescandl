@@ -12,10 +12,34 @@ import org.apache.logging.log4j.Logger;
 
 public class Main {
 
-    public static final String VERSION = "1.4";
+    public static final String VERSION = "1.4.1";
 
-    // TODO: usage
-    private static final String USAGE = "";
+    private static final String USAGE = """
+            First create a file named "animescandl.json" next to animescandl executable.
+            It is a json file which looks like this:
+
+            [
+                {
+                    "name": "https://neko-sama.fr/anime/info/4973-steins-gate-vostfr",
+                    "range": "1,5-7"
+                },
+                {
+                    "name": "Re:zero",
+                    "concatenateAll": true,
+                    "out": "PATH"
+                }
+            ]
+
+            It is an array of objects containing at least a "name". All others "arguments" are optional.
+            It accepts the following arguments:
+              - name: can be a direct url to a website or a just a string.\s
+                In the last case, the program will search on all websites a scan/anime matching\s
+                the search string.
+              - range: A range looks like "1,5-7". It specifies which scans/animes
+                will be downloaded.
+              - concatenateAll: For scans, it will concatenate all scans and produce a big pdf
+              - out: A folder where you want to download.
+            """;
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
