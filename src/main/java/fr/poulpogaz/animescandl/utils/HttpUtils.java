@@ -5,10 +5,11 @@ import fr.poulpogaz.json.tree.JsonElement;
 import org.apache.commons.compress.compressors.brotli.BrotliCompressorInputStream;
 import org.apache.commons.compress.compressors.deflate.DeflateCompressorInputStream;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.Cookie;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.CookieStore;
@@ -22,6 +23,8 @@ import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 
 public class HttpUtils {
+
+    private static final Logger LOGGER = LogManager.getLogger(HttpUtils.class);
 
     private static final HttpClient CLIENT = HttpClient.newBuilder().build();
     private static final IRequestSender STANDARD = createRequestSender();
@@ -139,6 +142,11 @@ public class HttpUtils {
     private static IRequestSender createRequestSender() {
         return request -> {
             HttpResponse<InputStream> rep = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+            LOGGER.debug(request.uri());
+            LOGGER.debug(request.headers());
+            LOGGER.debug(rep.headers());
+            LOGGER.debug("Response code: {}", rep.statusCode());
 
             return new HttpResponseDecoded(rep);
         };

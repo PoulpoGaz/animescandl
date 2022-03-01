@@ -4,7 +4,6 @@ import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonTreeWriter;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

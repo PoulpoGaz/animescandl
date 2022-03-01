@@ -5,38 +5,11 @@
         <Console name="verbose">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %m%n"/>
         </Console>
-
-
-        <Console name="normal">
-            <PatternLayout>
-                <LevelPatternSelector>
-                    <PatternMatch key="INFO" pattern="%m%n"/>
-                    <PatternMatch key="WARN" pattern="[%-5level] %m%n"/>
-                    <PatternMatch key="ERROR" pattern="[%-5level] %m%n"/>
-                    <PatternMatch key="FATAL" pattern="[%-5level] %m%n"/>
-                </LevelPatternSelector>
-            </PatternLayout>
-        </Console>
-
-
-        <File name="FILE"
-              fileName="log.log"
-              ignoreExceptions="false"
-              append="true">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-        </File>
     </Appenders>
 
     <Loggers>
         <Root level="TRACE">
-            <AppenderRef ref="${sys:stdout:-normal}" level="${sys:stdout-level:-info}"/>
-            <AppenderRef ref="FILE">
-                <ScriptFilter onMatch="ACCEPT" onMisMatch="DENY">
-                    <Script language="groovy"><![CDATA[
-                    return System.getProperty("write-log", 'false').equalsIgnoreCase('true');
-                ]]></Script>
-                </ScriptFilter>
-            </AppenderRef>
+            <AppenderRef ref="verbose"/>
         </Root>
     </Loggers>
 </Configuration>

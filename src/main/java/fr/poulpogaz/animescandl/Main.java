@@ -1,6 +1,7 @@
 package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.args.*;
+import fr.poulpogaz.animescandl.utils.Log4j2Setup;
 import fr.poulpogaz.animescandl.utils.Updater;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.WebDriver;
@@ -8,7 +9,6 @@ import fr.poulpogaz.animescandl.website.AbstractWebsite;
 import fr.poulpogaz.animescandl.website.Website;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
 
 public class Main {
 
@@ -108,22 +108,13 @@ public class Main {
             return;
         }
 
-        if (verbose.isPresent()) {
-            System.setProperty("stdout", "verbose");
-            System.setProperty("stdout-level", "trace");
-            Utils.VERBOSE = true;
-        }
-        if (writeLog.isPresent()) {
-            System.setProperty("write-log", "true");
-        }
-
+        Utils.VERBOSE = verbose.isPresent();
         AbstractWebsite.NO_DOWNLOAD = simulate.isPresent();
         Utils.WRITE = writeWebPages.isPresent();
         Utils.FFMPEG_PATH = ffmpeg.getArgument(0).orElse("ffmpeg");
         WebDriver.OPERA_DRIVER_PATH = operaDriver.getArgument(0).orElse("drivers/operadriver");
 
-        ((LoggerContext) LogManager.getContext(false)).reconfigure();
-
+        Log4j2Setup.setup(Utils.VERBOSE, writeLog.isPresent());
         LOGGER.debug("================================ AnimeScanDL ================================");
 
         if (update.isPresent()) {
