@@ -2,6 +2,7 @@ package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.model.Title;
 import fr.poulpogaz.animescandl.utils.FakeUserAgent;
+import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.WebDriver;
 import fr.poulpogaz.animescandl.website.*;
@@ -42,7 +43,7 @@ public class AnimeScanDL {
         for (int i = 0; i < settings.size(); i++) {
             Settings s = settings.get(i);
 
-            if (!Utils.isValidURL(s.name())) {
+            if (!HttpUtils.isValidURL(s.name())) {
                 Title url = search(s);
 
                 if (url == null) {

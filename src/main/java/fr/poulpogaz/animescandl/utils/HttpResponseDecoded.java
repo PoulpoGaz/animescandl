@@ -1,8 +1,5 @@
 package fr.poulpogaz.animescandl.utils;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import javax.net.ssl.SSLSession;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +11,6 @@ import java.net.http.HttpResponse;
 import java.util.Optional;
 
 public class HttpResponseDecoded implements HttpResponse<InputStream> {
-
-    private static final Logger LOGGER = LogManager.getLogger(HttpResponseDecoded.class);
 
     private final HttpResponse<InputStream> response;
     private final InputStream decoded;

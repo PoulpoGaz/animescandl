@@ -58,10 +58,6 @@ public class Utils {
         return Integer.parseInt(Utils.getRegexGroup(str, "(\\d+)"));
     }
 
-    public static boolean isValidURL(String url) {
-        return UrlValidator.getInstance().isValid(url);
-    }
-
     public static <T> T find(Collection<T> list, Predicate<T> predicate) {
         return list.stream()
                 .filter(predicate)

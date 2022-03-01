@@ -40,6 +40,13 @@ public interface IRequestSender {
         return getDocument(standardRequest(url).build());
     }
 
+    default Document getDocument(String url, HttpHeaders headers) throws IOException, InterruptedException {
+        HttpRequest.Builder request = standardRequest(url);
+        headers.apply(request);
+
+        return getDocument(request.build());
+    }
+
     default Document getDocument(HttpRequest request) throws IOException, InterruptedException {
         InputStream is = getInputStream(request);
         Document document = Jsoup.parse(is, "UTF-8", request.uri().toString());

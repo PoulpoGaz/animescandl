@@ -1,6 +1,7 @@
 package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.args.*;
+import fr.poulpogaz.animescandl.utils.Updater;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.WebDriver;
 import fr.poulpogaz.animescandl.website.AbstractWebsite;
@@ -11,7 +12,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 
 public class Main {
 
-    private static final String VERSION = "1.4";
+    public static final String VERSION = "1.4";
 
     // TODO: usage
     private static final String USAGE = "";
@@ -32,6 +33,11 @@ public class Main {
         Option version = new OptionBuilder()
                 .name("version")
                 .desc("Print version and exit")
+                .build();
+        Option update = new OptionBuilder()
+                .name("update")
+                .shortName("U")
+                .desc("Update this program to latest version")
                 .build();
         Option verbose = new OptionBuilder()
                 .name("verbose")
@@ -69,7 +75,8 @@ public class Main {
         Options options = new Options();
         options.addOption(version)
                 .addOption(help)
-                .addOption(supportedWebsite);
+                .addOption(supportedWebsite)
+                .addOption(update);
         options.addOption("System", operaDriver)
                 .addOption("System", ffmpeg);
         options.addOption("Debug", verbose)
@@ -118,6 +125,11 @@ public class Main {
         ((LoggerContext) LogManager.getContext(false)).reconfigure();
 
         LOGGER.debug("================================ AnimeScanDL ================================");
-        AnimeScanDL.run();
+
+        if (update.isPresent()) {
+            Updater.update();
+        } else {
+            AnimeScanDL.run();
+        }
     }
 }
