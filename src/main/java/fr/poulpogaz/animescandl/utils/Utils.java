@@ -1,10 +1,8 @@
 package fr.poulpogaz.animescandl.utils;
 
 import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.website.Mangadex;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
-import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeWriter;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.LogManager;
@@ -14,8 +12,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.CookieManager;
-import java.net.http.HttpClient;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;

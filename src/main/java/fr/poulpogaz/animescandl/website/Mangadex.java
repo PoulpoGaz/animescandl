@@ -1,10 +1,8 @@
 package fr.poulpogaz.animescandl.website;
 
 import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.DefaultEntry;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.AbstractScanWriter;
-import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.WebsiteException;
 import fr.poulpogaz.json.JsonException;
@@ -12,7 +10,6 @@ import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonValue;
-import fr.poulpogaz.json.tree.value.JsonNull;
 import fr.poulpogaz.json.tree.value.JsonNumber;
 import fr.poulpogaz.json.tree.value.JsonString;
 import org.apache.logging.log4j.LogManager;
@@ -20,8 +17,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**

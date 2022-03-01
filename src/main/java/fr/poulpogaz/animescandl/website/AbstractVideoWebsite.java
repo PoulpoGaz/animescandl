@@ -1,23 +1,15 @@
 package fr.poulpogaz.animescandl.website;
 
-import fr.poulpogaz.animescandl.*;
+import fr.poulpogaz.animescandl.Video;
 import fr.poulpogaz.animescandl.model.Entry;
 import fr.poulpogaz.animescandl.model.Title;
 import fr.poulpogaz.animescandl.utils.M3U8Downloader;
-import fr.poulpogaz.animescandl.utils.Pair;
-import fr.poulpogaz.animescandl.utils.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 public abstract class AbstractVideoWebsite<E extends Entry, T extends Title> extends AbstractWebsite<E, T> {
 

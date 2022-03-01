@@ -1,7 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
 import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.DefaultEntry;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.*;
 import fr.poulpogaz.json.JsonException;
@@ -95,7 +94,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
             throw new WebsiteException("Unsupported url: " + url);
         }
 
-        driver.get("https://www.japanread.cc/manga/kaifuku-jutsushi-yarinaoshi/0");
+        driver.get(chapterURL);
         driver.executeScript(MANGA_CHAPTER_EXTRACTOR);
 
         JsonObject manga = getMangaJson(driver);

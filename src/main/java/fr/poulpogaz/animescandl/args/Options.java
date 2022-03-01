@@ -38,7 +38,7 @@ public class Options {
                     throw new ParseException("Option %s doesn't require a parameter".formatted(arg));
                 }
             } else if (option.hasArgument()) {
-                throw new ParseException("Option %s doesn't require parameter".formatted(arg));
+                throw new ParseException("Option %s require a parameter".formatted(arg));
             }
 
             option.markPresent();

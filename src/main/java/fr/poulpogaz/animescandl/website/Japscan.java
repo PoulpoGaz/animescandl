@@ -18,11 +18,9 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.opera.OperaDriver;
-import org.openqa.selenium.opera.OperaOptions;
 
 import java.io.IOException;
 import java.net.http.HttpRequest;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
