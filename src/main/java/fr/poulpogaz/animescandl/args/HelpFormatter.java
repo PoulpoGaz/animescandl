@@ -60,13 +60,13 @@ public class HelpFormatter {
             // short name and long name
             int pos = builder.length();
             if (sn != null) {
-                builder.append("--").append(sn);
+                builder.append("-").append(sn);
 
                 if (n != null) {
-                    builder.append(", -").append(n);
+                    builder.append(", --").append(n);
                 }
             } else {
-                builder.append("-").append(n);
+                builder.append("--").append(n);
             }
 
             // arg
@@ -137,13 +137,13 @@ public class HelpFormatter {
 
             int w = 0;
             if (sn != null) {
-                w += sn.length() + 2; // --
+                w += sn.length() + 1; // -
 
                 if (n != null) {
-                    w += n.length() + 3; // comma + space + -
+                    w += n.length() + 4; // comma + space + --
                 }
             } else {
-                w += n.length() + 1; // -
+                w += n.length() + 2; // --
             }
 
             if (option.hasArgument()) {

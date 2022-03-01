@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +26,7 @@ public class Updater {
             JsonArray releases = (JsonArray) HttpUtils.getJson(GET_RELEASES);
             JsonObject lastRelease = releases.getAsObject(0);
 
-            if (isNewRelease(lastRelease)) {
+            //if (isNewRelease(lastRelease)) {
                 String downloadURL = getDownloadURL(lastRelease.getAsArray("assets"));
 
                 LOGGER.debug("Download url: {}", downloadURL);
@@ -33,7 +34,7 @@ public class Updater {
                     update(downloadURL);
                     return;
                 }
-            }
+            //}
 
             LOGGER.info("No update available");
         } catch (JsonException | InterruptedException | IOException | URISyntaxException e) {
@@ -62,14 +63,11 @@ public class Updater {
     }
 
     private static void update(String downloadURL) throws URISyntaxException, IOException, InterruptedException {
-        String path = Updater.class
+        URI path = Updater.class
                 .getProtectionDomain()
                 .getCodeSource()
                 .getLocation()
-                .toURI()
-                .getPath();
-
-        LOGGER.debug("Out: {}", path);
+                .toURI();
 
         InputStream is = HttpUtils.getInputStream(downloadURL);
         OutputStream os = Files.newOutputStream(Path.of(path));
