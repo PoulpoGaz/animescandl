@@ -13,6 +13,9 @@ public class Main {
 
     private static final String VERSION = "1.4";
 
+    // TODO: usage
+    private static final String USAGE = "";
+
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
@@ -79,12 +82,12 @@ public class Main {
         } catch (ParseException e) {
             e.printStackTrace();
 
-            HelpFormatter.printHelp("", options);
+            HelpFormatter.printHelp(USAGE, options);
             return;
         }
 
         if (help.isPresent()) {
-            HelpFormatter.printHelp("", options);
+            HelpFormatter.printHelp(USAGE, options);
             return;
         }
         if (version.isPresent()) {
