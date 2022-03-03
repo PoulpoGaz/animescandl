@@ -23,9 +23,6 @@ public class Utils {
     public static String FFMPEG_PATH = "ffmpeg";
     private static final Logger LOGGER = LogManager.getLogger(Utils.class);
 
-    public static boolean WRITE = false;
-    public static boolean VERBOSE = false;
-
     public static Logger getLogger(Class<?> clasz, String url) {
         return LogManager.getLogger("%s-%s".formatted(clasz.getSimpleName(), url));
     }

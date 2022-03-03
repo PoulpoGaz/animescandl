@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.DefaultEntry;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.model.Entry;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.http.HttpRequest;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -129,7 +132,12 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
     }
 
     @Override
-    protected void preDownload(List<Chapter> entries, Settings settings) throws Throwable {
+    protected Path getOutputFile(Chapter entry, Settings settings) {
+        return null;
+    }
+
+    @Override
+    protected boolean preDownload(List<Chapter> entries, Settings settings) throws Throwable {
         if (entries.size() == 1) {
             sw = AbstractScanWriter.newWriter(null, false, settings.out());
         } else {
@@ -137,6 +145,8 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
                     settings.concatenateAll(),
                     settings.out());
         }
+
+        return !Main.noOverwrites.isPresent() || !settings.concatenateAll() || !Files.exists(sw.allPath());
     }
 
     @Override
@@ -147,11 +157,14 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
 
     @Override
     protected void processEntry(Chapter chapter, Settings settings) throws IOException, InterruptedException {
-        LOGGER.info("Downloading {}", chapter.url());
-
         Document document = getDocument(chapter.url());
         String name = document.getElementsByClass("entry-title").get(0).html();
 
+        if (Main.noOverwrites.isPresent() && exists(name, settings)) {
+            return;
+        }
+
+        LOGGER.info("Downloading {}", chapter.url());
         Elements scripts = document.select("script");
 
         sw.newScan(name);
@@ -167,6 +180,17 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
             }
         }
         sw.endScan();
+    }
+
+    private boolean exists(String fileName, Settings settings) {
+        Path out;
+        if (settings.out() != null) {
+            out = settings.out().resolve(fileName + ".pdf");
+        } else {
+            out = Path.of(fileName + ".pdf");
+        }
+
+        return Files.exists(out);
     }
 
     private List<String> extractPages(Element element) {

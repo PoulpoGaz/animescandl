@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.Video;
 import fr.poulpogaz.animescandl.model.Entry;
 import fr.poulpogaz.animescandl.model.Title;
@@ -8,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 
@@ -41,7 +43,7 @@ public abstract class AbstractVideoWebsite<E extends Entry, T extends Title> ext
         LOGGER.info("Video(s) found:");
         videos.forEach((v) -> LOGGER.info("{}p - {}", v.quality(), v.file()));
 
-        if (NO_DOWNLOAD) {
+        if (Main.simulate.isPresent()) {
             return;
         }
 
@@ -63,5 +65,16 @@ public abstract class AbstractVideoWebsite<E extends Entry, T extends Title> ext
         }
 
         LOGGER.warn("No video has been downloaded");
+    }
+
+    @Override
+    protected Path getOutputFile(E entry, Settings settings) {
+        String dst = getFileName(entry.url()) + ".mp4";
+
+        if (settings.out() != null) {
+            dst = settings.out().resolve(dst).toString();
+        }
+
+        return Path.of(dst);
     }
 }

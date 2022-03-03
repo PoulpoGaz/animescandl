@@ -3,16 +3,13 @@ package fr.poulpogaz.animescandl;
 import fr.poulpogaz.animescandl.args.*;
 import fr.poulpogaz.animescandl.utils.Log4j2Setup;
 import fr.poulpogaz.animescandl.utils.Updater;
-import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.utils.WebDriver;
-import fr.poulpogaz.animescandl.website.AbstractWebsite;
 import fr.poulpogaz.animescandl.website.Website;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Main {
 
-    public static final String VERSION = "1.4.1";
+    public static final String VERSION = "1.4.2";
 
     private static final String USAGE = """
             First create a file named "animescandl.json" next to animescandl executable.
@@ -43,66 +40,95 @@ public class Main {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
-    public static void main(String[] args) {
-        Option supportedWebsite = new OptionBuilder()
+    public static final Option supportedWebsite;
+    public static final Option help;
+    public static final Option version;
+    public static final Option update;
+
+    public static final Option ffmpeg;
+    public static final Option operaDriver;
+    public static final Option noOverwrites;
+
+    public static final Option verbose;
+    public static final Option writeLog;
+    public static final Option simulate;
+    public static final Option writeWebPages;
+
+    static {
+        supportedWebsite = new OptionBuilder()
                 .name("supported-website")
                 .shortName("sw")
                 .desc("Print the list of supported website and exit")
                 .build();
-        Option help = new OptionBuilder()
+        help = new OptionBuilder()
                 .name("help")
                 .shortName("h")
                 .desc("Print this message and exit")
                 .build();
-        Option version = new OptionBuilder()
+        version = new OptionBuilder()
                 .name("version")
                 .desc("Print version and exit")
                 .build();
-        Option update = new OptionBuilder()
+        update = new OptionBuilder()
                 .name("update")
                 .shortName("U")
                 .desc("Update this program to latest version")
                 .build();
-        Option verbose = new OptionBuilder()
-                .name("verbose")
-                .shortName("v")
-                .desc("be extra verbose")
-                .build();
-        Option writeLog = new OptionBuilder()
-                .name("write-log")
-                .shortName("wl")
-                .desc("Write log to a file")
-                .build();
-        Option simulate = new OptionBuilder()
-                .name("simulate")
-                .shortName("s")
-                .desc("Do not download anime or scan")
-                .build();
-        Option writeWebPages = new OptionBuilder()
-                .name("write-webpages")
-                .shortName("ww")
-                .desc("Write all webpages to disk")
-                .build();
-        Option ffmpeg = new OptionBuilder()
+
+        ffmpeg = new OptionBuilder()
                 .name("ffmpeg")
                 .shortName("ff")
                 .argName("path")
                 .desc("Path to ffmpeg")
                 .build();
-        Option operaDriver = new OptionBuilder()
+        operaDriver = new OptionBuilder()
                 .name("opera")
                 .shortName("op")
                 .argName("path")
                 .desc("Path to opera driver")
                 .build();
+        noOverwrites = new OptionBuilder()
+                .name("no-overwrites")
+                .shortName("w")
+                .desc("Do not overwrite files")
+                .build();
 
+        // DEBUG
+        verbose = new OptionBuilder()
+                .name("verbose")
+                .shortName("v")
+                .desc("be extra verbose")
+                .build();
+        writeLog = new OptionBuilder()
+                .name("write-log")
+                .shortName("wl")
+                .desc("Write log to a file")
+                .build();
+        simulate = new OptionBuilder()
+                .name("simulate")
+                .shortName("s")
+                .desc("Do not download anime or scan")
+                .build();
+        writeWebPages = new OptionBuilder()
+                .name("write-webpages")
+                .shortName("ww")
+                .desc("Write all webpages to disk")
+                .build();
+    }
+
+
+
+    public static void main(String[] args) {
         Options options = new Options();
         options.addOption(version)
                 .addOption(help)
                 .addOption(supportedWebsite)
                 .addOption(update);
+
         options.addOption("System", operaDriver)
-                .addOption("System", ffmpeg);
+                .addOption("System", ffmpeg)
+                .addOption("System", noOverwrites);
+
         options.addOption("Debug", verbose)
                 .addOption("Debug", writeLog)
                 .addOption("Debug", simulate)
@@ -132,13 +158,7 @@ public class Main {
             return;
         }
 
-        Utils.VERBOSE = verbose.isPresent();
-        AbstractWebsite.NO_DOWNLOAD = simulate.isPresent();
-        Utils.WRITE = writeWebPages.isPresent();
-        Utils.FFMPEG_PATH = ffmpeg.getArgument(0).orElse("ffmpeg");
-        WebDriver.OPERA_DRIVER_PATH = operaDriver.getArgument(0).orElse("drivers/operadriver");
-
-        Log4j2Setup.setup(Utils.VERBOSE, writeLog.isPresent());
+        Log4j2Setup.setup(verbose.isPresent(), writeLog.isPresent());
         LOGGER.debug("================================ AnimeScanDL ================================");
 
         if (update.isPresent()) {

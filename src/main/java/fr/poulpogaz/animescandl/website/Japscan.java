@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.DefaultEntry;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.AbstractScanWriter;
@@ -21,6 +22,8 @@ import org.openqa.selenium.opera.OperaDriver;
 
 import java.io.IOException;
 import java.net.http.HttpRequest;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +64,6 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
                             .first()
                             .text();
 
-                    LOGGER.debug(volume);
                 } else if (child.is("div")) {
 
                     for (Element e : child.select("a.text-dark")) {
@@ -86,7 +88,6 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
             return chapters;
         }
     }
-
     protected String getMangaUrl(String url) throws WebsiteException, IOException, InterruptedException {
         if (isMangaPage(url)) {
             return url;
@@ -121,12 +122,23 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
     }
 
     @Override
-    protected void preDownload(List<JapsanChapter> entries, Settings settings) throws Throwable {
+    protected Path getOutputFile(JapsanChapter entry, Settings settings) {
+        if (settings.out() != null) {
+            return settings.out().resolve(entry.getChapterPDFName() + ".pdf");
+        } else {
+            return Path.of(entry.getChapterPDFName() + ".pdf");
+        }
+    }
+
+    @Override
+    protected boolean preDownload(List<JapsanChapter> entries, Settings settings) throws Throwable {
         if (entries.size() == 1) {
             sw = AbstractScanWriter.newWriter(null, false, settings.out());
         } else {
             sw = AbstractScanWriter.newWriter(entries.get(0).manga(), settings.concatenateAll(), settings.out());
         }
+
+        return !Main.noOverwrites.isPresent() || !settings.concatenateAll() || !Files.exists(sw.allPath());
     }
 
     @Override
@@ -149,7 +161,7 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
         }
         sw.endScan();
 
-        if (!Utils.VERBOSE) {
+        if (Main.verbose.isNotPresent()) {
             System.out.println();
         }
     }
@@ -171,6 +183,10 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
         // remove all div
         List<?> v = (List<?>) driver.executeScript("""
                 var canvas = document.querySelector("cnv-vv");
+                
+                if (!canvas) {
+                    return null;
+                }
         
                 document.body.textContent = '';
 
@@ -184,6 +200,10 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
                 
                 return [canvas.width, canvas.height];
                 """);
+
+        if (v == null) {
+            LOGGER.warn("Empty page at {}", url);
+        }
 
         int width = (int) (long) v.get(0);
         int height = (int) (long) v.get(1);

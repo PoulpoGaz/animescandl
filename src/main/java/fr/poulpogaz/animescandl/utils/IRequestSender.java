@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonTreeReader;
@@ -51,7 +52,7 @@ public interface IRequestSender {
         InputStream is = getInputStream(request);
         Document document = Jsoup.parse(is, "UTF-8", request.uri().toString());
 
-        if (Utils.WRITE) {
+        if (Main.writeWebPages.isPresent()) {
             URI uri = request.uri();
             String url = uri.toASCIIString();
 

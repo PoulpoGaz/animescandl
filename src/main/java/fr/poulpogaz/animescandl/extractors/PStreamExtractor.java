@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.extractors;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.Video;
 import fr.poulpogaz.animescandl.utils.ExtractorException;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
@@ -60,7 +61,7 @@ public class PStreamExtractor implements IExtractor {
         }
 
         String content = new String(is.readAllBytes());
-        if (Utils.WRITE) {
+        if (Main.writeWebPages.isPresent()) {
             js = js.replace(":", "-").replace("/", "-");
 
             if (js.length() >= 256) {

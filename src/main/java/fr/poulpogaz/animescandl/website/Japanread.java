@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.*;
@@ -24,6 +25,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +49,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     private static final String MANGA_CHAPTER_EXTRACTOR = """                
                 (function(send) {
                 
-                    XMLHttpRequest.prototype.send = function(data) {
-                        console.log("HELLO!");
-                   
+                    XMLHttpRequest.prototype.send = function(data) {                   
                         function transferComplete(evt) {
                             console.log(this.responseText);
                             
@@ -154,7 +155,18 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     }
 
     @Override
-    protected void preDownload(List<JapanreadChapter> entries, Settings settings) throws Throwable {
+    protected Path getOutputFile(JapanreadChapter entry, Settings settings) {
+        String fileName = entry.manga() + " - " + entry.chapter() + ".pdf";
+
+        if (settings.out() != null) {
+            return settings.out().resolve(fileName);
+        } else {
+            return Path.of(fileName);
+        }
+    }
+
+    @Override
+    protected boolean preDownload(List<JapanreadChapter> entries, Settings settings) throws Throwable {
         if (entries.size() == 1) {
             sw = AbstractScanWriter.newWriter(null, false, settings.out());
         } else {
@@ -162,6 +174,8 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
                     settings.concatenateAll(),
                     settings.out());
         }
+
+        return Main.noOverwrites.isNotPresent() || !settings.concatenateAll() || !Files.exists(sw.allPath());
     }
 
     @Override

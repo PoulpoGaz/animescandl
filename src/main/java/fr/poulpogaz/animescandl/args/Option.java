@@ -79,6 +79,10 @@ public class Option {
         return present;
     }
 
+    public boolean isNotPresent() {
+        return !present;
+    }
+
     @Override
     public String toString() {
         return "Option{" +

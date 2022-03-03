@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.Video;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +41,7 @@ public class M3U8Downloader {
 
         String line;
         while ((line = br.readLine()) != null) {
-            if (Utils.VERBOSE) {
+            if (Main.verbose.isPresent()) {
                 if (line.startsWith("frame=")) {
                     LOGGER.info(line);
                 } else {
@@ -53,7 +54,8 @@ public class M3U8Downloader {
                 }
             }
         }
-        if (Utils.VERBOSE) {
+
+        if (Main.verbose.isNotPresent()) {
             System.out.println();
         }
     }
@@ -61,7 +63,7 @@ public class M3U8Downloader {
     private static ProcessBuilder buildFFMPEGProcess(Video video, String dst) {
         ProcessBuilder builder = new ProcessBuilder();
         command(builder,
-                Utils.FFMPEG_PATH,
+                getFFMPEGPath(),
                 "-protocol_whitelist", "file,http,https,tcp,tls",
                 "-http_multiple", "0",
                 "-headers", getHeader(video.file()),
@@ -75,7 +77,7 @@ public class M3U8Downloader {
     private static ProcessBuilder buildFFMPEGProcessWithSubtitle(Video video, String dst) {
         ProcessBuilder builder = new ProcessBuilder();
         command(builder,
-                "ffmpeg",
+                getFFMPEGPath(),
                 "-protocol_whitelist", "file,http,https,tcp,tls",
                 "-http_multiple", "0",
                 "-headers", getHeader(video.file()),
@@ -97,5 +99,9 @@ public class M3U8Downloader {
     private static void command(ProcessBuilder builder, String... args) {
         List<String> commands = builder.command();
         commands.addAll(Arrays.asList(args));
+    }
+
+    private static String getFFMPEGPath() {
+        return Main.ffmpeg.getArgument(0).orElse("ffmpeg");
     }
 }

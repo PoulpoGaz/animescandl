@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.Entry;
 import fr.poulpogaz.animescandl.model.Title;
 import fr.poulpogaz.animescandl.utils.*;
@@ -12,6 +13,8 @@ import java.net.CookieManager;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public abstract class AbstractWebsite<E extends Entry, T extends Title> implements Website<T>, IRequestSender {
@@ -24,8 +27,6 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cookieHandler(COOKIES)
             .build();
-
-    public static boolean NO_DOWNLOAD = false;
 
     public AbstractWebsite() {
 
@@ -42,10 +43,22 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
 
         if (entries.size() > 0) {
             LOGGER.debug("Entries found: {}", entries);
-            preDownload(entries, settings);
+            if (!preDownload(entries, settings)) {
+                LOGGER.info("{} already downloaded", url);
+                return;
+            }
 
             for (E entry : entries) {
                 if (settings.rangeContains(entry.index())) {
+                    if (Main.noOverwrites.isPresent()) {
+                        Path output = getOutputFile(entry, settings);
+
+                        if (output != null && Files.exists(output)) {
+                            LOGGER.info("{} already exists", entry);
+                            continue;
+                        }
+                    }
+
                     processEntry(entry, settings);
                 }
             }
@@ -56,7 +69,16 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
 
     protected abstract List<E> fetchList(String url, Settings settings) throws Throwable;
 
-    protected void preDownload(List<E> entries, Settings settings) throws Throwable {}
+    /**
+     * @return the path to the output file or null
+     *          If null, implementations should take care
+     *          of not overwriting file if user wants
+     */
+    protected abstract Path getOutputFile(E entry, Settings settings);
+
+    protected boolean preDownload(List<E> entries, Settings settings) throws Throwable {
+        return true;
+    }
 
     protected abstract void processEntry(E entry, Settings settings) throws Throwable;
 
@@ -97,13 +119,13 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
             }
         }
 
-        if (!Utils.VERBOSE) {
+        if (Main.verbose.isNotPresent()) {
             System.out.println();
         }
     }
 
     protected void printErase(String text) {
-        if (Utils.VERBOSE) {
+        if (Main.verbose.isPresent()) {
             LOGGER.info(text);
         } else {
             LOGGER.debug(text);

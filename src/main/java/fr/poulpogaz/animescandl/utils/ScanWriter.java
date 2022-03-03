@@ -18,15 +18,10 @@ import java.nio.file.Path;
 
 public class ScanWriter extends AbstractScanWriter {
 
-    private Path out;
     private PDDocument document;
 
-    /** The name of the current scan. eg: bla_bla_volume_1*/
-    private String name;
-
     public ScanWriter(String title, boolean concatenateAll, Path out) {
-        super(title, concatenateAll);
-        this.out = out;
+        super(title, concatenateAll, out);
     }
 
     @Override
@@ -94,12 +89,7 @@ public class ScanWriter extends AbstractScanWriter {
     @Override
     public void endScan() throws IOException {
         if (!concatenateAll) {
-            String filename = name + ".pdf";
-            if (out != null) {
-                document.save(out.resolve(filename).toFile());
-            } else {
-                document.save(filename);
-            }
+            document.save(scanPath().toFile());
             document.close();
             document = null;
         }
@@ -108,12 +98,7 @@ public class ScanWriter extends AbstractScanWriter {
     @Override
     public void endAll() throws IOException {
         if (document != null) {
-            String filename = title + ".pdf";
-            if (out != null) {
-                document.save(out.resolve(filename).toFile());
-            } else {
-                document.save(filename);
-            }
+            document.save(allPath().toFile());
             document.close();
             document = null;
         }

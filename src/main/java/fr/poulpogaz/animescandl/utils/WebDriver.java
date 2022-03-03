@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.Main;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
@@ -12,7 +13,6 @@ import java.util.logging.Level;
 
 public class WebDriver {
 
-    public static String OPERA_DRIVER_PATH = "drivers/operadriver";
     private static OperaDriver driver = null;
     private static PageLoadStrategy current = null;
 
@@ -26,7 +26,8 @@ public class WebDriver {
         }
 
         if (driver == null) {
-            System.setProperty("webdriver.opera.driver", OPERA_DRIVER_PATH);
+            String path = Main.operaDriver.getArgument(0).orElse("drivers/operadriver");
+            System.setProperty("webdriver.opera.driver", path);
 
             OperaOptions options = new OperaOptions();
 

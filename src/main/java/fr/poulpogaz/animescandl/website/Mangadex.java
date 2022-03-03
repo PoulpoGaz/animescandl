@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.AbstractScanWriter;
@@ -16,6 +17,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -169,12 +172,25 @@ public class Mangadex extends AbstractWebsite<Mangadex.MangadexChapter, Mangadex
     }
 
     @Override
-    protected void preDownload(List<MangadexChapter> entries, Settings settings) throws Throwable {
+    protected Path getOutputFile(MangadexChapter entry, Settings settings) {
+        String fileName = entry.manga() + " - " + entry.chapter() + ".pdf";
+
+        if (settings.out() != null) {
+            return settings.out().resolve(fileName);
+        } else {
+            return Path.of(fileName);
+        }
+    }
+
+    @Override
+    protected boolean preDownload(List<MangadexChapter> entries, Settings settings) throws Throwable {
         if (entries.size() == 1) {
             sw = AbstractScanWriter.newWriter(null, false, settings.out());
         } else {
             sw = AbstractScanWriter.newWriter(entries.get(0).manga(), settings.concatenateAll(), settings.out());
         }
+
+        return !Main.noOverwrites.isPresent() || !settings.concatenateAll() || !Files.exists(sw.allPath());
     }
 
     @Override
