@@ -128,10 +128,10 @@ public class Mangadex extends AbstractWebsite<Mangadex.MangadexChapter, Mangadex
 
     protected String getMangaID(String url) throws JsonException, WebsiteException, IOException, InterruptedException {
         if (isMangaPage(url)) {
-             return Utils.getRegexGroup(url, "title/(.*)/?$");
+             return Utils.getRegexGroup(url, "title/(.*)(?:/.*)");
 
         } else if (isChapterPage(url)) {
-            String chapterID = Utils.getRegexGroup(url, "chapter/(.*)/?$");
+            String chapterID = Utils.getRegexGroup(url, "chapter/(.*)(?:/.*)");
 
             JsonObject object = apiJson("/chapter/%s?includes[]=manga", chapterID);
             JsonArray array = object.getAsObject("data").getAsArray("relationships");

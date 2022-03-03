@@ -41,30 +41,33 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
     public void process(String url, Settings settings) throws Throwable {
         List<E> entries = fetchList(url, settings);
 
-        if (entries.size() > 0) {
-            LOGGER.debug("Entries found: {}", entries);
-            if (!preDownload(entries, settings)) {
-                LOGGER.info("{} already downloaded", url);
-                return;
-            }
-
-            for (E entry : entries) {
-                if (settings.rangeContains(entry.index())) {
-                    if (Main.noOverwrites.isPresent()) {
-                        Path output = getOutputFile(entry, settings);
-
-                        if (output != null && Files.exists(output)) {
-                            LOGGER.info("{} already exists", entry);
-                            continue;
-                        }
-                    }
-
-                    processEntry(entry, settings);
-                }
-            }
-
-            postDownload(entries, settings);
+        if (entries.isEmpty()) {
+            return;
         }
+
+        LOGGER.debug("Entries found: {}", entries);
+        if (!preDownload(entries, settings)) {
+            LOGGER.info("{} already downloaded", url);
+            return;
+        }
+
+        for (E entry : entries) {
+            if (settings.rangeContains(entry.index())) {
+                if (Main.noOverwrites.isPresent()) {
+                    Path output = getOutputFile(entry, settings);
+
+                    if (output != null && Files.exists(output)) {
+                        LOGGER.info("{} already exists", entry);
+                        continue;
+                    }
+                }
+
+                LOGGER.debug("Processing {}", entry.url());
+                processEntry(entry, settings);
+            }
+        }
+
+        postDownload(entries, settings);
     }
 
     protected abstract List<E> fetchList(String url, Settings settings) throws Throwable;

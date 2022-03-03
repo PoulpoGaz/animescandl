@@ -33,6 +33,15 @@ public class ScanWriter extends AbstractScanWriter {
         this.name = name;
     }
 
+    protected void addPage(PDImageXObject object) throws IOException {
+        PDPage pdPage = new PDPage(new PDRectangle(object.getWidth(), object.getHeight()));
+        PDPageContentStream stream = new PDPageContentStream(document, pdPage);
+        stream.drawImage(object, 0, 0);
+        stream.close();
+
+        document.addPage(pdPage);
+    }
+
     @Override
     public void addPage(BufferedImage image) throws IOException {
         if (image.getType() != BufferedImage.TYPE_INT_RGB) {
@@ -40,12 +49,7 @@ public class ScanWriter extends AbstractScanWriter {
         }
 
         PDImageXObject obj = JPEGFactory.createFromImage(document, image, 1);
-        PDPage pdPage = new PDPage(new PDRectangle(image.getWidth(), image.getHeight()));
-        PDPageContentStream stream = new PDPageContentStream(document, pdPage);
-        stream.drawImage(obj, 0, 0);
-        stream.close();
-
-        document.addPage(pdPage);
+        addPage(obj);
     }
 
     @Override
@@ -67,10 +71,17 @@ public class ScanWriter extends AbstractScanWriter {
         }
 
         InputStream is = rep.body();
-        BufferedImage img = ImageIO.read(is);
-        is.close();
+        if (page.endsWith("jpg") || page.equals("jpeg")) {
+            PDImageXObject xObject = JPEGFactory.createFromStream(document, is);
+            is.close();
+            addPage(xObject);
 
-        addPage(img);
+        } else {
+            BufferedImage img = ImageIO.read(is);
+            is.close();
+
+            addPage(img);
+        }
     }
 
     private BufferedImage convertRGB(BufferedImage image) {

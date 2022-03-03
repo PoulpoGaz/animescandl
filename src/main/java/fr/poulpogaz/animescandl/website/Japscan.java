@@ -202,7 +202,11 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
                 """);
 
         if (v == null) {
+            if (Main.verbose.isNotPresent()) {
+                System.out.println();
+            }
             LOGGER.warn("Empty page at {}", url);
+            return;
         }
 
         int width = (int) (long) v.get(0);
