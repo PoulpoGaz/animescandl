@@ -1,7 +1,7 @@
 package fr.poulpogaz.animescandl.website;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.model.DefaultEntry;
+import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.AbstractScanWriter;
 import fr.poulpogaz.animescandl.utils.Utils;
@@ -19,7 +19,6 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.opera.OperaDriver;
 
 import java.io.IOException;
 import java.net.http.HttpRequest;
@@ -31,7 +30,7 @@ import java.util.List;
 /**
  * @version 27.02.2022
  */
-public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle> {
+public class Japscan extends AbstractWebsite<Chapter, DefaultTitle> {
 
     private static final Logger LOGGER = LogManager.getLogger(Japscan.class);
 
@@ -51,13 +50,13 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
     }
 
     @Override
-    protected List<JapsanChapter> fetchList(String url, Settings settings) throws Throwable {
+    protected List<Chapter> fetchList(String url, Settings settings) throws Throwable {
         if (settings.range() == null && isChapter(url)) {
             String name = getChapterName(url);
 
-            return List.of(new JapsanChapter(url, 0, null, null, name));
+            return List.of(new Chapter(url, 0, null, null, name));
         } else {
-            List<JapsanChapter> chapters = new ArrayList<>();
+            List<Chapter> chapters = new ArrayList<>();
 
             String mangaURL = getMangaUrl(url);
             LOGGER.debug("Manga url: {}", mangaURL);
@@ -79,7 +78,7 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
                         String link = url() + e.attr("href");
                         int index = Utils.getFirstInt(e.text());
 
-                        chapters.add(new JapsanChapter(link, index, manga, volume, e.text()));
+                        chapters.add(new Chapter(link, index, manga, volume, e.text()));
                     }
 
                 } else {
@@ -131,7 +130,7 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
     }
 
     @Override
-    protected Path getOutputFile(JapsanChapter entry, Settings settings) {
+    protected Path getOutputFile(Chapter entry, Settings settings) {
         if (settings.out() != null) {
             return settings.out().resolve(entry.getChapterPDFName() + ".pdf");
         } else {
@@ -140,7 +139,7 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
     }
 
     @Override
-    protected boolean preDownload(List<JapsanChapter> entries, Settings settings) throws Throwable {
+    protected boolean preDownload(List<Chapter> entries, Settings settings) throws Throwable {
         if (entries.size() == 1) {
             sw = AbstractScanWriter.newWriter(null, false, settings.out());
         } else {
@@ -151,13 +150,13 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
     }
 
     @Override
-    protected void postDownload(List<JapsanChapter> entries, Settings settings) throws Throwable {
+    protected void postDownload(List<Chapter> entries, Settings settings) throws Throwable {
         sw.endAll();
         sw = null;
     }
 
     @Override
-    protected void processEntry(JapsanChapter entry, Settings settings) throws Throwable {
+    protected void processEntry(Chapter entry, Settings settings) throws Throwable {
         List<String> pages = getPages(entry.url());
 
         LOGGER.debug(pages);
@@ -268,66 +267,5 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
         }
 
         return titles;
-    }
-
-    protected static class JapsanChapter extends DefaultEntry {
-
-        private final String manga;
-        private final String volume;
-        private final String chapter;
-
-        public JapsanChapter(String url, int index, String manga, String volume, String chapter) {
-            super(url, index);
-            this.manga = manga;
-            this.volume = volume;
-            this.chapter = chapter;
-        }
-
-        public String getChapterPDFName() {
-            StringBuilder builder = new StringBuilder();
-
-            if (manga != null) {
-                builder.append(manga);
-
-                if (volume != null || chapter != null) {
-                    builder.append(" - ");
-                }
-            }
-            if (volume != null) {
-                builder.append(volume);
-
-                if (chapter != null) {
-                    builder.append(" - ");
-                }
-            }
-            if (chapter != null) {
-                builder.append(chapter);
-            }
-
-            return builder.toString();
-        }
-
-        public String manga() {
-            return manga;
-        }
-
-        public String volume() {
-            return volume;
-        }
-
-        public String chapter() {
-            return chapter;
-        }
-
-        @Override
-        public String toString() {
-            return "JapsanChapter{" +
-                    "url='" + url + '\'' +
-                    ", index=" + index +
-                    ", manga='" + manga + '\'' +
-                    ", volume='" + volume + '\'' +
-                    ", chapter='" + chapter + '\'' +
-                    '}';
-        }
     }
 }

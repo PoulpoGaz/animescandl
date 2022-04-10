@@ -26,7 +26,8 @@ public class AnimeScanDL {
             Nekosama.INSTANCE,
             Mangadex.INSTANCE,
             Japscan.INSTANCE,
-            Japanread.INSTANCE
+            Japanread.INSTANCE,
+            MangaRead.INSTANCE
     };
 
     private static final Logger LOGGER = LogManager.getLogger(AnimeScanDL.class);

@@ -1,7 +1,7 @@
 package fr.poulpogaz.animescandl.website;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.model.DefaultEntry;
+import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.DefaultTitle;
 import fr.poulpogaz.animescandl.model.Entry;
 import fr.poulpogaz.animescandl.utils.AbstractScanWriter;
@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * @version 27.02.2022
  */
-public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> {
+public class SushiScan extends AbstractWebsite<Chapter, DefaultTitle> {
 
     public static final SushiScan INSTANCE = new SushiScan();
 
@@ -67,7 +67,7 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
     @Override
     protected List<Chapter> fetchList(String url, Settings settings) throws Throwable {
         if (settings.range() == null && isChapter(url)) {
-            return List.of(new Chapter(url, 0, null));
+            return List.of(new Chapter(url, 0, null, null, null));
         } else {
             String mangaURL = getMangaURL(url);
 
@@ -92,7 +92,7 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
                     if (a == null) {
                         throw new IOException("Can't find <a>");
                     }
-                    chapters.add(new Chapter(a.attr("href"), i, title));
+                    chapters.add(new Chapter(a.attr("href"), i, title, null, null));
                 }
             }
 
@@ -256,29 +256,5 @@ public class SushiScan extends AbstractWebsite<SushiScan.Chapter, DefaultTitle> 
         }
 
         return Collections.unmodifiableList(results);
-    }
-
-
-    protected static class Chapter extends DefaultEntry {
-
-        private final String manga;
-
-        public Chapter(String url, int index, String manga) {
-            super(url, index);
-            this.manga = manga;
-        }
-
-        public String manga() {
-            return manga;
-        }
-
-        @Override
-        public String toString() {
-            return "Chapter{" +
-                    "url='" + url + '\'' +
-                    ", index=" + index +
-                    ", manga='" + manga + '\'' +
-                    '}';
-        }
     }
 }

@@ -347,19 +347,12 @@ public class Mangadex extends AbstractWebsite<Mangadex.MangadexChapter, Mangadex
 
     protected static class MangadexChapter extends Chapter {
 
-        private final String manga;
-
         public MangadexChapter(String id, int index, String chapter, String manga) {
-            super(id, index, chapter);
-            this.manga = manga;
+            super(id, index, manga, null, chapter);
         }
 
         public String id() {
             return url();
-        }
-
-        public String manga() {
-            return manga;
         }
 
         @Override

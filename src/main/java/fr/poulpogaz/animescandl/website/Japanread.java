@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 /**
  * @version 28.02.2022
  */
-public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, DefaultTitle> {
+public class Japanread extends AbstractWebsite<Chapter, DefaultTitle> {
 
     public static final Japanread INSTANCE = new Japanread();
 
@@ -65,7 +65,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     }
 
     @Override
-    protected List<JapanreadChapter> fetchList(String url, Settings settings) throws Throwable {
+    protected List<Chapter> fetchList(String url, Settings settings) throws Throwable {
         ChromeDriver driver = WebDriver.init(PageLoadStrategy.EAGER);
 
         String chapterURL;
@@ -85,7 +85,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
         String title = manga.getAsObject("manga").getAsJsonString("title").getAsString();
         JsonObject chaptersObj = manga.getAsObject("chapter");
 
-        List<JapanreadChapter> chapters = new ArrayList<>();
+        List<Chapter> chapters = new ArrayList<>();
         for (Map.Entry<String, JsonElement> e : chaptersObj.entrySet()) {
             String id = e.getKey();
 
@@ -93,7 +93,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
             String chapter = value.getAsJsonString("chapter").getAsString();
             int index = Utils.getFirstInt(chapter);
 
-            chapters.add(new JapanreadChapter(id, index, chapter, title));
+            chapters.add(new Chapter(id, index, title, null, chapter));
         }
 
         chapters.sort(Utils::chapterComparator);
@@ -172,7 +172,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     }
 
     @Override
-    protected Path getOutputFile(JapanreadChapter entry, Settings settings) {
+    protected Path getOutputFile(Chapter entry, Settings settings) {
         String fileName = entry.manga() + " - " + entry.chapter() + ".pdf";
 
         if (settings.out() != null) {
@@ -183,7 +183,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     }
 
     @Override
-    protected boolean preDownload(List<JapanreadChapter> entries, Settings settings) throws Throwable {
+    protected boolean preDownload(List<Chapter> entries, Settings settings) throws Throwable {
         if (entries.size() == 1) {
             sw = AbstractScanWriter.newWriter(null, false, settings.out());
         } else {
@@ -196,12 +196,12 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     }
 
     @Override
-    protected void postDownload(List<JapanreadChapter> entries, Settings settings) throws Throwable {
+    protected void postDownload(List<Chapter> entries, Settings settings) throws Throwable {
         sw.endAll();
     }
 
     @Override
-    protected void processEntry(JapanreadChapter entry, Settings settings) throws Throwable {
+    protected void processEntry(Chapter entry, Settings settings) throws Throwable {
         Set<Cookie> cookieSet = WebDriver.get().manage().getCookies();
 
         HttpHeaders headers = standardHeaders()
@@ -285,29 +285,5 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
         }
 
         return titles;
-    }
-
-    protected static class JapanreadChapter extends Chapter {
-
-        private final String manga;
-
-        public JapanreadChapter(String url, int index, String chapter, String manga) {
-            super(url, index, chapter);
-            this.manga = manga;
-        }
-
-        public String manga() {
-            return manga;
-        }
-
-        @Override
-        public String toString() {
-            return "JapanreadChapter{" +
-                    "chapter='" + chapter + '\'' +
-                    ", url='" + url + '\'' +
-                    ", index=" + index +
-                    ", manga='" + manga + '\'' +
-                    '}';
-        }
     }
 }
