@@ -26,7 +26,7 @@ public class Updater {
             JsonArray releases = (JsonArray) HttpUtils.getJson(GET_RELEASES);
             JsonObject lastRelease = releases.getAsObject(0);
 
-            //if (isNewRelease(lastRelease)) {
+            if (isNewRelease(lastRelease)) {
                 String downloadURL = getDownloadURL(lastRelease.getAsArray("assets"));
 
                 LOGGER.debug("Download url: {}", downloadURL);
@@ -34,7 +34,7 @@ public class Updater {
                     update(downloadURL);
                     return;
                 }
-            //}
+            }
 
             LOGGER.info("No update available");
         } catch (JsonException | InterruptedException | IOException | URISyntaxException e) {

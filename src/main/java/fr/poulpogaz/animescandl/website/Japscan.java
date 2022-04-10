@@ -18,6 +18,7 @@ import org.jsoup.select.Elements;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.opera.OperaDriver;
 
 import java.io.IOException;
@@ -35,10 +36,18 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
     private static final Logger LOGGER = LogManager.getLogger(Japscan.class);
 
     public static final Japscan INSTANCE = new Japscan();
+
+    private final String URL_INDICATOR = "[URL]";
+    private final String IMAGE_URL_EXTRACTOR;
     private AbstractScanWriter sw = null;
 
     private Japscan() {
-
+        try {
+            IMAGE_URL_EXTRACTOR = getJS("image_url_extractor.js")
+                    .formatted(URL_INDICATOR);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -177,7 +186,8 @@ public class Japscan extends AbstractWebsite<Japscan.JapsanChapter, DefaultTitle
      * https://stackoverflow.com/questions/62799036/unable-to-locate-the-sign-in-element-within-shadow-root-open-using-selenium-a
      */
     protected void getImage(String url) throws IOException {
-        OperaDriver driver = WebDriver.init(PageLoadStrategy.NORMAL);
+        ChromeDriver driver = WebDriver.init(PageLoadStrategy.EAGER);
+        //driver.executeScript(IMAGE_URL_EXTRACTOR);
         driver.get(url);
 
         // remove all div

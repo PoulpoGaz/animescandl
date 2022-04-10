@@ -16,10 +16,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.opera.OperaDriver;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -46,35 +46,17 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     private static final String MANGA_INDICATOR = "[MANGA]";
     private static final String CHAP_INDICATOR = "[CHAPTER]";
 
-    private static final String MANGA_CHAPTER_EXTRACTOR = """                
-                (function(send) {
-                
-                    XMLHttpRequest.prototype.send = function(data) {                   
-                        function transferComplete(evt) {
-                            console.log(this.responseText);
-                            
-                            var mangaRegex = /https:\\/\\/www\\.japanread\\.cc\\/api\\/\\?id=\\d+&type=manga/;
-                            var chapterRegex = /https:\\/\\/www\\.japanread\\.cc\\/api\\/\\?id=\\d+&type=chapter/;
-                            
-                            if (this.responseURL.match(mangaRegex)) {
-                                console.log("%s" + this.responseText);
-                            } else if (this.responseURL.match(chapterRegex)) {
-                                console.log("%s" + this.responseText);
-                            }
-                        }
-                
-                        this.addEventListener("load", transferComplete, capture=true);
-                
-                        send.call(this, data);
-                    };
-               
-                })(XMLHttpRequest.prototype.send);
-                """.formatted(MANGA_INDICATOR, CHAP_INDICATOR);
+    private final String MANGA_CHAPTER_EXTRACTOR;
 
     private AbstractScanWriter sw;
 
     private Japanread() {
-
+        try {
+            MANGA_CHAPTER_EXTRACTOR = getJS("manga_chapter_extractor.js")
+                    .formatted(MANGA_INDICATOR, CHAP_INDICATOR);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -84,7 +66,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
 
     @Override
     protected List<JapanreadChapter> fetchList(String url, Settings settings) throws Throwable {
-        OperaDriver driver = WebDriver.init(PageLoadStrategy.EAGER);
+        ChromeDriver driver = WebDriver.init(PageLoadStrategy.EAGER);
 
         String chapterURL;
         if (isChapterURL(url)) {
@@ -139,7 +121,7 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
         return url() + e.attr("href");
     }
 
-    protected JsonObject getMangaJson(OperaDriver driver) throws WebsiteException, JsonException, IOException {
+    protected JsonObject getMangaJson(ChromeDriver driver) throws WebsiteException, JsonException, IOException {
         LogEntry log = getFirstMatching(driver, (e) -> e.getMessage().contains("[MANGA]"), 7500);
         String message = log.getMessage();
 
@@ -152,6 +134,41 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
         StringReader sr = new StringReader(json);
 
         return (JsonObject) JsonTreeReader.read(sr);
+    }
+
+    protected LogEntry getFirstMatching(ChromeDriver driver, Predicate<LogEntry> predicate, long timeout) throws WebsiteException {
+        long start = System.currentTimeMillis();
+
+        while (start + timeout > System.currentTimeMillis()) {
+            LogEntries entries = driver.manage().logs().get(LogType.BROWSER);
+
+            for (LogEntry entry : entries) {
+                LOGGER.debug(entry);
+                if (predicate.test(entry)) {
+                    return entry;
+                }
+            }
+        }
+
+        throw new WebsiteException("Timeout. Failed to get log matching predicate");
+    }
+
+    protected String removeBackslash(String text) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\\') {
+                if (i + 1 < text.length() && text.charAt(i + 1) == '\\') {
+                    builder.append('\\');
+                    i++;
+                }
+            } else {
+                builder.append(text.charAt(i));
+            }
+        }
+
+
+        return builder.toString();
     }
 
     @Override
@@ -227,41 +244,6 @@ public class Japanread extends AbstractWebsite<Japanread.JapanreadChapter, Defau
     @Override
     public String url() {
         return "https://www.japanread.cc";
-    }
-
-    protected LogEntry getFirstMatching(OperaDriver driver, Predicate<LogEntry> predicate, long timeout) throws WebsiteException {
-        long start = System.currentTimeMillis();
-
-        while (start + timeout > System.currentTimeMillis()) {
-            LogEntries entries = driver.manage().logs().get(LogType.BROWSER);
-
-            for (LogEntry entry : entries) {
-                LOGGER.debug(entry);
-                if (predicate.test(entry)) {
-                    return entry;
-                }
-            }
-        }
-
-        throw new WebsiteException("Timeout. Failed to get log matching predicate");
-    }
-
-    protected String removeBackslash(String text) {
-        StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == '\\') {
-                if (i + 1 < text.length() && text.charAt(i + 1) == '\\') {
-                    builder.append('\\');
-                    i++;
-                }
-            } else {
-                builder.append(text.charAt(i));
-            }
-        }
-
-
-        return builder.toString();
     }
 
     @Override

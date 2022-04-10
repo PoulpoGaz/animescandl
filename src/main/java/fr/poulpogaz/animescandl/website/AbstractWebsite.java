@@ -9,13 +9,17 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.CookieManager;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class AbstractWebsite<E extends Entry, T extends Title> implements Website<T>, IRequestSender {
 
@@ -134,5 +138,15 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
             LOGGER.debug(text);
             System.out.print("\r" + text);
         }
+    }
+
+    protected String getJS(String name) throws IOException {
+        String jsPath = "/js/" + name().toLowerCase(Locale.ROOT) + "_" + name;
+
+        InputStream is = AbstractWebsite.class.getResourceAsStream(jsPath);
+        byte[] bytes = is.readAllBytes();
+        is.close();
+
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }
