@@ -27,9 +27,6 @@ public interface ScanWebsite<M extends Manga, C extends Chapter> extends Website
     M getManga(String url)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
-    /**
-     * Chapters are ordered by the chapter number
-     */
     List<C> getChapters(M manga)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 

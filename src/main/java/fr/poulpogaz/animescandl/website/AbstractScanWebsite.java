@@ -1,7 +1,7 @@
 package fr.poulpogaz.animescandl.website;
 
-import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;

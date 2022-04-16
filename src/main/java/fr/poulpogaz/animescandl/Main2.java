@@ -2,12 +2,10 @@ package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.website.MangaRead;
 import fr.poulpogaz.animescandl.website.ScanWebsite;
-import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.SushiScan;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
-import fr.poulpogaz.animescandl.website.mangadex.Mangadex;
 import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;
@@ -18,7 +16,8 @@ public class Main2 {
     public static void main(String[] args)
             throws WebsiteException, IOException, InterruptedException, JsonException {
         // testString(new SushiScan(), "https://sushi-scan.su/hunter-x-hunter-volume-30/");
-        testString(new Mangadex(), "https://mangadex.org/title/a96676e5-8ae2-425e-b549-7f15dd34a6d8/komi-san-wa-komyushou-desu");
+        // testString(new Mangadex(), "https://mangadex.org/title/a96676e5-8ae2-425e-b549-7f15dd34a6d8/komi-san-wa-komyushou-desu");
+        testString(new MangaRead(), "https://www.mangaread.org/manga/we-never-learn/");
     }
 
     private static <M extends Manga, C extends Chapter>

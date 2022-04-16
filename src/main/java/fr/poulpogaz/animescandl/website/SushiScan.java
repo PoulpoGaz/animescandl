@@ -4,8 +4,6 @@ import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
-import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
@@ -15,11 +13,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -139,8 +138,6 @@ public class SushiScan extends AbstractScanWebsite<Manga, Chapter> {
             }
             chapters.add(new Chapter(a.attr("href"), i, title));
         }
-
-        chapters.sort(Comparator.comparingDouble(Chapter::getChapterNumber));
 
         return chapters;
     }

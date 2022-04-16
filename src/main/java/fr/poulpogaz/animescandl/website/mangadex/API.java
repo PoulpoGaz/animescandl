@@ -6,7 +6,6 @@ import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.websiteold.Mangadex;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
