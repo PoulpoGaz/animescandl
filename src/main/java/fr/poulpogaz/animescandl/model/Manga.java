@@ -16,11 +16,12 @@ public class Manga {
     private final String description;
     private final List<String> genre;
     private final Status status;
+    private final List<String> languages;
     private final String thumbnailURL;
     private final float score;
 
     public Manga(String url, String title) {
-        this(url, title, null, null, null, null, null, null, -1);
+        this(url, title, null, null, null, null, null, null, null, -1);
     }
 
     public Manga(String url,
@@ -30,6 +31,7 @@ public class Manga {
                  String description,
                  List<String> genre,
                  Status status,
+                 List<String> languages,
                  String thumbnailURL,
                  float score) {
         this.url = url;
@@ -39,6 +41,7 @@ public class Manga {
         this.description = description;
         this.genre = genre == null ? List.of() : Collections.unmodifiableList(genre);
         this.status = status;
+        this.languages = languages == null ? List.of() : Collections.unmodifiableList(languages);
         this.thumbnailURL = thumbnailURL;
         this.score = score;
     }
@@ -71,6 +74,10 @@ public class Manga {
         return Optional.of(status);
     }
 
+    public List<String> getLanguages() {
+        return languages;
+    }
+
     public Optional<String> getThumbnailURL() {
         return Optional.of(thumbnailURL);
     }
@@ -89,6 +96,7 @@ public class Manga {
                 ", description='" + description + '\'' +
                 ", genre=" + genre +
                 ", status=" + status +
+                ", languages=" + languages +
                 ", thumbnailURL='" + thumbnailURL + '\'' +
                 ", score=" + score +
                 '}';
@@ -103,6 +111,7 @@ public class Manga {
         private String description;
         private List<String> genres = new ArrayList<>();
         private Status status;
+        private List<String> languages = new ArrayList<>();
         private String thumbnailURL;
         private float score;
 
@@ -114,7 +123,7 @@ public class Manga {
                 throw new BuilderException("Title is null");
             }
 
-            return new Manga(url, title, artist, author, description, genres, status, thumbnailURL, score);
+            return new Manga(url, title, artist, author, description, genres, status, languages, thumbnailURL, score);
         }
 
         public String getUrl() {
@@ -183,6 +192,21 @@ public class Manga {
 
         public Builder setStatus(Status status) {
             this.status = status;
+            return this;
+        }
+
+        public List<String> getLanguage() {
+            return languages;
+        }
+
+        public Builder setLanguages(List<String> languages) {
+            this.languages = languages;
+            return this;
+        }
+
+        public Builder addLanguage(String language) {
+            languages.add(language);
+
             return this;
         }
 

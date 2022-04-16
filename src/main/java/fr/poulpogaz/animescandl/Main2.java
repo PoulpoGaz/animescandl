@@ -2,30 +2,40 @@ package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.website.ScanWebsite;
+import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.SushiScan;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.website.mangadex.Mangadex;
+import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;
 import java.util.List;
 
 public class Main2 {
 
-    public static void main(String[] args) throws WebsiteException, IOException, InterruptedException {
-        SushiScan su = new SushiScan();
+    public static void main(String[] args)
+            throws WebsiteException, IOException, InterruptedException, JsonException {
+        // testString(new SushiScan(), "https://sushi-scan.su/hunter-x-hunter-volume-30/");
+        testString(new Mangadex(), "https://mangadex.org/title/a96676e5-8ae2-425e-b549-7f15dd34a6d8/komi-san-wa-komyushou-desu");
+    }
 
-        Manga manga = su.getManga("https://sushi-scan.su/hunter-x-hunter-volume-30/");
+    private static <M extends Manga, C extends Chapter>
+    void testString(ScanWebsite<M, C> w, String url)
+            throws WebsiteException, IOException, InterruptedException, JsonException {
+        M manga = w.getManga(url);
         System.out.println(manga);
 
-        List<Chapter> chapters = su.getChapters(manga);
+        List<C> chapters = w.getChapters(manga);
 
-        Chapter vol30 = chapters.stream()
+        C vol30 = chapters.stream()
                 .filter((c) -> c.getChapterNumber() == 30).
                 findAny()
                 .orElseThrow();
         System.out.println(vol30);
 
-        PageIterator<String> iterator = su.getPageIterator(vol30, String.class);
+        PageIterator<String> iterator = w.getPageIterator(vol30, String.class);
 
         while (iterator.hasNext()) {
             System.out.println(iterator.next());

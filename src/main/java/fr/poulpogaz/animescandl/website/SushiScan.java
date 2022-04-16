@@ -55,7 +55,7 @@ public class SushiScan extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public Manga getManga(String url) throws UnsupportedURLException, IOException, InterruptedException {
+    public Manga getManga(String url) throws IOException, InterruptedException, UnsupportedURLException {
         Manga.Builder builder = new Manga.Builder();
 
         String mangaURL = getMangaURL(url);
@@ -146,26 +146,9 @@ public class SushiScan extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public Class<?>[] supportedIterators() {
-        return new Class<?>[] {String.class, InputStream.class, BufferedImage.class};
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <P> PageIterator<P> getPageIterator(Chapter chapter, Class<P> out) throws WebsiteException, IOException, InterruptedException {
-        StringPageIterator iterator = new StringPageIterator(chapter);
-
-        if (out == String.class) {
-            return (PageIterator<P>) iterator;
-        } else if (out == InputStream.class) {
-            return (PageIterator<P>) new InputStreamPageIterator(iterator, this);
-        } else if (out == BufferedImage.class) {
-            return (PageIterator<P>) new BufferedImagePageIterator(
-                    new InputStreamPageIterator(
-                            iterator, this));
-        }
-
-        throw new WebsiteException("Unsupported page iterator");
+    protected PageIterator<String> createStringPageIterator(Chapter chapter)
+            throws IOException, InterruptedException, WebsiteException {
+        return new StringPageIterator(chapter);
     }
 
     @Override
@@ -241,7 +224,7 @@ public class SushiScan extends AbstractScanWebsite<Manga, Chapter> {
 
         @Override
         public Optional<Integer> nPages() {
-            return Optional.empty();
+            return Optional.of(images.size());
         }
     }
 }

@@ -6,9 +6,14 @@ import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
+import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
+import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
+import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.json.JsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
@@ -20,6 +25,39 @@ public abstract class AbstractScanWebsite<M extends Manga, C extends Chapter>
 
     private final Logger LOGGER = LogManager.getLogger(AbstractScanWebsite.class);
     private final HttpClient CLIENT = createClient();
+
+
+    @Override
+    public Class<?>[] supportedIterators() {
+        return new Class<?>[] {String.class, InputStream.class, BufferedImage.class};
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <P> PageIterator<P> getPageIterator(C chapter, Class<P> out)
+            throws IOException, InterruptedException, WebsiteException, JsonException {
+        if (out == String.class) {
+            PageIterator<String> iterator = createStringPageIterator(chapter);
+            
+            return (PageIterator<P>) iterator;
+        } else if (out == InputStream.class) {
+            PageIterator<String> iterator = createStringPageIterator(chapter);
+            
+            return (PageIterator<P>) new InputStreamPageIterator(iterator, this);
+        } else if (out == BufferedImage.class) {
+            PageIterator<String> iterator = createStringPageIterator(chapter);
+            
+            return (PageIterator<P>) new BufferedImagePageIterator(
+                    new InputStreamPageIterator(
+                            iterator, this));
+        }
+
+        throw new WebsiteException("Unsupported page iterator");
+    }
+
+    protected abstract PageIterator<String> createStringPageIterator(Chapter chapter)
+            throws IOException, InterruptedException, WebsiteException, JsonException;
+
 
     public HttpHeaders standardHeaders() {
         return new HttpHeaders()
