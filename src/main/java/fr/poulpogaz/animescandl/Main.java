@@ -3,7 +3,7 @@ package fr.poulpogaz.animescandl;
 import fr.poulpogaz.animescandl.args.*;
 import fr.poulpogaz.animescandl.utils.Log4j2Setup;
 import fr.poulpogaz.animescandl.utils.Updater;
-import fr.poulpogaz.animescandl.website.Website;
+import fr.poulpogaz.animescandl.websiteold.Website;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

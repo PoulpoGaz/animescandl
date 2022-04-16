@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.model;
+package fr.poulpogaz.animescandl.modelold;
 
 public class DefaultEntry implements Entry {
 

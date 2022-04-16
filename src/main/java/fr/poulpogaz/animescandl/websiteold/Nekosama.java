@@ -1,14 +1,14 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.websiteold;
 
 import fr.poulpogaz.animescandl.Video;
 import fr.poulpogaz.animescandl.extractors.IExtractor;
 import fr.poulpogaz.animescandl.extractors.PStreamExtractor;
-import fr.poulpogaz.animescandl.model.DefaultEntry;
-import fr.poulpogaz.animescandl.model.DefaultTitle;
+import fr.poulpogaz.animescandl.modelold.DefaultEntry;
+import fr.poulpogaz.animescandl.modelold.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.ExtractorException;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.utils.WebsiteException;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.JsonReader;
 import fr.poulpogaz.json.tree.JsonArray;

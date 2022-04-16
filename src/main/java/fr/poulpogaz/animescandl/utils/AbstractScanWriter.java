@@ -1,7 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.website.AbstractWebsite;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

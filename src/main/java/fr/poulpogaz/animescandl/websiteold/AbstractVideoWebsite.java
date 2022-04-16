@@ -1,9 +1,9 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.websiteold;
 
 import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.Video;
-import fr.poulpogaz.animescandl.model.Entry;
-import fr.poulpogaz.animescandl.model.Title;
+import fr.poulpogaz.animescandl.modelold.Entry;
+import fr.poulpogaz.animescandl.modelold.Title;
 import fr.poulpogaz.animescandl.utils.M3U8Downloader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

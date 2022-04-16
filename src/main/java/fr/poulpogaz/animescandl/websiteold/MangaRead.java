@@ -1,10 +1,9 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.websiteold;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.DefaultEntry;
-import fr.poulpogaz.animescandl.model.DefaultTitle;
-import fr.poulpogaz.animescandl.model.Entry;
+import fr.poulpogaz.animescandl.modelold.Chapter;
+import fr.poulpogaz.animescandl.modelold.DefaultTitle;
+import fr.poulpogaz.animescandl.modelold.Entry;
 import fr.poulpogaz.animescandl.utils.AbstractScanWriter;
 import fr.poulpogaz.animescandl.utils.Utils;
 import org.jsoup.nodes.Document;
@@ -17,7 +16,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MangaRead extends AbstractWebsite<Chapter, DefaultTitle> {

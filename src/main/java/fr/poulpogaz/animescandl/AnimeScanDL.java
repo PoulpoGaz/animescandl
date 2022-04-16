@@ -1,11 +1,11 @@
 package fr.poulpogaz.animescandl;
 
-import fr.poulpogaz.animescandl.model.Title;
+import fr.poulpogaz.animescandl.modelold.Title;
 import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.WebDriver;
-import fr.poulpogaz.animescandl.website.*;
+import fr.poulpogaz.animescandl.websiteold.*;
 import fr.poulpogaz.json.IJsonReader;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.JsonReader;

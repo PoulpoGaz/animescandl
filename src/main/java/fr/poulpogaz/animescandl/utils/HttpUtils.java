@@ -29,7 +29,7 @@ public class HttpUtils {
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .build();
-    private static final IRequestSender STANDARD = createRequestSender();
+    public static final IRequestSender STANDARD = createRequestSender();
 
     public static InputStream decodeInputStream(HttpResponse<InputStream> rep) throws IOException {
         String encoding = rep.headers().firstValue("content-encoding").orElse(null);

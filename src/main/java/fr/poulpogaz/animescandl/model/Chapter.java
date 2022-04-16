@@ -1,66 +1,88 @@
 package fr.poulpogaz.animescandl.model;
 
-public class Chapter extends DefaultEntry {
+import fr.poulpogaz.animescandl.utils.BuilderException;
+import org.checkerframework.checker.units.qual.C;
 
-    protected final String manga;
-    protected final String volume;
-    protected final String chapter;
+import java.util.Optional;
 
-    public Chapter(String url, int index, String manga, String volume, String chapter) {
-        super(url, index);
-        this.manga = manga;
-        this.volume = volume;
-        this.chapter = chapter;
+public class Chapter {
+
+    private final String url;
+    private final float chapterNumber;
+
+    private final String name;
+
+    public Chapter(String url, float chapterNumber) {
+        this(url, chapterNumber, null);
     }
 
-    public String getChapterPDFName() {
-        StringBuilder builder = new StringBuilder();
-
-        if (manga != null) {
-            builder.append(manga);
-
-            if (volume != null || chapter != null) {
-                builder.append(" - ");
-            }
-        }
-        if (volume != null) {
-            builder.append(volume);
-
-            if (chapter != null) {
-                builder.append(" - ");
-            }
-        }
-        if (chapter != null) {
-            builder.append(chapter);
-        }
-
-        if (builder.isEmpty()) {
-            return String.valueOf(index);
-        }
-
-        return builder.toString();
+    public Chapter(String url, float chapterNumber, String name) {
+        this.url = url;
+        this.chapterNumber = chapterNumber;
+        this.name = name;
     }
 
-    public String manga() {
-        return manga;
+    public String getUrl() {
+        return url;
     }
 
-    public String volume() {
-        return volume;
+    public float getChapterNumber() {
+        return chapterNumber;
     }
 
-    public String chapter() {
-        return chapter;
+    public Optional<String> getName() {
+        return Optional.of(name);
     }
 
     @Override
     public String toString() {
         return "Chapter{" +
-                "manga='" + manga + '\'' +
-                ", volume='" + volume + '\'' +
-                ", chapter='" + chapter + '\'' +
-                ", url='" + url + '\'' +
-                ", index=" + index +
+                "url='" + url + '\'' +
+                ", chapterNumber=" + chapterNumber +
+                ", name='" + name + '\'' +
                 '}';
+    }
+
+    public static class Builder {
+        private String url;
+        private float chapterNumber;
+
+        private String name;
+        private float volume;
+
+        public Chapter build() {
+            if (url == null) {
+                throw new BuilderException("URL is null");
+            }
+
+            return new Chapter(url, chapterNumber, name);
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public Builder setUrl(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public float getChapterNumber() {
+            return chapterNumber;
+        }
+
+        public Builder setChapterNumber(float chapterNumber) {
+            this.chapterNumber = chapterNumber;
+            return this;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
     }
 }

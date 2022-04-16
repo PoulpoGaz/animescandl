@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.websiteold;
 
 import java.nio.file.Path;
 

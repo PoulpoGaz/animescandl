@@ -1,7 +1,7 @@
-package fr.poulpogaz.animescandl.model;
+package fr.poulpogaz.animescandl.modelold;
 
-import fr.poulpogaz.animescandl.website.Settings;
-import fr.poulpogaz.animescandl.website.Website;
+import fr.poulpogaz.animescandl.websiteold.Settings;
+import fr.poulpogaz.animescandl.websiteold.Website;
 
 public class DefaultTitle implements Title {
 

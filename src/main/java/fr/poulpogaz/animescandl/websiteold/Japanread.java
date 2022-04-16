@@ -1,9 +1,10 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.websiteold;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.DefaultTitle;
+import fr.poulpogaz.animescandl.modelold.Chapter;
+import fr.poulpogaz.animescandl.modelold.DefaultTitle;
 import fr.poulpogaz.animescandl.utils.*;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;

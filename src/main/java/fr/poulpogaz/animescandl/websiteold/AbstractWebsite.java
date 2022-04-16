@@ -1,16 +1,14 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.websiteold;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.model.Entry;
-import fr.poulpogaz.animescandl.model.Title;
+import fr.poulpogaz.animescandl.modelold.Entry;
+import fr.poulpogaz.animescandl.modelold.Title;
 import fr.poulpogaz.animescandl.utils.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.CookieManager;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

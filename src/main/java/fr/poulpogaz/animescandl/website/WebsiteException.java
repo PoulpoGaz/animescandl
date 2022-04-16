@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.utils;
+package fr.poulpogaz.animescandl.website;
 
 public class WebsiteException extends Exception {
 

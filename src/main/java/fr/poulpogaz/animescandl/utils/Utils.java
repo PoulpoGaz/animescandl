@@ -1,6 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
-import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.modelold.Chapter;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonTreeWriter;
@@ -52,6 +52,24 @@ public class Utils {
 
     public static int getFirstInt(String str) {
         return Integer.parseInt(Utils.getRegexGroup(str, "(\\d+)"));
+    }
+
+    public static <T> boolean contains(T[] array, T o) {
+        if (o == null) {
+            for (T t : array) {
+                if (t == null) {
+                    return true;
+                }
+            }
+        } else {
+            for (T t : array) {
+                if (o.equals(t)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static <T> T find(Collection<T> list, Predicate<T> predicate) {
