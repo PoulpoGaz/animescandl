@@ -77,22 +77,22 @@ public interface IRequestSender {
     }
 
     default InputStream getInputStream(HttpRequest request) throws IOException, InterruptedException {
-        HttpResponseDecoded rep = GET(request);
+        HttpResponseDecoded rep = send(request);
 
         return rep.body();
     }
 
 
     default HttpResponseDecoded GET(String url) throws IOException, InterruptedException {
-        return GET(standardRequest(url).build());
+        return send(standardRequest(url).build());
     }
 
     default HttpResponseDecoded GET(String url, HttpHeaders headers) throws IOException, InterruptedException {
         HttpRequest.Builder request = standardRequest(url);
         headers.apply(request);
 
-        return GET(request.build());
+        return send(request.build());
     }
 
-    HttpResponseDecoded GET(HttpRequest request) throws IOException, InterruptedException;
+    HttpResponseDecoded send(HttpRequest request) throws IOException, InterruptedException;
 }

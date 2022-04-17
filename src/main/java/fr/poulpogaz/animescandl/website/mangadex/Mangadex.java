@@ -3,7 +3,7 @@ package fr.poulpogaz.animescandl.website.mangadex;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.website.AbstractScanWebsite;
+import fr.poulpogaz.animescandl.website.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-public class Mangadex extends AbstractScanWebsite<Manga, Chapter> {
+public class Mangadex extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     private String language;
 

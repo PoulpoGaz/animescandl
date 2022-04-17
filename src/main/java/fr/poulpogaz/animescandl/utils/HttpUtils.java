@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.CookieStore;
 import java.net.HttpCookie;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,6 +30,7 @@ public class HttpUtils {
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .build();
+
     public static final IRequestSender STANDARD = createRequestSender();
 
     public static InputStream decodeInputStream(HttpResponse<InputStream> rep) throws IOException {
@@ -91,6 +93,15 @@ public class HttpUtils {
         return UrlValidator.getInstance().isValid(url);
     }
 
+    public static boolean exists(IRequestSender sender, String url) throws IOException, InterruptedException {
+        HttpRequest request = sender.standardRequest(url)
+                .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponseDecoded rep = sender.send(request);
+
+        return rep.statusCode() != HttpURLConnection.HTTP_NOT_FOUND;
+    }
 
     public static JsonElement getJson(String url) throws JsonException, IOException, InterruptedException {
         return STANDARD.getJson(url);
@@ -137,7 +148,7 @@ public class HttpUtils {
     }
 
     public static HttpResponseDecoded GET(HttpRequest request) throws IOException, InterruptedException {
-        return STANDARD.GET(request);
+        return STANDARD.send(request);
     }
 
 

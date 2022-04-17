@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MangaRead extends AbstractScanWebsite<Manga, Chapter> {
+public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     @Override
     public String name() {
@@ -53,7 +53,8 @@ public class MangaRead extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public Manga getManga(String url) throws IOException, InterruptedException, WebsiteException, JsonException {
+    public Manga getManga(String url)
+            throws IOException, InterruptedException, WebsiteException, JsonException {
         String mangaURL = getMangaURL(url);
         Document doc = getDocument(mangaURL);
 
@@ -131,7 +132,8 @@ public class MangaRead extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException, WebsiteException, JsonException {
+    public List<Chapter> getChapters(Manga manga)
+            throws IOException, InterruptedException {
         Document doc = getDocument(manga.getUrl());
         Elements chapters = doc.select(".wp-manga-chapter > a");
 
@@ -152,7 +154,8 @@ public class MangaRead extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    protected PageIterator<String> createStringPageIterator(Chapter chapter) throws IOException, InterruptedException, WebsiteException, JsonException {
+    protected PageIterator<String> createStringPageIterator(Chapter chapter)
+            throws IOException, InterruptedException {
         return new StringPageIterator(chapter);
     }
 

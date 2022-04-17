@@ -113,7 +113,7 @@ public class Manga {
         private Status status;
         private List<String> languages = new ArrayList<>();
         private String thumbnailURL;
-        private float score;
+        private float score = -1;
 
         public Manga build() {
             if (url == null) {

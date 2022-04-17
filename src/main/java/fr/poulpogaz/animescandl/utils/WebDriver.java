@@ -2,6 +2,7 @@ package fr.poulpogaz.animescandl.utils;
 
 import fr.poulpogaz.animescandl.Main;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.chromium.ChromiumDriver;
@@ -44,7 +45,7 @@ public class WebDriver {
             options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
             //options.setExperimentalOption("useAutomationExtension", false);
             options.addArguments("--disable-blink-features=AutomationControlled");
-            options.addArguments("--headless");
+            // options.addArguments("--headless");
             options.addArguments("user-agent=%s".formatted(FakeUserAgent.getUserAgent()));
 
             driver = new ChromeDriver(options);

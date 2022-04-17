@@ -7,4 +7,8 @@ public interface Website {
     String url();
 
     String version();
+
+    default boolean supportHeadless() {
+        return true;
+    }
 }

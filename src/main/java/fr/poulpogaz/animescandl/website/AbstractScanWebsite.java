@@ -27,38 +27,6 @@ public abstract class AbstractScanWebsite<M extends Manga, C extends Chapter>
     private final HttpClient CLIENT = createClient();
 
 
-    @Override
-    public Class<?>[] supportedIterators() {
-        return new Class<?>[] {String.class, InputStream.class, BufferedImage.class};
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <P> PageIterator<P> getPageIterator(C chapter, Class<P> out)
-            throws IOException, InterruptedException, WebsiteException, JsonException {
-        if (out == String.class) {
-            PageIterator<String> iterator = createStringPageIterator(chapter);
-            
-            return (PageIterator<P>) iterator;
-        } else if (out == InputStream.class) {
-            PageIterator<String> iterator = createStringPageIterator(chapter);
-            
-            return (PageIterator<P>) new InputStreamPageIterator(iterator, this);
-        } else if (out == BufferedImage.class) {
-            PageIterator<String> iterator = createStringPageIterator(chapter);
-            
-            return (PageIterator<P>) new BufferedImagePageIterator(
-                    new InputStreamPageIterator(
-                            iterator, this));
-        }
-
-        throw new WebsiteException("Unsupported page iterator");
-    }
-
-    protected abstract PageIterator<String> createStringPageIterator(Chapter chapter)
-            throws IOException, InterruptedException, WebsiteException, JsonException;
-
-
     public HttpHeaders standardHeaders() {
         return new HttpHeaders()
                 .setHeader("Accept-Encoding", "gzip, deflate, br")
@@ -70,7 +38,7 @@ public abstract class AbstractScanWebsite<M extends Manga, C extends Chapter>
     }
 
     @Override
-    public HttpResponseDecoded GET(HttpRequest request) throws IOException, InterruptedException {
+    public HttpResponseDecoded send(HttpRequest request) throws IOException, InterruptedException {
         HttpResponse<InputStream> rep = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         LOGGER.debug(request.uri());

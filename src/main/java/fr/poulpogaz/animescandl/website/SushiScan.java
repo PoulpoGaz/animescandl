@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class SushiScan extends AbstractScanWebsite<Manga, Chapter> {
+public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     @Override
     public String name() {

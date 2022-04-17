@@ -96,7 +96,7 @@ public abstract class AbstractWebsite<E extends Entry, T extends Title> implemen
                 .setHeader("User-Agent", FakeUserAgent.getUserAgent());
     }
 
-    public HttpResponseDecoded GET(HttpRequest request) throws IOException, InterruptedException {
+    public HttpResponseDecoded send(HttpRequest request) throws IOException, InterruptedException {
         HttpResponse<InputStream> rep = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         LOGGER.debug(request.uri());
