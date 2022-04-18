@@ -373,7 +373,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
             String u = url.orElseThrow(WebsiteException::new);
 
-            return baseURL + URLEncoder.encode(u, StandardCharsets.US_ASCII)
+            return baseURL + URLEncoder.encode(u, StandardCharsets.UTF_8)
                     .replace("+", "%20"); // java replace ' ' with '+' but I need "%20"
         }
 
