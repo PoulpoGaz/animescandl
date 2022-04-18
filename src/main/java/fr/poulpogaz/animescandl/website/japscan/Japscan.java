@@ -7,13 +7,10 @@ import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.AbstractScanWebsite;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
-import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
-import org.checkerframework.checker.units.qual.C;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import java.awt.image.BufferedImage;
@@ -21,8 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
 
@@ -77,17 +72,17 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
 
             switch (span.html()) {
                 case "Statut:" -> {
-                    builder.setStatus(parseStatus(getPMB_2_String(element)));
+                    builder.setStatus(parseStatus(Utils.getFirstNonEmptyText(element, true)));
                 }
                 case "Genre(s):" -> {
                     List<String> genres = parseMB_2_List(element);
                     builder.setGenres(genres);
                 }
                 case "Artiste(s):" -> {
-                    builder.setArtist(getPMB_2_String(element));
+                    builder.setArtist(Utils.getFirstNonEmptyText(element, true));
                 }
                 case "Auteur(s):" -> {
-                    builder.setAuthor(getPMB_2_String(element));
+                    builder.setAuthor(Utils.getFirstNonEmptyText(element, true));
                 }
             }
         }
@@ -123,48 +118,35 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     private List<String> parseMB_2_List(Element pmb_2) {
-       String text = getPMB_2_String(pmb_2);
+       String text = Utils.getFirstNonEmptyText(pmb_2, true);
 
         return List.of(text.split(", "));
     }
 
-    private String getPMB_2_String(Element pmb_2) {
-        for (TextNode n : pmb_2.textNodes()) {
-            String text = n.text();
-
-            if (!text.isBlank() && !text.isEmpty()) {
-                return text.substring(1, text.length() - 1);
-            }
-        }
-
-        return "";
-    }
-
     @Override
-    public List<Chapter> getChapters(Manga manga)
-            throws IOException, InterruptedException, WebsiteException, JsonException {
+    public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException {
         Document document = getDocument(manga.getUrl());
         Element chaptersList = document.getElementById("chapters_list");
 
+        Chapter.Builder builder = new Chapter.Builder();
+        builder.setManga(manga);
+
         List<Chapter> chapters = new ArrayList<>();
-        int volume = -1;
         for (Element child : chaptersList.children()) {
             if (child.is("h4")) {
                 String v = child.getElementsByTag("span")
                         .first()
                         .text();
 
-                volume = Utils.getFirstInt(v);
+                builder.setVolume(Utils.getFirstInt(v));
             } else if (child.is("div")) {
 
                 for (Element e : child.select("a.text-dark")) {
                     String link = url() + e.attr("href");
                     int index = Utils.getFirstInt(e.text());
 
-                    Chapter.Builder builder = new Chapter.Builder();
                     builder.setUrl(link);
                     builder.setChapterNumber(index);
-                    builder.setVolume(volume);
                     builder.setName(e.text());
 
                     chapters.add(builder.build());

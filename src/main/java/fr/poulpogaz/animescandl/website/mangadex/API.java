@@ -177,6 +177,9 @@ public class API {
         JsonObject object = apiJson(request);
         JsonObject volumes = object.getAsObject("volumes");
 
+        Chapter.Builder builder = new Chapter.Builder();
+        builder.setManga(manga);
+
         List<Chapter> chapters = new ArrayList<>();
         for (JsonElement e : volumes.values()) {
             JsonObject volume = (JsonObject) e;
@@ -190,13 +193,14 @@ public class API {
                 v = Float.parseFloat(str);
             }
 
+            builder.setVolume(v);
             for (JsonElement e2 : jsonChapters.values()) {
                 JsonObject chapter = (JsonObject) e2;
 
-                float chapterNumber = chapter.getAsFloat("chapter");
-                String chapterID = chapter.getAsString("id");
+                builder.setChapterNumber(chapter.getAsFloat("chapter"));
+                builder.setUrl(chapter.getAsString("id"));
 
-                chapters.add(new Chapter(chapterID, chapterNumber, null, v));
+                chapters.add(builder.build());
             }
         }
 

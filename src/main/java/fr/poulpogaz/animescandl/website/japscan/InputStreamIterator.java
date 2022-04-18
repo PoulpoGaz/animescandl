@@ -2,7 +2,6 @@ package fr.poulpogaz.animescandl.website.japscan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;
-import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 

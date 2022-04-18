@@ -6,14 +6,9 @@ import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
-import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
-import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
-import fr.poulpogaz.json.JsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;

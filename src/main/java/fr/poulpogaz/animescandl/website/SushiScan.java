@@ -118,25 +118,23 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
     public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException {
         Document doc = getDocument(manga.getUrl());
         Element element = doc.selectFirst("#chapterlist > ul");
-        Element series = doc.getElementsByClass("entry-title").first();
 
-        if (element == null || series == null) {
-            throw new IOException("Can't find chapter list/anime title in manga page");
-        }
-
-        String title = series.html();
+        Chapter.Builder builder = new Chapter.Builder();
+        builder.setManga(manga);
 
         List<Chapter> chapters = new ArrayList<>();
         for (Element sub : element.children()) {
             String dataNum = sub.attr("data-num");
-
-            int i = Utils.getFirstInt(dataNum);
+            builder.setName(dataNum);
+            builder.setChapterNumber(Utils.getFirstInt(dataNum));
 
             Element a = sub.selectFirst("a");
             if (a == null) {
                 throw new IOException("Can't find <a>");
             }
-            chapters.add(new Chapter(a.attr("href"), i, title));
+
+            builder.setUrl(a.attr("href"));
+            chapters.add(builder.build());
         }
 
         return chapters;

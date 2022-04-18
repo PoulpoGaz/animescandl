@@ -2,9 +2,7 @@ package fr.poulpogaz.animescandl.website.japscan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
-import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.Pair;
-import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
@@ -31,8 +29,6 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
     protected int index = 0;
 
     protected final Map<Character, Character> map = new HashMap<>();
-
-
 
     public BaseIterator(Japscan japscan, Chapter chapter) throws IOException, InterruptedException {
         this.japscan = japscan;

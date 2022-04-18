@@ -2,6 +2,7 @@ package fr.poulpogaz.animescandl.model;
 
 import fr.poulpogaz.animescandl.utils.BuilderException;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class Chapter {
@@ -9,25 +10,34 @@ public class Chapter {
     public static final float UNKNOWN_CHAPTER = -100;
     public static final float NONE_CHAPTER = -200;
 
+    public static final float UNKNOWN_VOLUME = -100;
+
+    private final Manga manga;
+
     private final String url;
     private final float chapterNumber;
 
     private final String name;
     private final float volume;
 
-    public Chapter(String url, float chapterNumber) {
-        this(url, chapterNumber, null, UNKNOWN_CHAPTER);
+    public Chapter(Manga manga, String url, float chapterNumber) {
+        this(manga, url, chapterNumber, null, UNKNOWN_CHAPTER);
     }
 
-    public Chapter(String url, float chapterNumber, String name) {
-        this(url, chapterNumber, name, UNKNOWN_CHAPTER);
+    public Chapter(Manga manga, String url, float chapterNumber, String name) {
+        this(manga, url, chapterNumber, name, UNKNOWN_CHAPTER);
     }
 
-    public Chapter(String url, float chapterNumber, String name, float volume) {
-        this.url = url;
+    public Chapter(Manga manga, String url, float chapterNumber, String name, float volume) {
+        this.manga = Objects.requireNonNull(manga);
+        this.url = Objects.requireNonNull(url);
         this.chapterNumber = chapterNumber;
         this.name = name;
         this.volume = volume;
+    }
+
+    public Manga getManga() {
+        return manga;
     }
 
     public String getUrl() {
@@ -43,7 +53,7 @@ public class Chapter {
     }
 
     public Optional<Float> getVolume() {
-        if (volume == Integer.MIN_VALUE) {
+        if (volume == UNKNOWN_VOLUME) {
             return Optional.empty();
         } else {
             return Optional.of(volume);
@@ -53,7 +63,8 @@ public class Chapter {
     @Override
     public String toString() {
         return "Chapter{" +
-                "url='" + url + '\'' +
+                "manga=" + manga +
+                ", url='" + url + '\'' +
                 ", chapterNumber=" + chapterNumber +
                 ", name='" + name + '\'' +
                 ", volume=" + volume +
@@ -61,18 +72,34 @@ public class Chapter {
     }
 
     public static class Builder {
+
+        private Manga manga;
+
         private String url;
-        private float chapterNumber;
+        private float chapterNumber = UNKNOWN_CHAPTER;
 
         private String name;
-        private float volume = Integer.MIN_VALUE;
+        private float volume = UNKNOWN_VOLUME;
 
         public Chapter build() {
             if (url == null) {
                 throw new BuilderException("URL is null");
             }
 
-            return new Chapter(url, chapterNumber, name, volume);
+            if (manga == null) {
+                throw new BuilderException("Manga is null");
+            }
+
+            return new Chapter(manga, url, chapterNumber, name, volume);
+        }
+
+        public Manga getManga() {
+            return manga;
+        }
+
+        public Builder setManga(Manga manga) {
+            this.manga = manga;
+            return this;
         }
 
         public String getUrl() {

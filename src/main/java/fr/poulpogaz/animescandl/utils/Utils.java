@@ -6,6 +6,8 @@ import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonTreeWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -207,5 +209,21 @@ public class Utils {
         } else {
             return 0;
         }
+    }
+
+    public static String getFirstNonEmptyText(Element element, boolean substring) {
+        for (TextNode n : element.textNodes()) {
+            String text = n.text();
+
+            if (!text.isBlank() && !text.isEmpty()) {
+                if (substring) {
+                    return text.substring(1, text.length() - 1);
+                } else {
+                    return text;
+                }
+            }
+        }
+
+        return "";
     }
 }

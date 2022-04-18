@@ -137,12 +137,14 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
         Document doc = getDocument(manga.getUrl());
         Elements chapters = doc.select(".wp-manga-chapter > a");
 
+        Chapter.Builder builder = new Chapter.Builder();
+        builder.setManga(manga);
+
         List<Chapter> entries = new ArrayList<>();
         for (Element chapter : chapters) {
             Element a = chapter.selectFirst("a");
             int i = Utils.getFirstInt(a.html());
 
-            Chapter.Builder builder = new Chapter.Builder();
             builder.setUrl(a.attr("href"));
             builder.setChapterNumber(i);
             builder.setName(a.html());
@@ -166,18 +168,13 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     private class StringPageIterator implements PageIterator<String> {
 
-        private Elements elements;
+        private final Elements elements;
         private int index = 0;
 
         public StringPageIterator(Chapter chapter) throws IOException, InterruptedException {
             Document document = getDocument(chapter.getUrl());
 
             elements = document.select(".wp-manga-chapter-img");
-            List<String> pages = new ArrayList<>();
-            for (Element e : elements) {
-                String replace = e.attr("data-src").replace("\t", "").replace("\n", "");
-                pages.add(replace);
-            }
         }
 
         @Override

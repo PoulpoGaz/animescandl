@@ -1,12 +1,26 @@
 package fr.poulpogaz.animescandl.model;
 
-import fr.poulpogaz.animescandl.utils.BuilderException;
+import fr.poulpogaz.animescandl.website.ScanWebsite;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * A {@code Manga} is loaded wia the {@link ScanWebsite#getManga(String)}
+ * function. The function should be optimized to limit the number
+ * of request.
+ *
+ * It is preferred that a {@code Manga}
+ * doesn't store any reference to a {@code Chapter}
+ * The preferred way to load a {@code Chapter} is to
+ * use {@link ScanWebsite#getChapters(Manga)}
+ *
+ * However, some websites may use, for performance
+ * or because it's impossible to do in another way,
+ * the {@link MangaWithChapter} object.
+ */
 public class Manga {
 
     private final String url;
@@ -34,8 +48,8 @@ public class Manga {
                  List<String> languages,
                  String thumbnailURL,
                  float score) {
-        this.url = url;
-        this.title = title;
+        this.url = Objects.requireNonNull(url);
+        this.title = Objects.requireNonNull(title);
         this.artist = artist;
         this.author = author;
         this.description = description;
@@ -102,130 +116,11 @@ public class Manga {
                 '}';
     }
 
-    public static class Builder {
+    public static class Builder extends MangaBuilderBase<Manga> {
 
-        private String url;
-        private String title;
-        private String artist;
-        private String author;
-        private String description;
-        private List<String> genres = new ArrayList<>();
-        private Status status;
-        private List<String> languages = new ArrayList<>();
-        private String thumbnailURL;
-        private float score = -1;
-
-        public Manga build() {
-            if (url == null) {
-                throw new BuilderException("URL is null");
-            }
-            if (title == null) {
-                throw new BuilderException("Title is null");
-            }
-
+        @Override
+        public Manga buildImpl() {
             return new Manga(url, title, artist, author, description, genres, status, languages, thumbnailURL, score);
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public Builder setUrl(String url) {
-            this.url = url;
-            return this;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public Builder setTitle(String title) {
-            this.title = title;
-            return this;
-        }
-
-        public String getArtist() {
-            return artist;
-        }
-
-        public Builder setArtist(String artist) {
-            this.artist = artist;
-            return this;
-        }
-
-        public String getAuthor() {
-            return author;
-        }
-
-        public Builder setAuthor(String author) {
-            this.author = author;
-            return this;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public Builder setDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public List<String> getGenres() {
-            return genres;
-        }
-
-        public Builder setGenres(List<String> genres) {
-            this.genres = genres;
-            return this;
-        }
-
-        public Builder addGenre(String genre) {
-            genres.add(genre);
-
-            return this;
-        }
-
-        public Status getStatus() {
-            return status;
-        }
-
-        public Builder setStatus(Status status) {
-            this.status = status;
-            return this;
-        }
-
-        public List<String> getLanguage() {
-            return languages;
-        }
-
-        public Builder setLanguages(List<String> languages) {
-            this.languages = languages;
-            return this;
-        }
-
-        public Builder addLanguage(String language) {
-            languages.add(language);
-
-            return this;
-        }
-
-        public String getThumbnailURL() {
-            return thumbnailURL;
-        }
-
-        public Builder setThumbnailURL(String thumbnailURL) {
-            this.thumbnailURL = thumbnailURL;
-            return this;
-        }
-
-        public float getScore() {
-            return score;
-        }
-
-        public Builder setScore(float score) {
-            this.score = score;
-            return this;
         }
     }
 }

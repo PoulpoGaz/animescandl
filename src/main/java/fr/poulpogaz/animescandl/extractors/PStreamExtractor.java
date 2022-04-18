@@ -4,7 +4,6 @@ import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.Video;
 import fr.poulpogaz.animescandl.utils.ExtractorException;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
-import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeReader;

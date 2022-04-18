@@ -86,9 +86,10 @@ public class CEFHelper extends JFrame {
         browser = client.createBrowser(url, false, false);
         browserUI = browser.getUIComponent();
 
+        setLayout(new BorderLayout());
         getContentPane().add(browserUI, BorderLayout.CENTER);
+        pack();
         setSize(1024, 576);
-        setVisible(true);
     }
 
     public void close() {
