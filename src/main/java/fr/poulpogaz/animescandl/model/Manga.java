@@ -28,7 +28,7 @@ public class Manga {
     private final String artist;
     private final String author;
     private final String description;
-    private final List<String> genre;
+    private final List<String> genres;
     private final Status status;
     private final List<String> languages;
     private final String thumbnailURL;
@@ -43,7 +43,7 @@ public class Manga {
                  String artist,
                  String author,
                  String description,
-                 List<String> genre,
+                 List<String> genres,
                  Status status,
                  List<String> languages,
                  String thumbnailURL,
@@ -53,7 +53,7 @@ public class Manga {
         this.artist = artist;
         this.author = author;
         this.description = description;
-        this.genre = genre == null ? List.of() : Collections.unmodifiableList(genre);
+        this.genres = genres == null ? List.of() : Collections.unmodifiableList(genres);
         this.status = status;
         this.languages = languages == null ? List.of() : Collections.unmodifiableList(languages);
         this.thumbnailURL = thumbnailURL;
@@ -80,8 +80,8 @@ public class Manga {
         return Optional.of(description);
     }
 
-    public List<String> getGenre() {
-        return genre;
+    public List<String> getGenres() {
+        return genres;
     }
 
     public Optional<Status> getStatus() {
@@ -108,7 +108,7 @@ public class Manga {
                 ", artist='" + artist + '\'' +
                 ", author='" + author + '\'' +
                 ", description='" + description + '\'' +
-                ", genre=" + genre +
+                ", genre=" + genres +
                 ", status=" + status +
                 ", languages=" + languages +
                 ", thumbnailURL='" + thumbnailURL + '\'' +

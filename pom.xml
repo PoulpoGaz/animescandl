@@ -109,5 +109,14 @@
             <artifactId>jcefmaven</artifactId>
             <version>100.0.14</version>
         </dependency>
+
+        <!-- TEST  -->
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

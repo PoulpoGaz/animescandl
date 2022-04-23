@@ -147,7 +147,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         if (isMangaURL(url)) {
             return url;
         } else if (isChapterURL(url)) {
-            return Utils.getRegexGroup(url, "^(https://www\\.japanread\\.cc/manga/[^/]*)/\\d$");
+            return Utils.getRegexGroup(url, "^(https://www\\.japanread\\.cc/manga/[^/]*)/\\d*$");
         } else {
             throw new UnsupportedURLException(this, url);
         }

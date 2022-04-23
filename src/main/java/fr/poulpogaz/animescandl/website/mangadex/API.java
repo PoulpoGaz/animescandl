@@ -47,6 +47,7 @@ public class API {
         JsonObject object = apiJson(
                 "/chapter/%s?includes[]=manga&includes[]=artist&includes[]=author&includes[]=cover_art",
                 chapterID);
+        System.out.println(Utils.jsonString(object));
         JsonObject data = object.getAsObject("data");
         JsonArray relationships = data.getAsArray("relationships");
 
@@ -54,7 +55,7 @@ public class API {
         // for getting mangaID which is necessary
         // for cover art
         for (JsonElement e : relationships) {
-            if (!e.isObject() || ((JsonObject) e).getAsString("type").equals("manga")) {
+            if (!e.isObject()) {
                 continue;
             }
             JsonObject o = (JsonObject) e;
@@ -188,7 +189,7 @@ public class API {
             String str = volume.getAsString("volume");
             float v;
             if (str.equals("none")) {
-                v = Chapter.NONE_CHAPTER;
+                v = Chapter.NONE_VOLUME;
             } else {
                 v = Float.parseFloat(str);
             }

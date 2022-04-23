@@ -61,7 +61,6 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
                 builder.append('/');
             }
         }
-
         builder.append(".jpg");
 
         return builder.toString();
@@ -124,6 +123,7 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
                 return null;
             }
         });
+        helper.setVisible(true);
 
         while (decrypted[0] == null) {
             Thread.onSpinWait();

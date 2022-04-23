@@ -10,12 +10,6 @@ import java.util.List;
 
 public interface ScanWebsite<M extends Manga, C extends Chapter> extends Website {
 
-    String name();
-
-    String url();
-
-    String version();
-
     boolean isChapterURL(String url);
 
     boolean isMangaURL(String url);

@@ -8,9 +8,9 @@ import java.util.Optional;
 public class Chapter {
 
     public static final float UNKNOWN_CHAPTER = -100;
-    public static final float NONE_CHAPTER = -200;
 
     public static final float UNKNOWN_VOLUME = -100;
+    public static final float NONE_VOLUME = -200;
 
     private final Manga manga;
 
@@ -21,11 +21,11 @@ public class Chapter {
     private final float volume;
 
     public Chapter(Manga manga, String url, float chapterNumber) {
-        this(manga, url, chapterNumber, null, UNKNOWN_CHAPTER);
+        this(manga, url, chapterNumber, null, UNKNOWN_VOLUME);
     }
 
     public Chapter(Manga manga, String url, float chapterNumber, String name) {
-        this(manga, url, chapterNumber, name, UNKNOWN_CHAPTER);
+        this(manga, url, chapterNumber, name, UNKNOWN_VOLUME);
     }
 
     public Chapter(Manga manga, String url, float chapterNumber, String name, float volume) {
