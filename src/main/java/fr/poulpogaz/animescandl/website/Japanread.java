@@ -75,7 +75,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
     @Override
     public boolean isChapterURL(String url) {
-        Pattern pattern = Pattern.compile("^https://www\\.japanread\\.cc/manga/[^/]*/\\d$");
+        Pattern pattern = Pattern.compile("^https://www\\.japanread\\.cc/manga/[^/]*/\\d*$");
 
         return pattern.matcher(url).find();
     }
@@ -299,7 +299,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
     @Override
     protected PageIterator<String> createStringPageIterator(Chapter chapter)
-            throws IOException, InterruptedException, WebsiteException, JsonException {
+            throws IOException, InterruptedException, JsonException {
         return new StringPageIterator(chapter);
     }
 
@@ -338,19 +338,18 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         private void setCookies(HttpHeaders headers) {
             AtomicBoolean stop = new AtomicBoolean(false);
 
-            manager.visitAllCookies((cookie, count, total, delete) -> {
-                switch (cookie.name) {
-                    case "__cf_bm", "__gads", "PHPSESSID" -> {
+            manager.visitUrlCookies("https://www.japanread.cc/", true,
+                (cookie, count, total, delete) -> {
+                    if ("PHPSESSID".equals(cookie.name)) {
                         headers.header("cookie", cookie.name + "=" + cookie.value);
                     }
-                }
 
-                if (count + 1 == total) {
-                    stop.set(true);
-                }
+                    if (count + 1 == total) {
+                        stop.set(true);
+                    }
 
-                return true;
-            });
+                    return true;
+                });
 
             while (!stop.get()) {
                 Thread.onSpinWait();

@@ -5,8 +5,10 @@ import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.AbstractScanWebsite;
+import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
+import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
 import org.jsoup.nodes.Document;
@@ -104,7 +106,7 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
 
             return url() + link.attr("href");
         } else {
-            throw new WebsiteException("Unsupported url: " + url);
+            throw new UnsupportedURLException(this, "Unsupported url: " + url);
         }
     }
 
@@ -172,10 +174,12 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
 
             return (PageIterator<P>) iterator;
         } else if (out == InputStream.class) {
-            return (PageIterator<P>) new InputStreamIterator(this, chapter);
+            return (PageIterator<P>) new InputStreamPageIterator(
+                    new StringPageIterator(this, chapter), this);
         } else if (out == BufferedImage.class) {
             return (PageIterator<P>) new BufferedImagePageIterator(
-                    new InputStreamIterator(this, chapter));
+                    new InputStreamPageIterator(
+                            new StringPageIterator(this, chapter), this));
         }
 
         throw new WebsiteException("Unsupported page iterator");

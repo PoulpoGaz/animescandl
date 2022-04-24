@@ -73,26 +73,42 @@ public class CEFHelper extends JFrame {
         }
 
         client = cefApp.createClient();
+        setLayout(new BorderLayout());
     }
 
     public void loadURL(String url) {
-        if (browser != null) {
-            removeAll();
-            browser.close(true);
-            browser = null;
-            browserUI = null;
+        if (browser == null) {
+            browser = client.createBrowser(url, false, false);
+            browserUI = browser.getUIComponent();
+
+            getContentPane().add(browserUI, BorderLayout.CENTER);
+            revalidate();
+            repaint();
+            pack();
+            setSize(1024, 576);
+        } else {
+            removeAllHandler();
+            browser.loadURL(url);
         }
+    }
 
-        browser = client.createBrowser(url, false, false);
-        browserUI = browser.getUIComponent();
-
-        setLayout(new BorderLayout());
-        getContentPane().add(browserUI, BorderLayout.CENTER);
-        pack();
-        setSize(1024, 576);
+    public void removeAllHandler() {
+        client.removeContextMenuHandler();
+        client.removeDialogHandler();
+        client.removeDisplayHandler();
+        client.removeDownloadHandler();
+        client.removeDragHandler();
+        client.removeFocusHandler();
+        client.removeJSDialogHandler();
+        client.removeKeyboardHandler();
+        client.removeLifeSpanHandler();
+        client.removeLoadHandler();
+        client.removePrintHandler();
+        client.removeRequestHandler();
     }
 
     public void close() {
+        removeAllHandler();
         removeAll();
         if (browser != null) {
             browser.close(true);

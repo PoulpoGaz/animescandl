@@ -7,14 +7,16 @@ import fr.poulpogaz.animescandl.website.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 /**
  * This class doesn't check if the manga has correct information
@@ -47,11 +49,8 @@ public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
         while (iterator.hasNext()) {
             System.out.println(iterator.next());
         }
-
-        if (needCEF()) {
-            CEFHelper.shutdown();
-        }
     }
+
     @Test
     public void mangaTest() throws WebsiteException, IOException, InterruptedException,
             JsonException, UnsupportedPlatformException, CefInitializationException {
@@ -72,6 +71,11 @@ public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
     public void unknownURL() {
         assertThrows(UnsupportedURLException.class, () -> test(getScanWebsite().url()));
     }
+
+    /*@AfterAll
+    public static void shutdown() {
+        CEFHelper.shutdown();
+    }*/
 
     protected boolean needCEF() {
         return false;

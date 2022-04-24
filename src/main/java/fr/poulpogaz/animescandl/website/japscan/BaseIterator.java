@@ -3,6 +3,7 @@ package fr.poulpogaz.animescandl.website.japscan;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.Pair;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
@@ -30,7 +31,7 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
 
     protected final Map<Character, Character> map = new HashMap<>();
 
-    public BaseIterator(Japscan japscan, Chapter chapter) throws IOException, InterruptedException {
+    public BaseIterator(Japscan japscan, Chapter chapter) throws IOException, InterruptedException, WebsiteException {
         this.japscan = japscan;
         this.chapter = chapter;
         loadPages();
@@ -61,12 +62,14 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
                 builder.append('/');
             }
         }
-        builder.append(".jpg");
+        int extensionStart = encrypted.lastIndexOf('.');
+
+        builder.append(encrypted, extensionStart, encrypted.length());
 
         return builder.toString();
     }
 
-    protected void loadPages() throws IOException, InterruptedException {
+    protected void loadPages() throws IOException, InterruptedException, WebsiteException {
         Document document = japscan.getDocument(chapter.getUrl());
         Elements options = document.select("#pages > option");
 
@@ -84,14 +87,16 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
         fillMap(w, e);
     }
 
-    protected void fillMap(String webpage, String encrypted) {
+    protected void fillMap(String webpage, String encrypted) throws WebsiteException {
         map.clear();
 
-        String decrypted = getDecrypted(webpage);
+        String decrypted = getDecrypted(webpage, 10000);
+
+        int end = encrypted.lastIndexOf('.');
 
         int dI = 43; // decryptedI
         int eI = 21; // encryptedI
-        for (; dI < decrypted.length() - 4; dI++, eI++) {
+        for (; dI < end; dI++, eI++) {
             if (decrypted.charAt(dI) != '/') {
                 map.put(encrypted.charAt(eI), decrypted.charAt(dI));
             }
@@ -99,7 +104,7 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
     }
 
     // The difficult function
-    protected String getDecrypted(String webpage) {
+    protected String getDecrypted(String webpage, long timeout) throws WebsiteException {
         String[] decrypted = new String[1];
         CEFHelper helper = CEFHelper.getInstance();
 
@@ -117,7 +122,6 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
 
                 if (url.contains("https://cdn.statically.io/img/c.japscan.ws/") && decrypted[0] == null) {
                     decrypted[0] = url;
-                    helper.close();
                 }
 
                 return null;
@@ -125,8 +129,14 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
         });
         helper.setVisible(true);
 
-        while (decrypted[0] == null) {
+        long start = System.currentTimeMillis();
+
+        while (start + timeout > System.currentTimeMillis() && decrypted[0] == null) {
             Thread.onSpinWait();
+        }
+
+        if (decrypted[0] == null) {
+            throw new WebsiteException("Timeout. Failed to get decrypted url");
         }
 
         return decrypted[0];

@@ -47,7 +47,6 @@ public class API {
         JsonObject object = apiJson(
                 "/chapter/%s?includes[]=manga&includes[]=artist&includes[]=author&includes[]=cover_art",
                 chapterID);
-        System.out.println(Utils.jsonString(object));
         JsonObject data = object.getAsObject("data");
         JsonArray relationships = data.getAsArray("relationships");
 
