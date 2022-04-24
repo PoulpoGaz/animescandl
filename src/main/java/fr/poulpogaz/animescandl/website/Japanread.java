@@ -4,6 +4,7 @@ import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.MangaWithChapter;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
+import fr.poulpogaz.animescandl.utils.CompletionWaiter;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapter> {
@@ -200,7 +200,8 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         builder.setDescription(b.toString());
     }
 
-    private void loadChapters(MangaWithChapter.Builder builder, String chapterURL) throws JsonException, WebsiteException, IOException {
+    private void loadChapters(MangaWithChapter.Builder builder, String chapterURL)
+            throws JsonException, WebsiteException, IOException, InterruptedException {
         JsonObject manga = getMangaJson(chapterURL);
         JsonObject chaptersObj = manga.getAsObject("chapter");
 
@@ -223,8 +224,9 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
     /* TODO: https://bitbucket.org/chromiumembedded/java-cef/pull-requests/81
         Will be done in a future jcef release I think
      */
-    protected JsonObject getMangaJson(String chapterURL) throws WebsiteException, JsonException, IOException {
-        String rawJson = getRawJson(chapterURL, 10_000);
+    protected JsonObject getMangaJson(String chapterURL)
+            throws WebsiteException, JsonException, IOException, InterruptedException {
+        String rawJson = getRawJson(chapterURL);
 
         String json = rawJson.substring(MANGA_INDICATOR.length() );
         json = removeBackslash(json);
@@ -233,8 +235,8 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         return (JsonObject) JsonTreeReader.read(sr);
     }
 
-    protected String getRawJson(String chapterURL, long timeout) throws WebsiteException {
-        String[] json = new String[1];
+    protected String getRawJson(String chapterURL) throws WebsiteException, InterruptedException {
+        CompletionWaiter<String> waiter = new CompletionWaiter<>();
 
         CEFHelper helper = CEFHelper.getInstance();
         helper.loadURL(chapterURL);
@@ -243,7 +245,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         client.addLoadHandler(new CefLoadHandlerAdapter() {
             @Override
             public void onLoadEnd(CefBrowser browser, CefFrame frame, int httpStatusCode) {
-                if (json[0] == null) {
+                if (!waiter.isCompleted()) {
                     browser.executeJavaScript(MANGA_CHAPTER_EXTRACTOR, "my_code.js", 0);
                 }
             }
@@ -253,7 +255,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
             @Override
             public boolean onConsoleMessage(CefBrowser browser, CefSettings.LogSeverity level, String message, String source, int line) {
                 if (message.startsWith(MANGA_INDICATOR)) {
-                    json[0] = message;
+                    waiter.complete(message);
                 }
 
                 return false;
@@ -261,17 +263,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         });
         helper.setVisible(true);
 
-        long start = System.currentTimeMillis();
-
-        while (start + timeout > System.currentTimeMillis() && json[0] == null) {
-            Thread.onSpinWait();
-        }
-
-        if (json[0] == null) {
-            throw new WebsiteException("Timeout. Failed to get manga json");
-        }
-
-        return json[0];
+        return waiter.waitUntilCompletion(10000);
     }
 
     protected String removeBackslash(String text) {
@@ -299,7 +291,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
     @Override
     protected PageIterator<String> createStringPageIterator(Chapter chapter)
-            throws IOException, InterruptedException, JsonException {
+            throws IOException, InterruptedException, JsonException, WebsiteException {
         return new StringPageIterator(chapter);
     }
 
@@ -322,7 +314,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         private int index;
 
         public StringPageIterator(Chapter chapter)
-                throws JsonException, IOException, InterruptedException {
+                throws JsonException, IOException, InterruptedException, WebsiteException {
             HttpHeaders headers = standardHeaders()
                     .header("a", "aa37ec6b0977")
                     .header("referer", chapter.getManga().getUrl())
@@ -335,25 +327,25 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
             pages = object.getAsArray("page_array");
         }
 
-        private void setCookies(HttpHeaders headers) {
-            AtomicBoolean stop = new AtomicBoolean(false);
+        private void setCookies(HttpHeaders headers) throws WebsiteException, InterruptedException {
+            CompletionWaiter<Void> waiter = new CompletionWaiter<>();
 
             manager.visitUrlCookies("https://www.japanread.cc/", true,
                 (cookie, count, total, delete) -> {
                     if ("PHPSESSID".equals(cookie.name)) {
                         headers.header("cookie", cookie.name + "=" + cookie.value);
+                        waiter.complete();
+                        return false;
                     }
 
                     if (count + 1 == total) {
-                        stop.set(true);
+                        waiter.complete();
                     }
 
                     return true;
                 });
 
-            while (!stop.get()) {
-                Thread.onSpinWait();
-            }
+            waiter.waitUntilCompletion(-1);
         }
 
         @Override

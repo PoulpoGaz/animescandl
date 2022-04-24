@@ -26,9 +26,7 @@ public class CEFHelper extends JFrame {
         }
 
         CefAppBuilder builder = new CefAppBuilder();
-        builder.setProgressHandler((enumProgress, v) -> {
-
-        });
+        builder.setProgressHandler((enumProgress, v) -> {});
 
         CefSettings settings = builder.getCefSettings();
         settings.windowless_rendering_enabled = false;

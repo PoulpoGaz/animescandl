@@ -2,6 +2,7 @@ package fr.poulpogaz.animescandl.website.japscan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
+import fr.poulpogaz.animescandl.utils.CompletionWaiter;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.iterators.PageIterator;
@@ -87,10 +88,10 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
         fillMap(w, e);
     }
 
-    protected void fillMap(String webpage, String encrypted) throws WebsiteException {
+    protected void fillMap(String webpage, String encrypted) throws WebsiteException, InterruptedException {
         map.clear();
 
-        String decrypted = getDecrypted(webpage, 10000);
+        String decrypted = getDecrypted(webpage);
 
         int end = encrypted.lastIndexOf('.');
 
@@ -104,8 +105,8 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
     }
 
     // The difficult function
-    protected String getDecrypted(String webpage, long timeout) throws WebsiteException {
-        String[] decrypted = new String[1];
+    protected String getDecrypted(String webpage) throws WebsiteException, InterruptedException {
+        CompletionWaiter<String> waiter = new CompletionWaiter<>();
         CEFHelper helper = CEFHelper.getInstance();
 
         helper.loadURL(webpage);
@@ -120,8 +121,8 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
                                                                        BoolRef disableDefaultHandling) {
                 String url = request.getURL();
 
-                if (url.contains("https://cdn.statically.io/img/c.japscan.ws/") && decrypted[0] == null) {
-                    decrypted[0] = url;
+                if (url.contains("https://cdn.statically.io/img/c.japscan.ws/")) {
+                    waiter.complete(url);
                 }
 
                 return null;
@@ -129,17 +130,7 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
         });
         helper.setVisible(true);
 
-        long start = System.currentTimeMillis();
-
-        while (start + timeout > System.currentTimeMillis() && decrypted[0] == null) {
-            Thread.onSpinWait();
-        }
-
-        if (decrypted[0] == null) {
-            throw new WebsiteException("Timeout. Failed to get decrypted url");
-        }
-
-        return decrypted[0];
+        return waiter.waitUntilCompletion(10000);
     }
 
     @Override
