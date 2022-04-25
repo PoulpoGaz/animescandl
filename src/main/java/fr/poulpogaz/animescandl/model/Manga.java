@@ -1,6 +1,6 @@
 package fr.poulpogaz.animescandl.model;
 
-import fr.poulpogaz.animescandl.website.ScanWebsite;
+import fr.poulpogaz.animescandl.scan.ScanWebsite;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,15 +69,15 @@ public class Manga {
     }
 
     public Optional<String> getArtist() {
-        return Optional.of(artist);
+        return Optional.ofNullable(artist);
     }
 
     public Optional<String> getAuthor() {
-        return Optional.of(author);
+        return Optional.ofNullable(author);
     }
 
     public Optional<String> getDescription() {
-        return Optional.of(description);
+        return Optional.ofNullable(description);
     }
 
     public List<String> getGenres() {
@@ -85,7 +85,7 @@ public class Manga {
     }
 
     public Optional<Status> getStatus() {
-        return Optional.of(status);
+        return Optional.ofNullable(status);
     }
 
     public List<String> getLanguages() {
@@ -93,7 +93,7 @@ public class Manga {
     }
 
     public Optional<String> getThumbnailURL() {
-        return Optional.of(thumbnailURL);
+        return Optional.ofNullable(thumbnailURL);
     }
 
     public Optional<Float> getScore() {

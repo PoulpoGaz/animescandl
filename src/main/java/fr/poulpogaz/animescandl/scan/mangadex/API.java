@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.website.mangadex;
+package fr.poulpogaz.animescandl.scan.mangadex;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;

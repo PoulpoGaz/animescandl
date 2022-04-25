@@ -1,10 +1,12 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
-import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.BufferedImagePageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.InputStreamPageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.website.AbstractWebsite;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 
 import java.awt.image.BufferedImage;
@@ -12,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public abstract class AbstractSimpleScanWebsite<M extends Manga, C extends Chapter>
-        extends AbstractScanWebsite<M, C>{
+        extends AbstractWebsite implements ScanWebsite<M, C>{
 
     @Override
     public Class<?>[] supportedIterators() {

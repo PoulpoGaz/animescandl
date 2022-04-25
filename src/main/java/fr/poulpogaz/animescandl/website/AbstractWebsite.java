@@ -1,7 +1,5 @@
 package fr.poulpogaz.animescandl.website;
 
-import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;
@@ -17,10 +15,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public abstract class AbstractScanWebsite<M extends Manga, C extends Chapter>
-        implements ScanWebsite<M, C>, IRequestSender {
+public abstract class AbstractWebsite implements Website {
 
-    private final Logger LOGGER = LogManager.getLogger(AbstractScanWebsite.class);
+    private final Logger LOGGER = LogManager.getLogger(AbstractWebsite.class);
     private final HttpClient CLIENT = createClient();
 
 

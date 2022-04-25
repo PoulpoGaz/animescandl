@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.MangaWithChapter;
@@ -7,7 +7,9 @@ import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.CompletionWaiter;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.website.UnsupportedURLException;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;

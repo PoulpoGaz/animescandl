@@ -4,10 +4,10 @@ import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.ScanWriter;
-import fr.poulpogaz.animescandl.website.AbstractScanWebsite;
-import fr.poulpogaz.animescandl.website.Japanread;
+import fr.poulpogaz.animescandl.scan.Japanread;
+import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
@@ -38,7 +38,7 @@ public class Main2 {
     }
 
     private static <M extends Manga, C extends Chapter>
-    void testString(AbstractScanWebsite<M, C> w, String url, boolean write)
+    void testString(ScanWebsite<M, C> w, String url, boolean write)
             throws WebsiteException, IOException, InterruptedException, JsonException {
         M manga = w.getManga(url);
         System.out.println(manga);

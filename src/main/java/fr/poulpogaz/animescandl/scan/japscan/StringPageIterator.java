@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.website.japscan;
+package fr.poulpogaz.animescandl.scan.japscan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.website.WebsiteException;

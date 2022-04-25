@@ -2,6 +2,8 @@ package fr.poulpogaz.animescandl.website;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.MangaWithChapter;
+import fr.poulpogaz.animescandl.scan.Japanread;
+import fr.poulpogaz.animescandl.scan.ScanWebsite;
 
 import java.io.IOException;
 

@@ -1,8 +1,10 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.website.Website;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;

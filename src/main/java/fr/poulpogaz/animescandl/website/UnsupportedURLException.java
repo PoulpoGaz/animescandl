@@ -1,5 +1,7 @@
 package fr.poulpogaz.animescandl.website;
 
+import fr.poulpogaz.animescandl.scan.ScanWebsite;
+
 public class UnsupportedURLException extends WebsiteException {
 
     public UnsupportedURLException(ScanWebsite<?, ?> w, String url, String... validURL) {

@@ -1,6 +1,8 @@
 package fr.poulpogaz.animescandl.website;
 
-public interface Website {
+import fr.poulpogaz.animescandl.utils.IRequestSender;
+
+public interface Website extends IRequestSender {
 
     String name();
 

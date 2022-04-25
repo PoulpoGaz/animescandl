@@ -1,15 +1,16 @@
-package fr.poulpogaz.animescandl.website.japscan;
+package fr.poulpogaz.animescandl.scan.japscan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.website.AbstractScanWebsite;
+import fr.poulpogaz.animescandl.website.AbstractWebsite;
+import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.iterators.BufferedImagePageIterator;
-import fr.poulpogaz.animescandl.website.iterators.InputStreamPageIterator;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.BufferedImagePageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.InputStreamPageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,7 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
+public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapter> {
 
     @Override
     public String name() {

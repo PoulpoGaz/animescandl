@@ -1,12 +1,12 @@
-package fr.poulpogaz.animescandl.website.mangadex;
+package fr.poulpogaz.animescandl.scan.mangadex;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.utils.Utils;
-import fr.poulpogaz.animescandl.website.AbstractSimpleScanWebsite;
+import fr.poulpogaz.animescandl.scan.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;

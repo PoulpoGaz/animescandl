@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.website.iterators;
+package fr.poulpogaz.animescandl.scan.iterators;
 
 import fr.poulpogaz.animescandl.website.WebsiteException;
 

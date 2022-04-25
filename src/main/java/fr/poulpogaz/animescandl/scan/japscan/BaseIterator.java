@@ -1,11 +1,11 @@
-package fr.poulpogaz.animescandl.website.japscan;
+package fr.poulpogaz.animescandl.scan.japscan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.CompletionWaiter;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.iterators.PageIterator;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefRequestHandlerAdapter;
