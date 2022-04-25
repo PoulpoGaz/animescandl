@@ -9,6 +9,7 @@ public class Anime {
     private final String url;
     private final String title;
     private final String description;
+    private final int nEpisode;
     private final List<String> studios;
     private final List<String> genres;
     private final Status status;
@@ -18,6 +19,7 @@ public class Anime {
     public Anime(String url,
                  String title,
                  String description,
+                 int nEpisode,
                  List<String> studios,
                  List<String> genres,
                  Status status,
@@ -26,6 +28,7 @@ public class Anime {
         this.url = Objects.requireNonNull(url);
         this.title = Objects.requireNonNull(title);
         this.description = description;
+        this.nEpisode = nEpisode;
         this.studios = studios == null ? List.of() : Collections.unmodifiableList(studios);
         this.genres = genres == null ? List.of() : Collections.unmodifiableList(genres);
         this.status = status;
@@ -43,6 +46,10 @@ public class Anime {
 
     public Optional<String> getDescription() {
         return Optional.ofNullable(description);
+    }
+
+    public Optional<Integer> getNEpisode() {
+        return nEpisode >= 0 ? Optional.of(nEpisode) : Optional.empty();
     }
 
     public List<String> getStudios() {
@@ -65,11 +72,27 @@ public class Anime {
         return score < 0 ? Optional.empty() : Optional.of(score);
     }
 
+    @Override
+    public String toString() {
+        return "Anime{" +
+                "url='" + url + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", nEpisode=" + nEpisode +
+                ", studios=" + studios +
+                ", genres=" + genres +
+                ", status=" + status +
+                ", thumbnailURL='" + thumbnailURL + '\'' +
+                ", score=" + score +
+                '}';
+    }
+
     public static class Builder {
 
         private String url;
         private String title;
         private String description;
+        private int nEpisode;
         private List<String> studios = new ArrayList<>();
         private List<String> genres = new ArrayList<>();
         private Status status;
@@ -85,7 +108,7 @@ public class Anime {
                 throw new BuilderException("title is null");
             }
 
-            return new Anime(url, title, description, studios, genres, status, thumbnailURL, score);
+            return new Anime(url, title, description, nEpisode, studios, genres, status, thumbnailURL, score);
         }
 
         public String getUrl() {
@@ -112,6 +135,15 @@ public class Anime {
 
         public Builder setDescription(String description) {
             this.description = description;
+            return this;
+        }
+
+        public int getNEpisode() {
+            return nEpisode;
+        }
+
+        public Builder setNEpisode(int nEpisode) {
+            this.nEpisode = nEpisode;
             return this;
         }
 

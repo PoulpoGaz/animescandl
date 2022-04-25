@@ -36,6 +36,16 @@ public class Episode {
         return Optional.ofNullable(name);
     }
 
+    @Override
+    public String toString() {
+        return "Episode{" +
+                "anime=" + anime +
+                ", url='" + url + '\'' +
+                ", episode=" + episode +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
     public static class Builder {
 
         private Anime anime;

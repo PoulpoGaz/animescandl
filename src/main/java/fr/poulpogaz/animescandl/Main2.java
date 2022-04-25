@@ -1,7 +1,8 @@
 package fr.poulpogaz.animescandl;
 
-import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.anime.AnimeWebsite;
+import fr.poulpogaz.animescandl.anime.Nekosama;
+import fr.poulpogaz.animescandl.model.*;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.ScanWriter;
 import fr.poulpogaz.animescandl.scan.Japanread;
@@ -12,6 +13,7 @@ import fr.poulpogaz.json.JsonException;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -21,24 +23,26 @@ public class Main2 {
     public static void main(String[] args)
             throws WebsiteException, IOException, InterruptedException,
             JsonException, UnsupportedPlatformException, CefInitializationException {
-       try {
-           // testString(new SushiScan(), "https://sushi-scan.su/hunter-x-hunter-volume-30/");
-           // testString(new Mangadex(), "https://mangadex.org/title/a96676e5-8ae2-425e-b549-7f15dd34a6d8/komi-san-wa-komyushou-desu");
-           // testString(new MangaRead(), "https://www.mangaread.org/manga/we-never-learn/");
+       //try {
+       //    // scanTest(new SushiScan(), "https://sushi-scan.su/hunter-x-hunter-volume-30/");
+       //    // scanTest(new Mangadex(), "https://mangadex.org/title/a96676e5-8ae2-425e-b549-7f15dd34a6d8/komi-san-wa-komyushou-desu");
+       //    // scanTest(new MangaRead(), "https://www.mangaread.org/manga/we-never-learn/");
 
-           // CEFHelper.initialize();
-           // testString(new Japscan(), "https://www.japscan.ws/lecture-en-ligne/elfen-lied/volume-1/10.html");
-           // CEFHelper.shutdown();
+       //    // CEFHelper.initialize();
+       //    // scanTest(new Japscan(), "https://www.japscan.ws/lecture-en-ligne/elfen-lied/volume-1/10.html");
+       //    // CEFHelper.shutdown();
 
-           CEFHelper.initialize();
-           testString(new Japanread(), "https://www.japanread.cc/manga/the-god-of-high-school/1", false);
-       } finally {
-           CEFHelper.shutdown();
-       }
+       //    CEFHelper.initialize();
+       //    scanTest(new Japanread(), "https://www.japanread.cc/manga/the-god-of-high-school/1", false);
+       //} finally {
+       //    CEFHelper.shutdown();
+       //}
+
+        animeTest(new Nekosama(), "https://neko-sama.fr/anime/info/4973-steins-gate-vostfr", false);
     }
 
     private static <M extends Manga, C extends Chapter>
-    void testString(ScanWebsite<M, C> w, String url, boolean write)
+    void scanTest(ScanWebsite<M, C> w, String url, boolean write)
             throws WebsiteException, IOException, InterruptedException, JsonException {
         M manga = w.getManga(url);
         System.out.println(manga);
@@ -68,6 +72,22 @@ public class Main2 {
                 System.out.println(iterator.next());
             }
         }
+    }
 
+    private static <A extends Anime, E extends Episode>
+    void animeTest(AnimeWebsite<A, E> a, String url, boolean write) throws JsonException, IOException, WebsiteException, InterruptedException {
+        A anime = a.getAnime(url);
+        System.out.println(anime);
+
+        List<E> episodes = a.getEpisodes(anime);
+
+        E episode = episodes.stream()
+                .filter((c) -> c.getEpisode() == 10).
+                findAny()
+                .orElseThrow();
+        System.out.println(episode);
+
+        List<Source> sources = a.getSources(episode);
+        System.out.println(sources);
     }
 }

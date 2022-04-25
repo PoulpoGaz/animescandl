@@ -26,7 +26,7 @@ public interface AnimeWebsite<A extends Anime, E extends Episode> extends Websit
     List<E> getEpisodes(A anime)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
-    List<Source> getSources(E episode);
+    List<Source> getSources(E episode) throws IOException, InterruptedException, JsonException, WebsiteException;
 
     List<A> search();
 }

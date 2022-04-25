@@ -32,4 +32,14 @@ public class Source {
     public Optional<String> getVideoFormat() {
         return Optional.ofNullable(videoFormat);
     }
+
+    @Override
+    public String toString() {
+        return "Source{" +
+                "url='" + url + '\'' +
+                ", subtitleURL='" + subtitleURL + '\'' +
+                ", quality=" + quality +
+                ", videoFormat='" + videoFormat + '\'' +
+                '}';
+    }
 }
