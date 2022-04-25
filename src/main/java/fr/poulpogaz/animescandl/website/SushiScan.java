@@ -36,7 +36,7 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     @Override
     public String version() {
-        return "dev";
+        return "dev2";
     }
 
     @Override
@@ -54,17 +54,17 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public Manga getManga(String url) throws IOException, InterruptedException, UnsupportedURLException {
+    public Manga getManga(String url) throws IOException, InterruptedException, WebsiteException {
         Manga.Builder builder = new Manga.Builder();
 
         String mangaURL = getMangaURL(url);
         builder.setUrl(mangaURL);
 
         Document document = getDocument(mangaURL);
-        builder.setTitle(document.selectFirst(".entry-title").html());
-        builder.setThumbnailURL(document.selectFirst(".thumb > img").attr("a"));
+        builder.setTitle(selectNonNull(document, ".entry-title").html());
+        builder.setThumbnailURL(selectNonNull(document, ".thumb > img").attr("a"));
 
-        float score = Utils.parseFloat(document.selectFirst(".num").html()).orElse(-1f);
+        float score = Utils.parseFloat(selectNonNull(document, ".num").html()).orElse(-1f);
         builder.setScore(score);
 
         Elements metadata = document.select(".tsinfo.bixbox > div > i");
@@ -88,16 +88,12 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
         return builder.build();
     }
 
-    protected String getMangaURL(String url) throws IOException, InterruptedException, UnsupportedURLException {
+    protected String getMangaURL(String url) throws IOException, InterruptedException, WebsiteException {
         if (isMangaURL(url)) {
             return url;
         } else if (isChapterURL(url)) {
             Document document = getDocument(url);
-            Element element = document.selectFirst("div.allc > a");
-
-            if (element == null) {
-                throw new IOException("Invalid SushiScan link");
-            }
+            Element element = selectNonNull(document, "div.allc > a");
 
             return element.attr("href");
         } else {
@@ -115,9 +111,9 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException {
+    public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException, WebsiteException {
         Document doc = getDocument(manga.getUrl());
-        Element element = doc.selectFirst("#chapterlist > ul");
+        Element element = selectNonNull(doc, "#chapterlist > ul");
 
         Chapter.Builder builder = new Chapter.Builder();
         builder.setManga(manga);
@@ -128,11 +124,7 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
             builder.setName(dataNum);
             builder.setChapterNumber(Utils.getFirstInt(dataNum));
 
-            Element a = sub.selectFirst("a");
-            if (a == null) {
-                throw new IOException("Can't find <a>");
-            }
-
+            Element a = selectNonNull(sub, "a");
             builder.setUrl(a.attr("href"));
             chapters.add(builder.build());
         }

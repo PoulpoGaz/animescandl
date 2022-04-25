@@ -70,7 +70,7 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
 
         Elements elements = doc.select(".mb-2");
         for (Element element : elements) {
-            Element span = element.selectFirst("span");
+            Element span = selectNonNull(element, "span");
 
             switch (span.html()) {
                 case "Statut:" -> {
@@ -89,7 +89,7 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
             }
         }
 
-        Element thumbnail = doc.selectFirst(".m-2 > img");
+        Element thumbnail = selectNonNull(doc, ".m-2 > img");
         builder.setThumbnailURL(url() + thumbnail.attr("src"));
 
         return builder.build();
@@ -101,8 +101,8 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
         } else if (isChapterURL(url)) {
             Document document = getDocument(url);
 
-            Element e = document.getElementsByClass("breadcrumb justify-content-center").first();
-            Element link = e.child(2).selectFirst("a");
+            Element e = selectNonNull(document, ".breadcrumb.justify-content-center");
+            Element link = selectNonNull(child(e, 2), "a");
 
             return url() + link.attr("href");
         } else {
@@ -126,9 +126,9 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException {
+    public List<Chapter> getChapters(Manga manga) throws IOException, InterruptedException, WebsiteException {
         Document document = getDocument(manga.getUrl());
-        Element chaptersList = document.getElementById("chapters_list");
+        Element chaptersList = getElementById(document, "chapters_list");
 
         Chapter.Builder builder = new Chapter.Builder();
         builder.setManga(manga);
@@ -136,8 +136,7 @@ public class Japscan extends AbstractScanWebsite<Manga, Chapter> {
         List<Chapter> chapters = new ArrayList<>();
         for (Element child : chaptersList.children()) {
             if (child.is("h4")) {
-                String v = child.getElementsByTag("span")
-                        .first()
+                String v = first(child.getElementsByTag("span"))
                         .text();
 
                 builder.setVolume(Utils.getFirstInt(v));

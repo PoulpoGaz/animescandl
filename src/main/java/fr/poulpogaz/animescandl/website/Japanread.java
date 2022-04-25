@@ -33,10 +33,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapter> {
@@ -50,6 +47,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         String path = "/js/japanread_manga_chapter_extractor.js";
 
         InputStream is = Japanread.class.getResourceAsStream(path);
+        Objects.requireNonNull(is);
         byte[] bytes = is.readAllBytes();
         is.close();
 
@@ -65,7 +63,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
     @Override
     public String version() {
-        return "dev1";
+        return "dev2";
     }
 
     @Override
@@ -96,25 +94,25 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         MangaWithChapter.Builder builder = new MangaWithChapter.Builder();
         builder.setUrl(mangaURL);
 
-        Element title = document.selectFirst(".text-white");
+        Element title = selectNonNull(document, ".text-white");
         builder.setTitle(Utils.getFirstNonEmptyText(title, true));
 
-        Element thumbnail = document.selectFirst("img[alt^=couverture]");
+        Element thumbnail = selectNonNull(document, "img[alt^=couverture]");
         builder.setThumbnailURL(thumbnail.attr("src"));
 
         Elements elements = document.select(".col-xl-9 > *");
 
         for (Element element : elements) {
-            String t = element.selectFirst("div .font-weight-bold").html();
+            String t = selectNonNull(element, "div .font-weight-bold").html();
 
             switch (t) {
                 case "Auteur(s) :" -> {
-                    String author = element.selectFirst("a").html();
+                    String author = selectNonNull(element, "a").html();
 
                     builder.setAuthor(author);
                 }
                 case "Artiste(s) :" -> {
-                    String artist = element.selectFirst("a").html();
+                    String artist = selectNonNull(element, "a").html();
 
                     builder.setArtist(artist);
                 }
@@ -125,7 +123,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
                     parseStatus(element, builder);
                 }
                 case "Note :" -> {
-                    String score = element.selectFirst(".js_avg").html();
+                    String score = selectNonNull(element, ".js_avg").html();
                     builder.setScore(Float.parseFloat(score));
                 }
                 case "Description :" -> {
@@ -164,16 +162,12 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
             Element e = a.selectFirst("span");
 
-            if (e == null) {
-                builder.addGenre(a.html());
-            } else {
-                builder.addGenre(e.html());
-            }
+            builder.addGenre(Objects.requireNonNullElse(e, a).html());
         }
     }
 
-    private void parseStatus(Element element, MangaWithChapter.Builder builder) {
-        Element e = element.selectFirst(".col-xl-10");
+    private void parseStatus(Element element, MangaWithChapter.Builder builder) throws WebsiteException {
+        Element e = selectNonNull(element, ".col-xl-10");
         String text = e.html();
 
         Status s = switch (text) {
@@ -185,8 +179,8 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         builder.setStatus(s);
     }
 
-    private void parseDescription(Element element, MangaWithChapter.Builder builder) {
-        Element description = element.selectFirst(".col-lg-9");
+    private void parseDescription(Element element, MangaWithChapter.Builder builder) throws WebsiteException {
+        Element description = selectNonNull(element, ".col-lg-9");
 
         StringBuilder b = new StringBuilder();
         for (Node n : description.childNodes()) {

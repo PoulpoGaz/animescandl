@@ -30,7 +30,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     @Override
     public String version() {
-        return "dev1";
+        return "dev2";
     }
 
     @Override
@@ -61,7 +61,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
         Manga.Builder builder = new Manga.Builder();
         builder.setUrl(mangaURL);
 
-        Element title = doc.selectFirst(".post-title > h1");
+        Element title = selectNonNull(doc, ".post-title > h1");
         builder.setTitle(title.html());
 
         builder.setAuthor(parseList(doc, ".author-content").collect(Collectors.joining(", ")));
@@ -70,13 +70,13 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
         builder.setDescription(getDescription(doc));
 
         // quite angry selector
-        Element status = doc.selectFirst(".post-status > .post-content_item > .summary-content:not(:has(a))");
+        Element status = selectNonNull(doc, ".post-status > .post-content_item > .summary-content:not(:has(a))");
         builder.setStatus(parseStatus(status.html()));
 
-        Element image = doc.selectFirst(".summary_image > a > img");
+        Element image = selectNonNull(doc, ".summary_image > a > img");
         builder.setThumbnailURL(image.attr("data-src"));
 
-        Element score = doc.selectFirst(".post-total-rating > .total_votes");
+        Element score = selectNonNull(doc, ".post-total-rating > .total_votes");
         builder.setScore(Float.parseFloat(score.html()));
 
         return builder.build();
@@ -99,8 +99,8 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
                 .map(Element::html);
     }
 
-    private String getDescription(Document document) {
-        Element summary = document.selectFirst(".summary__content");
+    private String getDescription(Document document) throws WebsiteException {
+        Element summary = selectNonNull(document, ".summary__content");
 
         StringBuilder description = new StringBuilder();
 
@@ -133,7 +133,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
     @Override
     public List<Chapter> getChapters(Manga manga)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, WebsiteException {
         Document doc = getDocument(manga.getUrl());
         Elements chapters = doc.select(".wp-manga-chapter > a");
 
@@ -142,7 +142,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> {
 
         List<Chapter> entries = new ArrayList<>();
         for (Element chapter : chapters) {
-            Element a = chapter.selectFirst("a");
+            Element a = selectNonNull(chapter, "a");
             int i = Utils.getFirstInt(a.html());
 
             builder.setUrl(a.attr("href"));
