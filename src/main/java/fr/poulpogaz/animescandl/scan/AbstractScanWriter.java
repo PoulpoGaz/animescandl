@@ -1,6 +1,10 @@
-package fr.poulpogaz.animescandl.utils;
+package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.Main;
+import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.utils.IRequestSender;
+import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.json.JsonException;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -23,7 +27,7 @@ public abstract class AbstractScanWriter {
     protected final Path out;
 
     /** The name of the current scan. eg: bla_bla_volume_1*/
-    protected String name;
+    protected String chapterName;
 
     public AbstractScanWriter(String title, boolean concatenateAll, Path out) {
         this.title = title;
@@ -31,7 +35,10 @@ public abstract class AbstractScanWriter {
         this.out = out;
     }
 
-    public abstract void newScan(String name);
+    public abstract <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chapter)
+            throws IOException, JsonException, WebsiteException, InterruptedException;
+
+    public abstract void newScan(String chapterName);
 
     public abstract void addPage(BufferedImage image) throws IOException;
 
@@ -55,7 +62,7 @@ public abstract class AbstractScanWriter {
     }
 
     public Path scanPath() {
-        String filename = name + ".pdf";
+        String filename = chapterName + ".pdf";
         if (out != null) {
             return out.resolve(filename);
         } else {
@@ -70,7 +77,13 @@ public abstract class AbstractScanWriter {
         }
 
         @Override
-        public void newScan(String name) {
+        public <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chapter)
+                throws IOException, JsonException, WebsiteException, InterruptedException {
+
+        }
+
+        @Override
+        public void newScan(String chapterName) {
 
         }
 
@@ -80,27 +93,27 @@ public abstract class AbstractScanWriter {
         }
 
         @Override
-        public void addPage(byte[] data) throws IOException {
+        public void addPage(byte[] data) {
 
         }
 
         @Override
-        public void addPage(InputStream is) throws IOException {
+        public void addPage(InputStream is) {
 
         }
 
         @Override
-        public void addPage(IRequestSender s, String page) throws IOException, InterruptedException {
+        public void addPage(IRequestSender s, String page) {
 
         }
 
         @Override
-        public void endScan() throws IOException {
+        public void endScan() {
 
         }
 
         @Override
-        public void endAll() throws IOException {
+        public void endAll() {
 
         }
     }

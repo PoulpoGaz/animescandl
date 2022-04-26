@@ -1,5 +1,14 @@
-package fr.poulpogaz.animescandl.utils;
+package fr.poulpogaz.animescandl.scan;
 
+import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.utils.IRequestSender;
+import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
+import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.json.JsonException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -18,6 +27,8 @@ import java.nio.file.Path;
 
 public class ScanWriter extends AbstractScanWriter {
 
+    private static final ASDLLogger LOGGER = Loggers.getLogger(ScanWriter.class);
+
     private PDDocument document;
 
     public ScanWriter(String title, boolean concatenateAll, Path out) {
@@ -25,12 +36,53 @@ public class ScanWriter extends AbstractScanWriter {
     }
 
     @Override
-    public void newScan(String name) {
+    public <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chap) throws IOException, JsonException, WebsiteException, InterruptedException {
+        Manga m = chap.getManga();
+        String chapName = chap.getName().orElse(m.getTitle() + " - " + chap.getChapterNumber());
+
+        LOGGER.infoln("Writing {}", chapName);
+        newScan(chapName);
+
+        try {
+            if (Utils.contains(s.supportedIterators(), String.class)) {
+                iter(s.getPageIterator(chap, String.class), (url) -> addPage(s, url));
+
+            } else if (Utils.contains(s.supportedIterators(), InputStream.class)) {
+                iter(s.getPageIterator(chap, InputStream.class), this::addPage);
+
+            } else if (Utils.contains(s.supportedIterators(), BufferedImage.class)) {
+                iter(s.getPageIterator(chap, BufferedImage.class), this::addPage);
+
+            }
+        } finally {
+            LOGGER.newLine();
+        }
+
+        endScan();
+    }
+
+    private <T> void iter(PageIterator<T> iterator, AddPage<T> addPage)
+            throws IOException, WebsiteException, InterruptedException {
+        String max = iterator.nPages()
+                .map(String::valueOf)
+                .orElse("??");
+        int page = 0;
+
+        while (iterator.hasNext()) {
+            addPage.addPage(iterator.next());
+            page++;
+
+            LOGGER.info("\r{}/{} pages", page, max);
+        }
+    }
+
+    @Override
+    public void newScan(String chapterName) {
         if (document == null) {
             document = new PDDocument();
         }
 
-        this.name = name;
+        this.chapterName = chapterName;
     }
 
     protected void addPage(PDImageXObject object) throws IOException {
@@ -118,5 +170,10 @@ public class ScanWriter extends AbstractScanWriter {
             document.close();
             document = null;
         }
+    }
+
+    @FunctionalInterface
+    private interface AddPage<T> {
+        void addPage(T page) throws IOException, InterruptedException;
     }
 }

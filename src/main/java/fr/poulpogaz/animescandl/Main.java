@@ -4,14 +4,15 @@ import fr.poulpogaz.animescandl.args.*;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.utils.Updater;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Log4j2Setup;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.website.Website;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.IJsonReader;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.JsonReader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,7 +22,7 @@ import java.util.List;
 
 public class Main {
 
-    public static final String VERSION = "1.4.2";
+    public static final String VERSION = "1.5-dev";
     public static final Path CONFIG_PATH = Path.of("animescandl.json");
 
     private static final String USAGE = """
@@ -51,7 +52,7 @@ public class Main {
               - out: A folder where you want to download.
             """;
 
-    private static final Logger LOGGER = LogManager.getLogger(Main.class);
+    private static final ASDLLogger LOGGER = Loggers.getLogger(Main.class);
 
     public static final Option supportedWebsite;
     public static final Option help;
@@ -59,7 +60,6 @@ public class Main {
     public static final Option update;
 
     public static final Option ffmpeg;
-    public static final Option operaDriver;
     public static final Option noOverwrites;
 
     public static final Option verbose;
@@ -93,12 +93,6 @@ public class Main {
                 .shortName("ff")
                 .argName("path")
                 .desc("Path to ffmpeg")
-                .build();
-        operaDriver = new OptionBuilder()
-                .name("opera")
-                .shortName("op")
-                .argName("path")
-                .desc("Path to opera driver")
                 .build();
         noOverwrites = new OptionBuilder()
                 .name("no-overwrites")
@@ -138,8 +132,7 @@ public class Main {
                 .addOption(supportedWebsite)
                 .addOption(update);
 
-        options.addOption("System", operaDriver)
-                .addOption("System", ffmpeg)
+        options.addOption("System", ffmpeg)
                 .addOption("System", noOverwrites);
 
         options.addOption("Debug", verbose)
@@ -157,17 +150,15 @@ public class Main {
         }
 
         Log4j2Setup.setup(verbose.isPresent(), writeLog.isPresent());
-        LOGGER.debug("================================ AnimeScanDL ================================");
+        LOGGER.debugln("================================ AnimeScanDL ================================");
 
-
-        AnimeScanDL a;
+        AnimeScanDownloader a;
         try {
-            a = AnimeScanDL.createDefault();
+            a = AnimeScanDownloader.createDefault();
         } catch (IOException e) {
-            System.err.println("FATAL");
-            throw new RuntimeException(e);
+            LOGGER.fatalln("Failed to initialize websites.", e);
+            return;
         }
-
 
 
         if (help.isPresent()) {
@@ -175,18 +166,22 @@ public class Main {
             return;
         }
         if (version.isPresent()) {
-            System.out.println(VERSION);
+            LOGGER.infoln(VERSION);
             return;
         }
         if (supportedWebsite.isPresent()) {
             for (Website website : a.getWebsites()) {
-                System.out.printf("%s [%s]\n", website.name(), website.version());
+                LOGGER.infoln("{} [{}]", website.name(), website.version());
             }
 
             return;
         }
 
+        run(a);
+    }
 
+
+    private static void run(AnimeScanDownloader a) {
         if (update.isPresent()) {
             Updater.update();
         } else {
@@ -197,10 +192,11 @@ public class Main {
                 }
 
             } catch (WebsiteException | JsonException | IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+                LOGGER.throwing(Level.FATAL, e);
             }
         }
     }
+
 
     private static List<Pair<String, Settings>> loadConfig() throws JsonException, IOException {
         List<Pair<String, Settings>> settings = new ArrayList<>();

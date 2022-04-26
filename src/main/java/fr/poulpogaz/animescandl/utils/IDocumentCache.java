@@ -2,13 +2,11 @@ package fr.poulpogaz.animescandl.utils;
 
 import org.jsoup.nodes.Document;
 
-import java.io.IOException;
-
 public interface IDocumentCache {
 
     void clearCache();
 
-    Document getDocument(String url) throws IOException, InterruptedException ;
+    Document getCachedDocument(String url);
 
     int getCacheLimit();
 

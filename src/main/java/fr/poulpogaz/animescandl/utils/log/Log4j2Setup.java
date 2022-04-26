@@ -10,6 +10,11 @@ public class Log4j2Setup {
 
     private static final String CONSOLE = "console";
     private static final String FILE = "file";
+    private static final String LOG_FILE = "log.log";
+
+    private static final String VERBOSE_PATTERN =
+            "%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %replace{%msg}{[\r\n]+}{}%n";
+
 
     public static void setup(boolean verbose, boolean writeLogs) {
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
@@ -42,7 +47,7 @@ public class Log4j2Setup {
 
     private static void createVerboseConsole(ConfigurationBuilder<BuiltConfiguration> builder) {
         LayoutComponentBuilder layout = builder.newLayout("PatternLayout")
-                .addAttribute("pattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n");
+                .addAttribute("pattern", VERBOSE_PATTERN);
 
         builder.add(
                 builder.newAppender(CONSOLE, "Console")
@@ -52,10 +57,10 @@ public class Log4j2Setup {
 
     private static void createConsole(ConfigurationBuilder<BuiltConfiguration> builder) {
         ComponentBuilder<?> v = builder.newComponent("LevelPatternSelector");
-        v.addComponent(patternMatch(builder, "INFO", "%m%n"));
-        v.addComponent(patternMatch(builder, "WARN", "[%-5level] %m%n"));
-        v.addComponent(patternMatch(builder, "ERROR", "[%-5level] %m%n"));
-        v.addComponent(patternMatch(builder, "FATAL", "[%-5level] %m%n"));
+        v.addComponent(patternMatch(builder, "INFO", "%m%throwable{short}"));
+        v.addComponent(patternMatch(builder, "WARN", "[%-5level] %m%throwable{short}"));
+        v.addComponent(patternMatch(builder, "ERROR", "[%-5level] %m%throwable{short}"));
+        v.addComponent(patternMatch(builder, "FATAL", "[%-5level] %m%throwable{short}"));
 
         LayoutComponentBuilder layout = builder.newLayout("PatternLayout")
                 .addComponent(v);
@@ -74,11 +79,11 @@ public class Log4j2Setup {
 
     private static void createFile(ConfigurationBuilder<BuiltConfiguration> builder) {
         LayoutComponentBuilder layout = builder.newLayout("PatternLayout")
-                .addAttribute("pattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n");
+                .addAttribute("pattern", VERBOSE_PATTERN);
 
         builder.add(
                 builder.newAppender(FILE, "File")
-                        .addAttribute("fileName", "log.log")
+                        .addAttribute("fileName", LOG_FILE)
                         .addAttribute("ignoreExceptions", "false")
                         .addAttribute("append", "true")
                         .add(layout)

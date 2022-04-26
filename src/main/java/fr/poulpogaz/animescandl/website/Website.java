@@ -1,6 +1,9 @@
 package fr.poulpogaz.animescandl.website;
 
-public interface Website {
+import fr.poulpogaz.animescandl.utils.IDocumentCache;
+import fr.poulpogaz.animescandl.utils.IRequestSender;
+
+public interface Website extends IRequestSender, IDocumentCache {
 
     String name();
 

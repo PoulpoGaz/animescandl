@@ -11,6 +11,10 @@ public class ASDLLogger extends Logger {
         super(context, name, messageFactory);
     }
 
+    public void newLine() {
+        System.out.println(System.lineSeparator());
+    }
+
     public void debugln(CharSequence message) {
         super.debug(message + System.lineSeparator());
     }

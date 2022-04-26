@@ -1,6 +1,9 @@
 package fr.poulpogaz.animescandl.website;
 
-import fr.poulpogaz.animescandl.utils.*;
+import fr.poulpogaz.animescandl.utils.FakeUserAgent;
+import fr.poulpogaz.animescandl.utils.HttpHeaders;
+import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;
+import fr.poulpogaz.animescandl.utils.SizedHashMap;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
 import org.jsoup.nodes.Document;
@@ -13,7 +16,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public abstract class AbstractWebsite implements Website, IRequestSender, IDocumentCache {
+public abstract class AbstractWebsite implements Website {
 
     private static final ASDLLogger LOGGER = Loggers.getLogger(AbstractWebsite.class);
     protected final HttpClient CLIENT = createClient();
@@ -86,6 +89,11 @@ public abstract class AbstractWebsite implements Website, IRequestSender, IDocum
     }
 
     @Override
+    public Document getCachedDocument(String url) {
+        return DOCUMENT_CACHE.get(url);
+    }
+
+    @Override
     public Document getDocument(String url) throws IOException, InterruptedException {
         if (DOCUMENT_CACHE.getMaxSize() != 0) {
             Document doc = DOCUMENT_CACHE.get(url);
@@ -95,7 +103,7 @@ public abstract class AbstractWebsite implements Website, IRequestSender, IDocum
             }
         }
 
-        Document doc = IRequestSender.super.getDocument(url);
+        Document doc = Website.super.getDocument(url);
         DOCUMENT_CACHE.put(url, doc);
 
         return doc;

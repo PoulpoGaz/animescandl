@@ -21,7 +21,7 @@ public record Settings(int[] range, boolean concatenateAll, String language, Pat
         private int[] range = null;
         private boolean concatenateAll = false;
         private String language = null;
-        private Path out = null;
+        private Path out = Path.of("");
 
         public Settings build() {
             return new Settings(range, concatenateAll, language, out);
