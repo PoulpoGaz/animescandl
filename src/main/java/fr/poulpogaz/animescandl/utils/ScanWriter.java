@@ -60,6 +60,11 @@ public class ScanWriter extends AbstractScanWriter {
     }
 
     @Override
+    public void addPage(InputStream is) throws IOException {
+        addPage(ImageIO.read(is));
+    }
+
+    @Override
     public void addPage(IRequestSender s, String page) throws IOException, InterruptedException {
         HttpResponse<InputStream> rep = s.GET(page);
 

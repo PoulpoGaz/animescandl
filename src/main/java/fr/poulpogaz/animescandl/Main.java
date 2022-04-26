@@ -1,15 +1,28 @@
 package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.args.*;
-import fr.poulpogaz.animescandl.utils.log.Log4j2Setup;
+import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.utils.Updater;
-import fr.poulpogaz.animescandl.websiteold.Website;
+import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.log.Log4j2Setup;
+import fr.poulpogaz.animescandl.website.Website;
+import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.json.IJsonReader;
+import fr.poulpogaz.json.JsonException;
+import fr.poulpogaz.json.JsonReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
     public static final String VERSION = "1.4.2";
+    public static final Path CONFIG_PATH = Path.of("animescandl.json");
 
     private static final String USAGE = """
             First create a file named "animescandl.json" next to animescandl executable.
@@ -143,6 +156,20 @@ public class Main {
             return;
         }
 
+        Log4j2Setup.setup(verbose.isPresent(), writeLog.isPresent());
+        LOGGER.debug("================================ AnimeScanDL ================================");
+
+
+        AnimeScanDL a;
+        try {
+            a = AnimeScanDL.createDefault();
+        } catch (IOException e) {
+            System.err.println("FATAL");
+            throw new RuntimeException(e);
+        }
+
+
+
         if (help.isPresent()) {
             HelpFormatter.printHelp(USAGE, options);
             return;
@@ -152,19 +179,72 @@ public class Main {
             return;
         }
         if (supportedWebsite.isPresent()) {
-            for (Website<?> website : AnimeScanDL.WEBSITES) {
+            for (Website website : a.getWebsites()) {
                 System.out.printf("%s [%s]\n", website.name(), website.version());
             }
+
             return;
         }
 
-        Log4j2Setup.setup(verbose.isPresent(), writeLog.isPresent());
-        LOGGER.debug("================================ AnimeScanDL ================================");
 
         if (update.isPresent()) {
             Updater.update();
         } else {
-            AnimeScanDL.run();
+
+            try {
+                for (Pair<String, Settings> p : loadConfig()) {
+                    a.process(p.left(), p.right());
+                }
+
+            } catch (WebsiteException | JsonException | IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
+    }
+
+    private static List<Pair<String, Settings>> loadConfig() throws JsonException, IOException {
+        List<Pair<String, Settings>> settings = new ArrayList<>();
+
+        IJsonReader jr = new JsonReader(Files.newBufferedReader(CONFIG_PATH));
+        jr.beginArray();
+
+        while (!jr.isArrayEnd()) {
+            jr.beginObject();
+
+            Pair<String, Settings> target = parseTarget(jr);
+
+            settings.add(target);
+
+            jr.endObject();
+        }
+
+        jr.endArray();
+        jr.close();
+
+        return settings;
+    }
+
+    private static Pair<String, Settings> parseTarget(IJsonReader jr) throws IOException, JsonException {
+        String url = null;
+        Settings.Builder builder = new Settings.Builder();
+
+        while (!jr.isObjectEnd()) {
+            String key = jr.nextKey();
+
+            switch (key) {
+                case "name" -> url = jr.nextString();
+                case "concatenateAll" -> builder.setConcatenateAll(jr.nextBoolean());
+                case "range" -> builder.setRange(Utils.parseRange(jr.nextString()));
+                case "language" -> builder.setLanguage(jr.nextString());
+                case "out" -> builder.setOut(Path.of(jr.nextString()));
+                default -> throw new IOException("Unknown attribute: " + key);
+            }
+        }
+
+        if (url == null) {
+            throw new IOException("URL is null");
+        }
+
+        return new Pair<>(url, builder.build());
     }
 }

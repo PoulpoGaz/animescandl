@@ -8,7 +8,6 @@ import org.apache.commons.compress.compressors.brotli.BrotliCompressorInputStrea
 import org.apache.commons.compress.compressors.deflate.DeflateCompressorInputStream;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.nodes.Document;
-import org.openqa.selenium.Cookie;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,22 +63,6 @@ public class HttpUtils {
         Iterator<HttpCookie> iterator = cookies.iterator();
         for (int i = 0; i < cookies.size(); i++) {
             builder.append(iterator.next());
-
-            if (i + 1 < cookies.size()) {
-                builder.append(';');
-            }
-        }
-
-        return builder.toString();
-    }
-
-    public static String stoString(Collection<Cookie> cookies) {
-        StringBuilder builder = new StringBuilder();
-
-        Iterator<Cookie> iterator = cookies.iterator();
-        for (int i = 0; i < cookies.size(); i++) {
-            Cookie c = iterator.next();
-            builder.append(c.getName()).append("=").append(c.getValue());
 
             if (i + 1 < cookies.size()) {
                 builder.append(';');

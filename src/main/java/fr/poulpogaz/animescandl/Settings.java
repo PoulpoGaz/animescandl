@@ -1,8 +1,8 @@
-package fr.poulpogaz.animescandl.websiteold;
+package fr.poulpogaz.animescandl;
 
 import java.nio.file.Path;
 
-public record Settings(String name, int[] range, boolean concatenateAll, String language, Path out) {
+public record Settings(int[] range, boolean concatenateAll, String language, Path out) {
 
     public boolean rangeContains(int n) {
         if (range == null) {
@@ -18,27 +18,13 @@ public record Settings(String name, int[] range, boolean concatenateAll, String 
     }
 
     public static class Builder {
-        private String name = null;
         private int[] range = null;
         private boolean concatenateAll = false;
         private String language = null;
         private Path out = null;
 
         public Settings build() {
-            if (name == null) {
-                return null;
-            }
-
-            return new Settings(name, range, concatenateAll, language, out);
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Builder setName(String name) {
-            this.name = name;
-            return this;
+            return new Settings(range, concatenateAll, language, out);
         }
 
         public int[] getRange() {

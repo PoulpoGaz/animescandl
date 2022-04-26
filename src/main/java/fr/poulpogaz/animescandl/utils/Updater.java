@@ -1,6 +1,8 @@
 package fr.poulpogaz.animescandl.utils;
 
 import fr.poulpogaz.animescandl.Main;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
@@ -18,7 +20,7 @@ import java.nio.file.Path;
 
 public class Updater {
 
-    private static final Logger LOGGER = LogManager.getLogger(Updater.class);
+    private static final ASDLLogger LOGGER = Loggers.getLogger(Updater.class);
     private static final String GET_RELEASES = "https://api.github.com/repos/PoulpoGaz/animescandl/releases";
 
     public static void update() {
@@ -29,21 +31,21 @@ public class Updater {
             if (isNewRelease(lastRelease)) {
                 String downloadURL = getDownloadURL(lastRelease.getAsArray("assets"));
 
-                LOGGER.debug("Download url: {}", downloadURL);
+                LOGGER.debugln("Download url: {}", downloadURL);
                 if (downloadURL != null) {
                     update(downloadURL);
                     return;
                 }
             }
 
-            LOGGER.info("No update available");
+            LOGGER.infoln("No update available");
         } catch (JsonException | InterruptedException | IOException | URISyntaxException e) {
-            LOGGER.warn("Failed to update", e);
+            LOGGER.warnln("Failed to update", e);
         }
     }
 
     private static boolean isNewRelease(JsonObject release) {
-        String releaseName = release.getAsJsonString("tag_name").getAsString();
+        String releaseName = release.getAsString("tag_name");
 
         return !releaseName.equals(Main.VERSION);
     }
@@ -52,10 +54,10 @@ public class Updater {
         for (JsonElement e : assets) {
             JsonObject a = (JsonObject) e;
 
-            String name = a.getAsJsonString("name").getAsString();
+            String name = a.getAsString("name");
 
             if (name.contains("animescandl")) {
-                return a.getAsJsonString("browser_download_url").getAsString();
+                return a.getAsString("browser_download_url");
             }
         }
 

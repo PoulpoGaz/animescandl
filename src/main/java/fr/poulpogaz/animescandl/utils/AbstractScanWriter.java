@@ -4,6 +4,7 @@ import fr.poulpogaz.animescandl.Main;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 public abstract class AbstractScanWriter {
@@ -35,6 +36,8 @@ public abstract class AbstractScanWriter {
     public abstract void addPage(BufferedImage image) throws IOException;
 
     public abstract void addPage(byte[] data) throws IOException;
+
+    public abstract void addPage(InputStream is) throws IOException;
 
     public abstract void addPage(IRequestSender s, String page) throws IOException, InterruptedException;
 
@@ -78,6 +81,11 @@ public abstract class AbstractScanWriter {
 
         @Override
         public void addPage(byte[] data) throws IOException {
+
+        }
+
+        @Override
+        public void addPage(InputStream is) throws IOException {
 
         }
 

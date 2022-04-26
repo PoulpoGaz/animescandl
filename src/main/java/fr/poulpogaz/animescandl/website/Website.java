@@ -8,6 +8,8 @@ public interface Website {
 
     String version();
 
+    boolean isSupported(String url);
+
     default boolean supportHeadless() {
         return true;
     }

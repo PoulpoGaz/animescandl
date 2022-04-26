@@ -1,6 +1,5 @@
 package fr.poulpogaz.animescandl.utils;
 
-import fr.poulpogaz.animescandl.modelold.Chapter;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.json.JsonException;
@@ -180,31 +179,6 @@ public class Utils {
         }
 
         return sw.toString();
-    }
-
-    public static int chapterComparator(Chapter a, Chapter b) {
-        Pattern pattern = Pattern.compile("(\\d+)");
-
-        Matcher matcherA = pattern.matcher(a.chapter());
-        Matcher matcherB = pattern.matcher(b.chapter());
-
-        if (matcherA.find() && matcherB.find()) {
-            int min = Math.min(matcherA.groupCount(), matcherB.groupCount());
-            for (int i = 1; i <= min; i++) {
-                int intA = Integer.parseInt(matcherA.group(i));
-                int intB = Integer.parseInt(matcherB.group(i));
-
-                if (intA < intB) {
-                    return -1;
-                } else if (intA > intB) {
-                    return 1;
-                }
-            }
-
-            return Integer.compare(matcherA.groupCount(), matcherB.groupCount());
-        } else {
-            return 0;
-        }
     }
 
     public static String getFirstNonEmptyText(Element element, boolean substring) {
