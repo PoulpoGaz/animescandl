@@ -3,7 +3,7 @@ package fr.poulpogaz.animescandl.scan.mangadex;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
-import fr.poulpogaz.animescandl.website.ScanWebsiteBaseTest;
+import fr.poulpogaz.animescandl.scan.ScanWebsiteBaseTest;
 
 public class MangadexTest extends ScanWebsiteBaseTest<Manga, Chapter> {
 

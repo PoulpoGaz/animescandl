@@ -1,9 +1,7 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.scan.MangaRead;
-import fr.poulpogaz.animescandl.scan.ScanWebsite;
 
 public class MangareadTest extends ScanWebsiteBaseTest<Manga, Chapter> {
 

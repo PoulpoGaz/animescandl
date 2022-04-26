@@ -3,17 +3,16 @@ package fr.poulpogaz.animescandl;
 import fr.poulpogaz.animescandl.anime.AnimeWebsite;
 import fr.poulpogaz.animescandl.anime.Nekosama;
 import fr.poulpogaz.animescandl.model.*;
-import fr.poulpogaz.animescandl.utils.CEFHelper;
-import fr.poulpogaz.animescandl.utils.ScanWriter;
-import fr.poulpogaz.animescandl.scan.Japanread;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
-import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.utils.HttpUtils;
+import fr.poulpogaz.animescandl.utils.IRequestSender;
+import fr.poulpogaz.animescandl.utils.ScanWriter;
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -63,7 +62,12 @@ public class Main2 {
             sw.newScan(chap.getName().orElse(manga.getTitle() + " - " + chap.getChapterNumber()));
             while (iterator.hasNext()) {
                 String next = iterator.next();
-                sw.addPage(w, next);
+
+                if (w instanceof IRequestSender s) {
+                    sw.addPage(s, next);
+                } else {
+                    sw.addPage(HttpUtils.STANDARD, next);
+                }
             }
             sw.endScan();
             sw.endAll();
@@ -75,7 +79,8 @@ public class Main2 {
     }
 
     private static <A extends Anime, E extends Episode>
-    void animeTest(AnimeWebsite<A, E> a, String url, boolean write) throws JsonException, IOException, WebsiteException, InterruptedException {
+    void animeTest(AnimeWebsite<A, E> a, String url, boolean write)
+            throws JsonException, IOException, WebsiteException, InterruptedException {
         A anime = a.getAnime(url);
         System.out.println(anime);
 

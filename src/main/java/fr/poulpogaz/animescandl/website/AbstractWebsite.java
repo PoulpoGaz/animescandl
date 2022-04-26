@@ -1,11 +1,9 @@
 package fr.poulpogaz.animescandl.website;
 
-import fr.poulpogaz.animescandl.utils.FakeUserAgent;
-import fr.poulpogaz.animescandl.utils.HttpHeaders;
-import fr.poulpogaz.animescandl.utils.HttpResponseDecoded;
-import fr.poulpogaz.animescandl.utils.IRequestSender;
+import fr.poulpogaz.animescandl.utils.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -15,11 +13,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public abstract class AbstractWebsite implements Website {
+public abstract class AbstractWebsite implements Website, IRequestSender, IDocumentCache {
 
     private final Logger LOGGER = LogManager.getLogger(AbstractWebsite.class);
-    private final HttpClient CLIENT = createClient();
+    protected final HttpClient CLIENT = createClient();
+    protected final SizedHashMap<String, Document> DOCUMENT_CACHE = new SizedHashMap<>();
 
+    public AbstractWebsite() {
+        DOCUMENT_CACHE.setMaxSize(100);
+    }
 
     public HttpHeaders standardHeaders() {
         return new HttpHeaders()
@@ -81,5 +83,36 @@ public abstract class AbstractWebsite implements Website {
         } else {
             return element.child(n);
         }
+    }
+
+    @Override
+    public Document getDocument(String url) throws IOException, InterruptedException {
+        if (DOCUMENT_CACHE.getMaxSize() != 0) {
+            Document doc = DOCUMENT_CACHE.get(url);
+
+            if (doc != null) {
+                return doc;
+            }
+        }
+
+        Document doc = IRequestSender.super.getDocument(url);
+        DOCUMENT_CACHE.put(url, doc);
+
+        return doc;
+    }
+
+    @Override
+    public void clearCache() {
+        DOCUMENT_CACHE.clear();
+    }
+
+    @Override
+    public int getCacheLimit() {
+        return DOCUMENT_CACHE.getMaxSize();
+    }
+
+    @Override
+    public void setCacheLimit(int limit) {
+        DOCUMENT_CACHE.setMaxSize(limit);
     }
 }

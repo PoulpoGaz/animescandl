@@ -1,6 +1,5 @@
 package fr.poulpogaz.animescandl.anime;
 
-import fr.poulpogaz.animescandl.Video;
 import fr.poulpogaz.animescandl.model.Anime;
 import fr.poulpogaz.animescandl.model.Episode;
 import fr.poulpogaz.animescandl.model.Source;

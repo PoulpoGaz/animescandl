@@ -1,9 +1,7 @@
-package fr.poulpogaz.animescandl.website;
+package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.scan.ScanWebsite;
-import fr.poulpogaz.animescandl.scan.SushiScan;
 
 public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
 

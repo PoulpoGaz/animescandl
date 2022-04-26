@@ -3,7 +3,7 @@ package fr.poulpogaz.animescandl.scan.japscan;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
-import fr.poulpogaz.animescandl.website.ScanWebsiteBaseTest;
+import fr.poulpogaz.animescandl.scan.ScanWebsiteBaseTest;
 
 public class JapscanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
 
