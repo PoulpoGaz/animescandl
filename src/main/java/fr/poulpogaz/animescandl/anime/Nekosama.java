@@ -112,7 +112,7 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Epi
             return url;
         } else if (isEpisodeURL(url)) {
             Document document = getDocument(url);
-            Element a = selectNonNull(document, "details > info > h1 > a");
+            Element a = selectNonNull(document, ".details > .info > h1 > a");
 
             return url() + a.attr("href");
         } else {
@@ -263,7 +263,7 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Epi
                 int height = Integer.parseInt(group);
 
                 String url = br.readLine();
-                sources.add(new Source(url, subtitle, height, "m3u8"));
+                sources.add(new Source(url, subtitle, height, M3U8Downloader.FORMAT));
             }
         }
         br.close();

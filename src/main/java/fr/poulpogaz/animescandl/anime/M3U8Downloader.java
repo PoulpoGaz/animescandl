@@ -1,7 +1,8 @@
-package fr.poulpogaz.animescandl.utils;
+package fr.poulpogaz.animescandl.anime;
 
 import fr.poulpogaz.animescandl.Main;
-import fr.poulpogaz.animescandl.Video;
+import fr.poulpogaz.animescandl.model.Source;
+import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,25 +15,27 @@ import java.util.List;
 
 public class M3U8Downloader {
 
+    public static final String FORMAT = "m3u8";
     private static final Logger LOGGER = LogManager.getLogger(M3U8Downloader.class);
+
+    // authority: %s
+    // scheme: %s
+    // path: %s
 
     private static final String FFMPEG_HEADER =
             """
             $'User-Agent: %s\r
-            authority: %s\r
-            scheme: %s\r
-            path: %s\r
             accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\r
             accept-encoding: gzip, deflate, br\r
             accept-language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7
             """;
 
-    public static void download(Video video, String dst) throws IOException {
+    public static void download(Source source, String dst) throws IOException {
         ProcessBuilder builder;
-        if (video.subtile() == null) {
-            builder = buildFFMPEGProcess(video, dst);
+        if (source.getSubtitleURL().isPresent()) {
+            builder = buildFFMPEGProcessWithSubtitle(source, dst);
         } else {
-            builder = buildFFMPEGProcessWithSubtitle(video, dst);
+            builder = buildFFMPEGProcess(source, dst);
         }
 
         Process process = builder.start();
@@ -60,30 +63,31 @@ public class M3U8Downloader {
         }
     }
 
-    private static ProcessBuilder buildFFMPEGProcess(Video video, String dst) {
+    private static ProcessBuilder buildFFMPEGProcess(Source source, String dst) {
         ProcessBuilder builder = new ProcessBuilder();
         command(builder,
                 getFFMPEGPath(),
                 "-protocol_whitelist", "file,http,https,tcp,tls",
                 "-http_multiple", "0",
-                "-headers", getHeader(video.file()),
-                "-i", video.file(),
+                "-headers", getHeader(source.getUrl()),
+                "-i", source.getUrl(),
                 "-c", "copy",
                 dst);
 
         return builder;
     }
 
-    private static ProcessBuilder buildFFMPEGProcessWithSubtitle(Video video, String dst) {
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    private static ProcessBuilder buildFFMPEGProcessWithSubtitle(Source source, String dst) {
         ProcessBuilder builder = new ProcessBuilder();
         command(builder,
                 getFFMPEGPath(),
                 "-protocol_whitelist", "file,http,https,tcp,tls",
                 "-http_multiple", "0",
-                "-headers", getHeader(video.file()),
-                "-i", video.file(),
-                "-headers", getHeader(video.subtile()),
-                "-i", video.subtile(),
+                "-headers", getHeader(source.getUrl()),
+                "-i", source.getUrl(),
+                "-headers", getHeader(source.getSubtitleURL().get()),
+                "-i", source.getSubtitleURL().get(),
                 "-c", "copy",
                 "-c:s", "mov_text",
                 dst);
