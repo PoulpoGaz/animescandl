@@ -3,6 +3,8 @@ package fr.poulpogaz.animescandl.anime;
 import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.Source;
 import fr.poulpogaz.animescandl.utils.FakeUserAgent;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +18,7 @@ import java.util.List;
 public class M3U8Downloader {
 
     public static final String FORMAT = "m3u8";
-    private static final Logger LOGGER = LogManager.getLogger(M3U8Downloader.class);
+    private static final ASDLLogger LOGGER = Loggers.getLogger(M3U8Downloader.class);
 
     // authority: %s
     // scheme: %s
@@ -38,28 +40,15 @@ public class M3U8Downloader {
             builder = buildFFMPEGProcess(source, dst);
         }
 
+        ProgressBar bar = new ProgressBar();
         Process process = builder.start();
 
         BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
         String line;
         while ((line = br.readLine()) != null) {
-            if (Main.verbose.isPresent()) {
-                if (line.startsWith("frame=")) {
-                    LOGGER.info(line);
-                } else {
-                    LOGGER.debug(line);
-                }
-            } else {
-                LOGGER.debug(line);
-                if (line.startsWith("frame")) {
-                    System.out.print("\r" + line);
-                }
-            }
-        }
-
-        if (Main.verbose.isNotPresent()) {
-            System.out.println();
+            LOGGER.debugln(line);
+            bar.update(line);
         }
     }
 

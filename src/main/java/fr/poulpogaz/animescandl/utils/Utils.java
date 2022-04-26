@@ -10,8 +10,6 @@ import org.jsoup.nodes.TextNode;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -24,16 +22,62 @@ public class Utils {
     public static String FFMPEG_PATH = "ffmpeg";
     private static final ASDLLogger LOGGER = Loggers.getLogger(Utils.class);
 
-    public static double round(double value, int scale) {
-        return BigDecimal.valueOf(value).setScale(scale, RoundingMode.HALF_EVEN).doubleValue();
+    public static final String ANSI_BLUE = "36";
+    public static final String ANSI_GREEN = "32";
+    public static final String ANSI_PURPLE = "35";
+
+    public static String blue(String str) {
+        return color(str, ANSI_BLUE);
     }
 
-    public static double toMB(long value) {
-        BigDecimal _1024 = BigDecimal.valueOf(1024);
+    public static String green(String str) {
+        return color(str, ANSI_GREEN);
+    }
 
-        return BigDecimal.valueOf(value)
-                .divide(_1024.multiply(_1024), 2, RoundingMode.HALF_EVEN)
-                .doubleValue();
+    public static String purple(String str) {
+        return color(str, ANSI_PURPLE);
+    }
+
+    public static String color(String str, String color) {
+        return "%s[%sm%s%s[0m".formatted((char) 27, color, str, (char) 27);
+    }
+
+    public static String colorStart(String color) {
+        return "%s[%sm".formatted((char) 27, color);
+    }
+
+    public static String colorEnd() {
+        return (char) 27 + "[0m";
+    }
+
+    public static String bytesHumanReadable(long totalSize, int precision) {
+        if (totalSize < 1024L) {
+            return totalSize + " B";
+        } else if (totalSize < 1024L * 1024) {
+            return ("%." + precision + "f KB").formatted(totalSize / 1024d);
+        } else if (totalSize < 1024L * 1024 * 1024) {
+            return ("%." + precision + "f MB").formatted(totalSize / (1024d * 1024));
+        } else if (totalSize < 1024L * 1024 * 1024 * 1024) {
+            return ("%." + precision + "f GB").formatted(totalSize / (1024d * 1024 * 1024));
+        } else {
+            return ("%." + precision + "f TB").formatted(totalSize / (1024d * 1024 * 1024 * 1024));
+        }
+    }
+
+    public static String timeHumanReadable(long second, int precision) {
+        if (second == Long.MAX_VALUE) {
+            return "+infinity s";
+        }
+
+        if (second < 60) {
+            return second + "s";
+        } else if (second < 60 * 60) {
+            return ("%." + precision + "f m").formatted(second / 60d);
+        } else if (second < 60 * 60 * 24) {
+            return ("%." + precision + "f h").formatted(second / (60d * 60));
+        } else  {
+            return ("%." + precision + "f d").formatted(second / (60d * 60 * 24));
+        }
     }
 
     public static String getRegexGroup(String text, String regex) {
@@ -74,10 +118,6 @@ public class Utils {
                 .filter(predicate)
                 .findFirst()
                 .orElse(null);
-    }
-
-    public static <T> T findInValue(Map<?, T> list, Predicate<T> predicate) {
-        return find(list.values(), predicate);
     }
 
     public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
