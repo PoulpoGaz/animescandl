@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.utils;
+package fr.poulpogaz.animescandl.utils.log;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

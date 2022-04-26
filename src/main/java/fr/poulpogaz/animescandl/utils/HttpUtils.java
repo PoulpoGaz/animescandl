@@ -1,12 +1,12 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
 import org.apache.commons.compress.compressors.brotli.BrotliCompressorInputStream;
 import org.apache.commons.compress.compressors.deflate.DeflateCompressorInputStream;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.Cookie;
 
@@ -25,7 +25,7 @@ import java.util.zip.GZIPInputStream;
 
 public class HttpUtils {
 
-    private static final Logger LOGGER = LogManager.getLogger(HttpUtils.class);
+    private static final ASDLLogger LOGGER = Loggers.getLogger(HttpUtils.class);
 
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
@@ -156,10 +156,10 @@ public class HttpUtils {
         return request -> {
             HttpResponse<InputStream> rep = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-            LOGGER.debug(request.uri());
-            LOGGER.debug(request.headers());
-            LOGGER.debug(rep.headers());
-            LOGGER.debug("Response code: {}", rep.statusCode());
+            LOGGER.debugln(request.uri());
+            LOGGER.debugln(request.headers());
+            LOGGER.debugln(rep.headers());
+            LOGGER.debugln("Response code: {}", rep.statusCode());
 
             return new HttpResponseDecoded(rep);
         };

@@ -1,8 +1,8 @@
 package fr.poulpogaz.animescandl.website;
 
 import fr.poulpogaz.animescandl.utils.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -15,7 +15,7 @@ import java.net.http.HttpResponse;
 
 public abstract class AbstractWebsite implements Website, IRequestSender, IDocumentCache {
 
-    private final Logger LOGGER = LogManager.getLogger(AbstractWebsite.class);
+    private static final ASDLLogger LOGGER = Loggers.getLogger(AbstractWebsite.class);
     protected final HttpClient CLIENT = createClient();
     protected final SizedHashMap<String, Document> DOCUMENT_CACHE = new SizedHashMap<>();
 
@@ -37,10 +37,10 @@ public abstract class AbstractWebsite implements Website, IRequestSender, IDocum
     public HttpResponseDecoded send(HttpRequest request) throws IOException, InterruptedException {
         HttpResponse<InputStream> rep = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        LOGGER.debug(request.uri());
-        LOGGER.debug(request.headers());
-        LOGGER.debug(rep.headers());
-        LOGGER.debug("Response code: {}", rep.statusCode());
+        LOGGER.debugln(request.uri());
+        LOGGER.debugln(request.headers());
+        LOGGER.debugln(rep.headers());
+        LOGGER.debugln("Response code: {}", rep.statusCode());
 
         return new HttpResponseDecoded(rep);
     }

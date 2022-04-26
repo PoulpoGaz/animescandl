@@ -1,5 +1,7 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,9 +18,10 @@ import java.util.List;
  */
 public class FakeUserAgent {
 
-    private static final Logger LOGGER = LogManager.getLogger(FakeUserAgent.class);
+    private static final ASDLLogger LOGGER = Loggers.getLogger(FakeUserAgent.class);
 
-    private static final String USER_AGENT_FORMAT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36";
+    private static final String USER_AGENT_FORMAT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36";
     private static final List<String> chromeVersions = new ArrayList<>();
     private static final String DEFAULT_CHROME_VERSION = "74.0.3729.129";
     private static String userAgent = null;
@@ -55,7 +58,7 @@ public class FakeUserAgent {
                 }
 
             } catch (IOException e) {
-                LOGGER.warn("Failed to read chrome versions", e);
+                LOGGER.warnln("Failed to read chrome versions", e);
             }
         }
     }

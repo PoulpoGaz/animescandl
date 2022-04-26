@@ -8,10 +8,14 @@ import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
 import fr.poulpogaz.animescandl.utils.ScanWriter;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;

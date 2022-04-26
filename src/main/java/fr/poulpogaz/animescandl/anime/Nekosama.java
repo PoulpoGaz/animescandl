@@ -209,8 +209,6 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Epi
     protected List<Source> getSources(String pstreamURL) throws IOException, InterruptedException, WebsiteException, JsonException {
         Document doc = getDocument(pstreamURL);
 
-        System.out.println(doc.html());
-
         Element subtitleElement = doc.selectFirst("track[kind=subtitles]");
         String subtitles = null;
         if (subtitleElement != null) {

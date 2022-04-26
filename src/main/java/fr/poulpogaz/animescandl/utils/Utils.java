@@ -1,11 +1,11 @@
 package fr.poulpogaz.animescandl.utils;
 
 import fr.poulpogaz.animescandl.modelold.Chapter;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonTreeWriter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
@@ -23,11 +23,7 @@ import java.util.regex.Pattern;
 public class Utils {
 
     public static String FFMPEG_PATH = "ffmpeg";
-    private static final Logger LOGGER = LogManager.getLogger(Utils.class);
-
-    public static Logger getLogger(Class<?> clasz, String url) {
-        return LogManager.getLogger("%s-%s".formatted(clasz.getSimpleName(), url));
-    }
+    private static final ASDLLogger LOGGER = Loggers.getLogger(Utils.class);
 
     public static double round(double value, int scale) {
         return BigDecimal.valueOf(value).setScale(scale, RoundingMode.HALF_EVEN).doubleValue();
@@ -180,7 +176,7 @@ public class Utils {
         try {
             JsonTreeWriter.write(element, sw);
         } catch (IOException | JsonException e) {
-            LOGGER.warn("Failed to make string of json", e);
+            LOGGER.warnln("Failed to make string of json", e);
         }
 
         return sw.toString();
