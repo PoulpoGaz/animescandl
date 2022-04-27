@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.anime;
 
+import fr.poulpogaz.animescandl.utils.CircularQueue;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * A cool ASCII progress bar for ffmpeg
  *
- * [=======>         ] XX% UUU/VVVmib/s ETA
+ * [=======>         ] XX% YYY/ZZZmb/s ETA WWWs
  */
 public class ProgressBar {
 
@@ -18,13 +19,11 @@ public class ProgressBar {
 
     private int progressBarLength = 20; // doesn't count '[' and ']'
 
-    private int duration = - 1;
+    private CircularQueue<Integer> sizes = new CircularQueue<>(10);
 
-    private int lastTime = -1;
-    private int lastSize = -1;
-
-    private int currTime;
-    private int currSize;
+    // The two variables are relative to the video
+    private int videoDuration = - 1;
+    private CircularQueue<Integer> times = new CircularQueue<>(10);
 
     public ProgressBar() {
 
@@ -32,16 +31,13 @@ public class ProgressBar {
 
     public void update(String ffmpegOutput) {
         if (ffmpegOutput.startsWith("  Duration")) {
-            duration = getDuration(ffmpegOutput);
+            videoDuration = getDuration(ffmpegOutput);
         } else if (ffmpegOutput.startsWith("frame")) {
             parseFrame(ffmpegOutput);
 
             LOGGER.info(createProgressBar());
-            lastSize = currSize;
-            lastTime = currTime;
         } else if (ffmpegOutput.startsWith("video")) {
-            currTime = duration;
-
+            times.offer(videoDuration);
             LOGGER.info(createProgressBar());
         }
     }
@@ -74,13 +70,15 @@ public class ProgressBar {
             int second = Integer.parseInt(matcher.group(5));
             int centi = Integer.parseInt(matcher.group(6));
 
-            currTime = centi * 10 + 1000 * (second + 60 * (minute + 60 * hour));
+            int t = centi * 10 + 1000 * (second + 60 * (minute + 60 * hour));
+            times.offer(t);
 
-            switch (unit) {
-                case "kB" -> currSize = size * 1024;
-                case "mB" -> currSize = size * 1024 * 1024;
-                default -> currSize = size;
-            }
+            int currSize = switch (unit) {
+                case "kB" -> size * 1024;
+                case "mB" -> size * 1024 * 1024;
+                default -> size;
+            };
+            sizes.offer(currSize);
         }
     }
 
@@ -89,16 +87,20 @@ public class ProgressBar {
     }
 
     protected String createProgressBar() {
+        if (times.size() == 0 || sizes.size() == 0) {
+            return "Unknown status";
+        }
+
         StringBuilder b = new StringBuilder();
         b.append('\r');
         addProgressBar(b);
 
         // in b/s
-        int speed = currSize - lastSize;
+        int speed = approxSpeed();
         b.append(' ').append(Utils.bytesHumanReadable(speed, 2)).append("/s");
 
         // in s
-        long eta = calculateETA(speed);
+        long eta = approxETA();
         b.append(" ETA ").append(Utils.timeHumanReadable(eta, 2));
 
         return b.toString();
@@ -106,7 +108,7 @@ public class ProgressBar {
 
 
     private void addProgressBar(StringBuilder b) {
-        double ratio = (double) currTime / duration;
+        double ratio = (double) times.tail() / videoDuration;
         int length = (int) (Math.round(progressBarLength * ratio));
 
         b.append(Utils.colorStart(Utils.ANSI_PURPLE));
@@ -129,15 +131,35 @@ public class ProgressBar {
         b.append(" ").append(percent).append("%");
     }
 
-    private long calculateETA(int speed) {
-        if (speed == 0) {
-            if (duration == currTime) {
-                return 0;
-            } else {
-                return Long.MAX_VALUE;
-            }
+    private long approxETA() {
+        int s = times.size();
+
+        if (s == 0) {
+            return Long.MAX_VALUE;
+        } else if (s == 1) {
+            return (videoDuration - times.peek()) / times.peek();
         } else {
-            return (duration - currTime) / (currTime - lastTime);
+            return s * (videoDuration - times.tail()) / (times.tail() - times.peek());
         }
+    }
+
+    private int approxSpeed() {
+        int s = sizes.size();
+
+        if (s == 0) {
+            return 0;
+        } else if (s == 1) {
+            return sizes.peek();
+        } else {
+            return (sizes.tail() - sizes.peek()) / s;
+        }
+    }
+
+    public int getProgressBarLength() {
+        return progressBarLength;
+    }
+
+    public void setProgressBarLength(int progressBarLength) {
+        this.progressBarLength = progressBarLength;
     }
 }

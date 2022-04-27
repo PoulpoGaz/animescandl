@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.utils.log;
 
+import fr.poulpogaz.animescandl.Main;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.message.MessageFactory;
@@ -12,7 +13,9 @@ public class ASDLLogger extends Logger {
     }
 
     public void newLine() {
-        System.out.println(System.lineSeparator());
+        if (!Main.verbose.isPresent()) {
+            System.out.println();
+        }
     }
 
     public void debugln(CharSequence message) {

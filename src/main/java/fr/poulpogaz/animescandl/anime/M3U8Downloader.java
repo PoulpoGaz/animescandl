@@ -45,10 +45,14 @@ public class M3U8Downloader {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-        String line;
-        while ((line = br.readLine()) != null) {
-            LOGGER.debugln(line);
-            bar.update(line);
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                LOGGER.debugln(line);
+                bar.update(line);
+            }
+        } finally {
+            LOGGER.newLine();
         }
     }
 
@@ -61,6 +65,7 @@ public class M3U8Downloader {
                 "-headers", getHeader(source.getUrl()),
                 "-i", source.getUrl(),
                 "-c", "copy",
+                "-y",
                 dst);
 
         return builder;
@@ -79,6 +84,7 @@ public class M3U8Downloader {
                 "-i", source.getSubtitleURL().get(),
                 "-c", "copy",
                 "-c:s", "mov_text",
+                "-y",
                 dst);
 
         return builder;

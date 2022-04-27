@@ -110,7 +110,8 @@ public class AnimeScanDownloader {
                 continue;
             }
 
-            String filename = chap.getName().orElse(manga.getTitle() + " - " + chap.getChapterNumber()) + ".pdf";
+            String chapName = chap.getName().orElse(manga.getTitle() + " - " + chap.getChapterNumber());
+            String filename = chapName + ".pdf";
             Path out = settings.out().resolve(filename);
 
             if (Main.noOverwrites.isPresent() && Files.exists(out)) {
@@ -118,6 +119,7 @@ public class AnimeScanDownloader {
                 continue;
             }
 
+            LOGGER.infoln("Downloading {}", chapName);
             sw.newScan(s, chap);
         }
 
@@ -143,16 +145,18 @@ public class AnimeScanDownloader {
                 return;
             }
 
-            String filename = episode.getName()
-                    .orElseGet(() -> episode.getAnime().getTitle() + " - " + episode.getEpisode())
-                    + ".mp4";
+            String epName = episode.getName()
+                    .orElseGet(() -> episode.getAnime().getTitle() + " - " + episode.getEpisode());
 
+            String filename = epName + ".mp4";
             Path out = settings.out().resolve(filename);
+
             if (Main.noOverwrites.isPresent() && Files.exists(out)) {
                 LOGGER.infoln("{} already exists", filename);
                 continue;
             }
 
+            LOGGER.infoln("Downloading {}", epName);
             VideoDownloader.download(episode, best, out);
         }
     }
@@ -166,6 +170,11 @@ public class AnimeScanDownloader {
         int quality = -2;
         for (Source curr : sources) {
             int currQuality = curr.getQuality().orElse(-1);
+
+            // for testing
+            if (currQuality == 480) {
+                return curr;
+            }
 
             if (currQuality > quality) {
                 best = curr;

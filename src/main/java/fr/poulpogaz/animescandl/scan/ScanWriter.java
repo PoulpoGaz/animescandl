@@ -40,22 +40,16 @@ public class ScanWriter extends AbstractScanWriter {
         Manga m = chap.getManga();
         String chapName = chap.getName().orElse(m.getTitle() + " - " + chap.getChapterNumber());
 
-        LOGGER.infoln("Writing {}", chapName);
         newScan(chapName);
 
-        try {
-            if (Utils.contains(s.supportedIterators(), String.class)) {
-                iter(s.getPageIterator(chap, String.class), (url) -> addPage(s, url));
+        if (Utils.contains(s.supportedIterators(), String.class)) {
+            iter(s.getPageIterator(chap, String.class), (url) -> addPage(s, url));
 
-            } else if (Utils.contains(s.supportedIterators(), InputStream.class)) {
-                iter(s.getPageIterator(chap, InputStream.class), this::addPage);
+        } else if (Utils.contains(s.supportedIterators(), InputStream.class)) {
+            iter(s.getPageIterator(chap, InputStream.class), this::addPage);
 
-            } else if (Utils.contains(s.supportedIterators(), BufferedImage.class)) {
-                iter(s.getPageIterator(chap, BufferedImage.class), this::addPage);
-
-            }
-        } finally {
-            LOGGER.newLine();
+        } else if (Utils.contains(s.supportedIterators(), BufferedImage.class)) {
+            iter(s.getPageIterator(chap, BufferedImage.class), this::addPage);
         }
 
         endScan();
@@ -68,11 +62,15 @@ public class ScanWriter extends AbstractScanWriter {
                 .orElse("??");
         int page = 0;
 
-        while (iterator.hasNext()) {
-            addPage.addPage(iterator.next());
-            page++;
+        try {
+            while (iterator.hasNext()) {
+                addPage.addPage(iterator.next());
+                page++;
 
-            LOGGER.info("\r{}/{} pages", page, max);
+                LOGGER.info("\r{}/{} pages", page, max);
+            }
+        } finally {
+            LOGGER.newLine();
         }
     }
 
