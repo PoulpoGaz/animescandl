@@ -1,5 +1,8 @@
 package fr.poulpogaz.animescandl.utils.math;
 
+import fr.poulpogaz.animescandl.utils.Pair;
+import org.cef.misc.IntRef;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -37,7 +40,10 @@ public class Union implements Set {
         for (int i = 0; i < sets.size(); i++) {
             Set s = sets.get(i);
 
-            if (s instanceof Union u) {
+            if (s == null) {
+                throw new NullPointerException("s is null");
+
+            } else if (s instanceof Union u) {
                 sets.addAll(i, u.getSets());
                 sets.remove(u);
                 i--;
@@ -54,7 +60,6 @@ public class Union implements Set {
                     Set s2 = sets.get(j);
 
                     if (s.intersect(s2) != Empty.INSTANCE) {
-                        System.out.println(s + " inter " + s2 + " = " + s.intersect(s2));
                         throw new IllegalArgumentException("Non empty intersection");
                     }
                 }
@@ -95,8 +100,8 @@ public class Union implements Set {
     /**
      * @return The first index i where sets.(i).sup() >= inf
      */
-    private int firstOverlapIndex(float inf) {
-        for (int i = 0; i < sets.size(); i++) {
+    private int firstGreaterIndex(int start, float inf) {
+        for (int i = start; i < sets.size(); i++) {
             Set s = sets.get(i);
 
             if (s.sup() >= inf) {
@@ -114,12 +119,30 @@ public class Union implements Set {
         for (int i = sets.size() - 1; i >= 0; i--) {
             Set s = sets.get(i);
 
-            if (s.inf() <= inf()) {
+            if (s.inf() <= sup) {
                 return i;
             }
         }
 
         return -1;
+    }
+
+    private void nextOverlapIndex(List<Set> other, IntWrapper i, IntWrapper j) {
+        while (i.get() < sets.size() && j.get() < other.size()) {
+            Set s = sets.get(i.get());
+            Set s2 = other.get(j.get());
+
+            if (s2.sup() < s.inf()) {
+                j.increment();
+            } else if (s.sup() < s2.inf()) {
+                i.increment();
+            } else {
+                return; // END
+            }
+        }
+
+        i.set(-1);
+        j.set(-1);
     }
 
     @Override
@@ -132,12 +155,45 @@ public class Union implements Set {
             return Empty.INSTANCE;
         }
 
-        int start = firstOverlapIndex(set.inf());
-        int end = lastOverlapIndex(set.sup());
+        List<Set> other;
+        if (set instanceof Union u) {
+            other = u.getSets();
+        } else {
+            other = List.of(set);
+        }
 
-        System.out.println(start + " - " + end);
+        List<Set> output = new ArrayList<>();
 
-       return null;
+        IntWrapper i = new IntWrapper();
+        IntWrapper j = new IntWrapper();
+
+        nextOverlapIndex(other, i, j);
+        while (i.get() != -1 && j.get() != -1) {
+            Set s1 = sets.get(i.get());
+            Set s2 = other.get(j.get());
+
+            Set intersection = s1.intersect(s2);
+
+            if (intersection != Empty.INSTANCE) {
+                output.add(intersection);
+            }
+
+            if (s1.sup() < s2.sup()) {
+                i.increment();
+            } else {
+                j.increment();
+            }
+
+            nextOverlapIndex(other, i, j);
+        }
+
+        if (output.size() == 0) {
+            return Empty.INSTANCE;
+        } else if (output.size() == 1) {
+            return output.get(0);
+        } else {
+            return new Union(output);
+        }
     }
 
     @Override

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.function.BiFunction;
 
+import static fr.poulpogaz.animescandl.utils.math.MathTestUtils.intersectionTest;
+import static fr.poulpogaz.animescandl.utils.math.MathTestUtils.unionTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntervalTest {
@@ -132,13 +134,6 @@ class IntervalTest {
         nonEmptyIntersection(false, Interval.closed(-10, -4), Interval.openClosed(-4, -2));
     }
 
-    void unionTest(Interval a, Interval b, Set expected) {
-        assertEquals(expected, a.union(b));
-        assertEquals(expected, b.union(a));
-        assertEquals(a, a.union(a));
-        assertEquals(b, b.union(b));
-    }
-
     @Test
     void union() {
         unionTest(Interval.open(-10, 0),
@@ -161,13 +156,6 @@ class IntervalTest {
 
         unionTest(Interval.closed(10, 15), Interval.closed(0, 5),
                 new Union(Interval.closed(10, 15), Interval.closed(0, 5)));
-    }
-
-    void intersectionTest(Interval a, Interval b, Set expected) {
-        assertEquals(expected, a.intersect(b));
-        assertEquals(expected, b.intersect(a));
-        assertEquals(a, a.intersect(a));
-        assertEquals(b, b.intersect(b));
     }
 
     @Test
