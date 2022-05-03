@@ -1,8 +1,5 @@
 package fr.poulpogaz.animescandl.utils.math;
 
-import fr.poulpogaz.animescandl.utils.Pair;
-import org.cef.misc.IntRef;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -88,49 +85,65 @@ public class Union implements Set {
             return this;
         }
 
+        if (inf() > set.sup() || set.inf() >= sup()) {
+            return new Union(this, set);
+        }
+
+        List<Set> others;
         if (set instanceof Union u) {
-
+            others = u.getSets();
         } else {
-
+            others = List.of(set);
         }
 
-        return null;
-    }
+        List<Set> output = new ArrayList<>();
+        output.add(sets.get(0));
 
-    /**
-     * @return The first index i where sets.(i).sup() >= inf
-     */
-    private int firstGreaterIndex(int start, float inf) {
-        for (int i = start; i < sets.size(); i++) {
-            Set s = sets.get(i);
+        int i = 1;
+        int j = 0;
+        while (i < sets.size() || j < others.size()) {
+            Set last = output.get(output.size() - 1);
+            Set toUnion;
 
-            if (s.sup() >= inf) {
-                return i;
+            if (i < sets.size() && j < others.size()) {
+                Set s1 = sets.get(i);
+                Set s2 = others.get(j);
+
+                if (s1.inf() < s2.inf()) {
+                    toUnion = s1;
+                    i++;
+                } else {
+                    toUnion = s2;
+                    j++;
+                }
+
+            } else if (i < sets.size()) {
+                toUnion = sets.get(i);
+                i++;
+            } else {
+                toUnion = others.get(j);
+                j++;
+            }
+
+            Set union = last.union(toUnion);
+            if (union instanceof Union u) {
+                output.add(u.getSets().get(1));
+            } else {
+                output.set(output.size() - 1, union);
             }
         }
 
-        return -1;
-    }
-
-    /**
-     * @return The last index i where sets.(i).inf() <= sup
-     */
-    private int lastOverlapIndex(float sup) {
-        for (int i = sets.size() - 1; i >= 0; i--) {
-            Set s = sets.get(i);
-
-            if (s.inf() <= sup) {
-                return i;
-            }
+        if (output.size() == 1) {
+            return output.get(0);
+        } else {
+            return new Union(output);
         }
-
-        return -1;
     }
 
-    private void nextOverlapIndex(List<Set> other, IntWrapper i, IntWrapper j) {
-        while (i.get() < sets.size() && j.get() < other.size()) {
+    private void nextOverlapIndex(List<Set> others, IntWrapper i, IntWrapper j) {
+        while (i.get() < sets.size() && j.get() < others.size()) {
             Set s = sets.get(i.get());
-            Set s2 = other.get(j.get());
+            Set s2 = others.get(j.get());
 
             if (s2.sup() < s.inf()) {
                 j.increment();
@@ -155,11 +168,11 @@ public class Union implements Set {
             return Empty.INSTANCE;
         }
 
-        List<Set> other;
+        List<Set> others;
         if (set instanceof Union u) {
-            other = u.getSets();
+            others = u.getSets();
         } else {
-            other = List.of(set);
+            others = List.of(set);
         }
 
         List<Set> output = new ArrayList<>();
@@ -167,10 +180,10 @@ public class Union implements Set {
         IntWrapper i = new IntWrapper();
         IntWrapper j = new IntWrapper();
 
-        nextOverlapIndex(other, i, j);
+        nextOverlapIndex(others, i, j);
         while (i.get() != -1 && j.get() != -1) {
             Set s1 = sets.get(i.get());
-            Set s2 = other.get(j.get());
+            Set s2 = others.get(j.get());
 
             Set intersection = s1.intersect(s2);
 
@@ -184,7 +197,7 @@ public class Union implements Set {
                 j.increment();
             }
 
-            nextOverlapIndex(other, i, j);
+            nextOverlapIndex(others, i, j);
         }
 
         if (output.size() == 0) {
