@@ -106,4 +106,33 @@ public class Union implements Set {
     public List<Set> getSets() {
         return sets;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Union union = (Union) o;
+
+        return sets.equals(union.sets);
+    }
+
+    @Override
+    public int hashCode() {
+        return sets.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < sets.size() - 1; i++) {
+            sb.append(sets.get(i));
+            sb.append(" U ");
+        }
+
+        sb.append(sets.get(sets.size() - 1));
+
+        return sb.toString();
+    }
 }

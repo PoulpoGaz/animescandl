@@ -26,4 +26,14 @@ public record Singleton(float value) implements Set {
             return null;
         }
     }
+
+    //@Override
+    //public float sup() {
+    //    return value;
+    //}
+
+    //@Override
+    //public float inf() {
+    //    return value;
+    //}
 }
