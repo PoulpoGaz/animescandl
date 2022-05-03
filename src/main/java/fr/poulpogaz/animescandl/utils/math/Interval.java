@@ -68,6 +68,23 @@ public class Interval implements Set {
         return left.lessThan(real) && right.greaterThan(real);
     }
 
+    /**
+     * @return true if the intersection is non-empty
+     */
+    public boolean nonEmptyIntersection(Interval i) {
+        Bound leftMax = Utils.max(left, i.left, Bound::valueCompare);
+        Bound rightMin = Utils.min(right, i.right, Bound::valueCompare);
+
+        if (leftMax.value() == rightMin.value() && leftMax.isFinite()) {
+            return leftMax.isClosed() && rightMin.isClosed();
+        } else {
+            return rightMin.value() > leftMax.value();
+        }
+    }
+
+    /**
+     * @return true if the union with 'i' is not a union
+     */
     public boolean isConnected(Interval i) {
         Bound leftMax = Utils.max(left, i.left, Bound::valueCompare);
         Bound rightMin = Utils.min(right, i.right, Bound::valueCompare);
@@ -86,6 +103,8 @@ public class Interval implements Set {
             return i;
         } else if (min == NEGATIVE_INFINITY && max == POSITIVE_INFINITY) {
             return all();
+        } else if (min.value() == max.value()) {
+            return new Singleton(min.value());
         } else {
             return new Interval(min, max);
         }
@@ -147,7 +166,7 @@ public class Interval implements Set {
             return this;
         } else if (set instanceof Interval i) {
 
-            if (isConnected(i)) {
+            if (nonEmptyIntersection(i)) {
                 Bound min = max(left, i.left, true);
                 Bound max = min(right, i.right, true);
 
@@ -159,6 +178,16 @@ public class Interval implements Set {
             // redirect to Singleton or Union
             return set.intersect(this);
         }
+    }
+
+    @Override
+    public float sup() {
+        return right.value();
+    }
+
+    @Override
+    public float inf() {
+        return left.value();
     }
 
     @Override
@@ -198,6 +227,7 @@ public class Interval implements Set {
         } else if (left.isOpen()) {
             sb.append("]").append(left.value());
         }
+
         sb.append("; ");
 
         if (right.isInfinity()) {

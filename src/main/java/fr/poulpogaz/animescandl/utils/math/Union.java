@@ -1,28 +1,69 @@
 package fr.poulpogaz.animescandl.utils.math;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
- * An union DOESN'T CONTAIN an union
+ * A union doesn't contain a union.
+ * It contains an ordered list of set sorted by the return of {@link Set#inf()}.
+ * All sets should not overlap.
+ *
+ *
  */
 public class Union implements Set {
 
     private final List<Set> sets;
 
     public Union(List<Set> sets) {
-        this.sets = sets;
-
-        for (Set s : sets) {
-            if (s instanceof Union) {
-                throw new IllegalStateException("An union can't contain an union");
-            }
+        List<Set> copy;
+        if (sets instanceof ArrayList<Set>) {
+            copy = sets;
+        } else {
+            copy = new ArrayList<>(sets);
         }
+
+        checkValid(copy);
+        this.sets = copy.stream()
+                .sorted(Comparator.comparing(Set::inf))
+                .toList();
     }
 
     public Union(Set... sets) {
         this(List.of(sets));
+    }
+
+    private void checkValid(List<Set> sets) {
+        for (int i = 0; i < sets.size(); i++) {
+            Set s = sets.get(i);
+
+            if (s instanceof Union u) {
+                sets.addAll(i, u.getSets());
+                sets.remove(u);
+                i--;
+
+            } else if (s instanceof Empty) {
+                sets.remove(i);
+                i--;
+
+            } else {
+
+                // check if s has an empty intersection with the previous sets.
+                // The reverse loop avoid to check the instance of the set.
+                for (int j = i - 1; j >= 0; j--) {
+                    Set s2 = sets.get(j);
+
+                    if (s.intersect(s2) != Empty.INSTANCE) {
+                        System.out.println(s + " inter " + s2 + " = " + s.intersect(s2));
+                        throw new IllegalArgumentException("Non empty intersection");
+                    }
+                }
+            }
+        }
+
+        if (sets.size() < 2) {
+            throw new IllegalArgumentException("A union contains at least 2 elements");
+        }
     }
 
     @Override
@@ -51,56 +92,62 @@ public class Union implements Set {
         return null;
     }
 
+    /**
+     * @return The first index i where sets.(i).sup() >= inf
+     */
+    private int firstOverlapIndex(float inf) {
+        for (int i = 0; i < sets.size(); i++) {
+            Set s = sets.get(i);
+
+            if (s.sup() >= inf) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * @return The last index i where sets.(i).inf() <= sup
+     */
+    private int lastOverlapIndex(float sup) {
+        for (int i = sets.size() - 1; i >= 0; i--) {
+            Set s = sets.get(i);
+
+            if (s.inf() <= inf()) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     @Override
     public Set intersect(Set set) {
         if (set == this) {
             return this;
         }
 
-        // union vs union
-        if (set instanceof Union u) {
-            List<Set> others = u.getSets();
-
-            if (others.size() == 0) {
-                return Empty.INSTANCE;
-            } else if (others.size() == 1) {
-                return intersect(others.get(0));
-            } else {
-
-                List<Set> sets = new ArrayList<>();
-
-                for (Set s : this.sets) {
-                    // became union vs (not an union)
-                    Set i = s.intersect(set);
-
-                    if (i != Empty.INSTANCE) {
-                        sets.add(i);
-                    }
-                }
-
-                if (sets.size() == 0) {
-                    return Empty.INSTANCE;
-                } else if (sets.size() == 1) {
-                    return sets.get(0);
-                } else {
-                    return new Union(Collections.unmodifiableList(sets));
-                }
-            }
-
-        } else {
-            // union vs singleton or union vs interval
-            Set out = set;
-
-            for (Set set2 : sets) {
-                out = out.intersect(set2);
-
-                if (out instanceof Empty) {
-                    break;
-                }
-            }
-
-            return out;
+        if (inf() > set.sup() || set.inf() >= sup()) {
+            return Empty.INSTANCE;
         }
+
+        int start = firstOverlapIndex(set.inf());
+        int end = lastOverlapIndex(set.sup());
+
+        System.out.println(start + " - " + end);
+
+       return null;
+    }
+
+    @Override
+    public float sup() {
+        return sets.get(sets.size() - 1).sup();
+    }
+
+    @Override
+    public float inf() {
+        return sets.get(0).inf();
     }
 
     public List<Set> getSets() {

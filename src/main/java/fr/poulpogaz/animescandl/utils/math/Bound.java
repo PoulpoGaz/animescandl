@@ -1,7 +1,5 @@
 package fr.poulpogaz.animescandl.utils.math;
 
-import java.util.Objects;
-
 /**
  *                     FRENCH NOTATION        ENGLISH NOTATION
  *
@@ -41,39 +39,6 @@ public interface Bound {
     static int valueCompare(Bound a, Bound b) {
         return Float.compare(a.value(), b.value());
     }
-
-    static int minValueCompare(Bound a, Bound b) {
-        int c = Float.compare(a.value(), b.value());
-
-        if (c == 0 && a.isFinite()) {
-            if (a.isOpen() && b.isClosed()) {
-                return 1;
-            } else if (a.isClosed() && b.isOpen()) {
-                return -1;
-            } else {
-                return 0;
-            }
-        }
-
-        return c;
-    }
-
-    static int maxValueCompare(Bound a, Bound b) {
-        int c = Float.compare(b.value(), a.value());
-
-        if (c == 0 && a.isFinite()) {
-            if (a.isOpen() && b.isClosed()) {
-                return -1;
-            } else if (a.isClosed() && b.isOpen()) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-
-        return c;
-    }
-
 
     abstract class Finite implements Bound {
 

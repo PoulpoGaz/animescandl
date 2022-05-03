@@ -14,4 +14,8 @@ public interface Set {
     Set union(Set set);
 
     Set intersect(Set set);
+
+    float sup();
+
+    float inf();
 }

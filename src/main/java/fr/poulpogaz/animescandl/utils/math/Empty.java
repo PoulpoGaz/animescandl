@@ -22,4 +22,14 @@ public class Empty implements Set {
     public Set intersect(Set set) {
         return this;
     }
+
+    @Override
+    public float sup() {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public float inf() {
+        throw new IllegalStateException();
+    }
 }
