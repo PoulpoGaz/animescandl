@@ -13,7 +13,7 @@ public interface Website extends IRequestSender, IDocumentCache {
 
     boolean isSupported(String url);
 
-    default boolean supportHeadless() {
+    default boolean needCEF() {
         return true;
     }
 }

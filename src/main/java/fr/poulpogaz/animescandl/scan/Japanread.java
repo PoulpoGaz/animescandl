@@ -74,6 +74,11 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
     }
 
     @Override
+    public boolean needCEF() {
+        return true;
+    }
+
+    @Override
     public boolean isChapterURL(String url) {
         Pattern pattern = Pattern.compile("^https://www\\.japanread\\.cc/manga/[^/]*/\\d*$");
 

@@ -1,24 +1,18 @@
 package fr.poulpogaz.animescandl;
 
+import fr.poulpogaz.animescandl.utils.math.Interval;
+import fr.poulpogaz.animescandl.utils.math.Set;
+
 import java.nio.file.Path;
 
-public record Settings(int[] range, boolean concatenateAll, String language, Path out) {
+public record Settings(Set range, boolean concatenateAll, String language, Path out) {
 
-    public boolean rangeContains(int n) {
-        if (range == null) {
-            return true;
-        }
-
-        for (int j : range) {
-            if (j == n) {
-                return true;
-            }
-        }
-        return false;
+    public boolean rangeContains(float n) {
+        return range.contains(n);
     }
 
     public static class Builder {
-        private int[] range = null;
+        private Set range = Interval.all();
         private boolean concatenateAll = false;
         private String language = null;
         private Path out = Path.of("");
@@ -27,11 +21,11 @@ public record Settings(int[] range, boolean concatenateAll, String language, Pat
             return new Settings(range, concatenateAll, language, out);
         }
 
-        public int[] getRange() {
+        public Set getRange() {
             return range;
         }
 
-        public Builder setRange(int[] range) {
+        public Builder setRange(Set range) {
             this.range = range;
             return this;
         }

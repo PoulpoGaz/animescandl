@@ -17,10 +17,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -131,7 +128,7 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
             chapters.add(builder.build());
         }
 
-        return chapters;
+        return Collections.unmodifiableList(chapters);
     }
 
     @Override

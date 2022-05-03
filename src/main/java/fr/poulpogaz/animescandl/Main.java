@@ -1,17 +1,22 @@
 package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.args.*;
+import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.utils.Updater;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Log4j2Setup;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
+import fr.poulpogaz.animescandl.utils.math.Interval;
+import fr.poulpogaz.animescandl.utils.math.SetParser;
 import fr.poulpogaz.animescandl.website.Website;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.IJsonReader;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.JsonReader;
+import me.friwi.jcefmaven.CefInitializationException;
+import me.friwi.jcefmaven.UnsupportedPlatformException;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
@@ -156,10 +161,9 @@ public class Main {
         try {
             a = AnimeScanDownloader.createDefault();
         } catch (IOException e) {
-            LOGGER.fatalln("Failed to initialize websites.", e);
+            LOGGER.fatalln("Failed to initialize websites or CEF.", e);
             return;
         }
-
 
         if (help.isPresent()) {
             HelpFormatter.printHelp(USAGE, options);
@@ -178,6 +182,7 @@ public class Main {
         }
 
         run(a);
+        CEFHelper.shutdown();
     }
 
 
@@ -191,15 +196,23 @@ public class Main {
                     a.process(p.left(), p.right());
                 }
 
-            } catch (WebsiteException | JsonException | IOException | InterruptedException e) {
+            } catch (WebsiteException | JsonException | IOException | InterruptedException | ParseException e) {
                 LOGGER.throwing(Level.FATAL, e);
+            } catch (UnsupportedPlatformException e) {
+                LOGGER.fatalln("Sorry. Your platform isn't supported by CEF", e);
+            } catch (CefInitializationException e) {
+                LOGGER.fatalln("Failed to initialize CEF");
             }
         }
     }
 
 
-    private static List<Pair<String, Settings>> loadConfig() throws JsonException, IOException {
+    private static List<Pair<String, Settings>> loadConfig() throws JsonException, IOException, ParseException {
         List<Pair<String, Settings>> settings = new ArrayList<>();
+
+        SetParser parser = new SetParser();
+        parser.setIntervalCreator((a, b) -> Interval.closedOpen(a, b + 1));
+        parser.setSingletonCreator((a) -> Interval.closedOpen(a, a + 1));
 
         IJsonReader jr = new JsonReader(Files.newBufferedReader(CONFIG_PATH));
         jr.beginArray();
@@ -207,7 +220,7 @@ public class Main {
         while (!jr.isArrayEnd()) {
             jr.beginObject();
 
-            Pair<String, Settings> target = parseTarget(jr);
+            Pair<String, Settings> target = parseTarget(jr, parser);
 
             settings.add(target);
 
@@ -220,7 +233,8 @@ public class Main {
         return settings;
     }
 
-    private static Pair<String, Settings> parseTarget(IJsonReader jr) throws IOException, JsonException {
+    private static Pair<String, Settings> parseTarget(IJsonReader jr, SetParser parser)
+            throws IOException, JsonException, ParseException {
         String url = null;
         Settings.Builder builder = new Settings.Builder();
 
@@ -230,7 +244,7 @@ public class Main {
             switch (key) {
                 case "name" -> url = jr.nextString();
                 case "concatenateAll" -> builder.setConcatenateAll(jr.nextBoolean());
-                case "range" -> builder.setRange(Utils.parseRange(jr.nextString()));
+                case "range" -> builder.setRange(parser.parse(jr.nextString()));
                 case "language" -> builder.setLanguage(jr.nextString());
                 case "out" -> builder.setOut(Path.of(jr.nextString()));
                 default -> throw new IOException("Unknown attribute: " + key);

@@ -2,7 +2,12 @@ package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.Main;
 import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
+import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 
@@ -12,6 +17,8 @@ import java.io.InputStream;
 import java.nio.file.Path;
 
 public abstract class AbstractScanWriter {
+
+    private static final ASDLLogger LOGGER = Loggers.getLogger(AbstractScanWriter.class);
 
     public static AbstractScanWriter newWriter(String title, boolean concatenateAll, Path out) {
         if (Main.simulate.isPresent()) {
@@ -35,8 +42,43 @@ public abstract class AbstractScanWriter {
         this.out = out;
     }
 
-    public abstract <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chapter)
-            throws IOException, JsonException, WebsiteException, InterruptedException;
+    public <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chap) throws IOException, JsonException, WebsiteException, InterruptedException {
+        Manga m = chap.getManga();
+        String chapName = chap.getName().orElse(m.getTitle() + " - " + chap.getChapterNumber());
+
+        newScan(chapName);
+
+        if (Utils.contains(s.supportedIterators(), String.class)) {
+            iter(s.getPageIterator(chap, String.class), (url) -> addPage(s, url));
+
+        } else if (Utils.contains(s.supportedIterators(), InputStream.class)) {
+            iter(s.getPageIterator(chap, InputStream.class), this::addPage);
+
+        } else if (Utils.contains(s.supportedIterators(), BufferedImage.class)) {
+            iter(s.getPageIterator(chap, BufferedImage.class), this::addPage);
+        }
+
+        endScan();
+    }
+
+    private <T> void iter(PageIterator<T> iterator, AddPage<T> addPage)
+            throws IOException, WebsiteException, InterruptedException {
+        String max = iterator.nPages()
+                .map(String::valueOf)
+                .orElse("??");
+        int page = 0;
+
+        try {
+            while (iterator.hasNext()) {
+                addPage.addPage(iterator.next());
+                page++;
+
+                LOGGER.info("\r{}/{} pages", page, max);
+            }
+        } finally {
+            LOGGER.newLine();
+        }
+    }
 
     public abstract void newScan(String chapterName);
 
@@ -77,12 +119,6 @@ public abstract class AbstractScanWriter {
         }
 
         @Override
-        public <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chapter)
-                throws IOException, JsonException, WebsiteException, InterruptedException {
-
-        }
-
-        @Override
         public void newScan(String chapterName) {
 
         }
@@ -116,5 +152,10 @@ public abstract class AbstractScanWriter {
         public void endAll() {
 
         }
+    }
+
+    @FunctionalInterface
+    private interface AddPage<T> {
+        void addPage(T page) throws IOException, InterruptedException;
     }
 }

@@ -2,7 +2,6 @@ package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
@@ -32,12 +31,12 @@ public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
             JsonException, UnsupportedPlatformException, CefInitializationException {
         ScanWebsite<M, C> sw = getScanWebsite();
 
-        if (GraphicsEnvironment.isHeadless() && !sw.supportHeadless()) {
+        if (GraphicsEnvironment.isHeadless() && !sw.needCEF()) {
             throw new WebsiteException("Test can't be run because "
                     + sw.name() + " doesn't support headless");
         }
 
-        if (needCEF()) {
+        if (sw.needCEF()) {
             CEFHelper.initialize();
         }
 
@@ -78,10 +77,6 @@ public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
     public static void shutdown() {
         CEFHelper.shutdown();
     }*/
-
-    protected boolean needCEF() {
-        return false;
-    }
 
     protected abstract ScanWebsite<M, C> getScanWebsite();
 }

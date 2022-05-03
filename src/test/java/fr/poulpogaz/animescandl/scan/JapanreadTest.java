@@ -20,11 +20,6 @@ public class JapanreadTest extends ScanWebsiteBaseTest<MangaWithChapter, Chapter
     }
 
     @Override
-    protected boolean needCEF() {
-        return true;
-    }
-
-    @Override
     protected ScanWebsite<MangaWithChapter, Chapter> getScanWebsite() {
         if (jr == null) {
             try {

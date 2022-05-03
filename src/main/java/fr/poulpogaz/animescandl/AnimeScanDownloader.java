@@ -7,13 +7,17 @@ import fr.poulpogaz.animescandl.model.*;
 import fr.poulpogaz.animescandl.scan.*;
 import fr.poulpogaz.animescandl.scan.japscan.Japscan;
 import fr.poulpogaz.animescandl.scan.mangadex.Mangadex;
+import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.website.Website;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
+import me.friwi.jcefmaven.CefInitializationException;
+import me.friwi.jcefmaven.UnsupportedPlatformException;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +51,8 @@ public class AnimeScanDownloader {
     }
 
     public void process(String url, Settings settings)
-            throws WebsiteException, JsonException, IOException, InterruptedException {
+            throws WebsiteException, JsonException, IOException,
+            InterruptedException, UnsupportedPlatformException, CefInitializationException {
         if (!HttpUtils.isValidURL(url)) {
             throw new WebsiteException("Not an url: " + url);
         }
@@ -56,6 +61,14 @@ public class AnimeScanDownloader {
 
         Website w = getWebsiteFor(url);
         LOGGER.debugln("Website: " + w.name());
+
+        if (w.needCEF()) {
+            if (GraphicsEnvironment.isHeadless()) {
+                throw new WebsiteException(w.name() + " doesn't support headless");
+            }
+
+            CEFHelper.initialize();
+        }
 
         if (w instanceof ScanWebsite<?, ?> s) {
             downloadScan(s, url, settings, createChapterFilter(settings, url, s));
@@ -100,10 +113,10 @@ public class AnimeScanDownloader {
         }
 
         M manga = s.getManga(url);
-        List<C> chapters = s.getChapters(manga);
+        List<C> chapters = new ArrayList<>(s.getChapters(manga));
         chapters.sort(Comparator.comparingDouble(Chapter::getChapterNumber));
 
-        ScanWriter sw = new ScanWriter(manga.getTitle(), settings.concatenateAll(), settings.out());
+        AbstractScanWriter sw = AbstractScanWriter.newWriter(manga.getTitle(), settings.concatenateAll(), settings.out());
 
         for (C chap : chapters) {
             if (!filter.test(chap)) {

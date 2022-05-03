@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapter> {
@@ -40,7 +41,7 @@ public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapt
     }
 
     @Override
-    public boolean supportHeadless() {
+    public boolean needCEF() {
         return false;
     }
 
@@ -157,7 +158,7 @@ public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapt
             }
         }
 
-        return chapters;
+        return Collections.unmodifiableList(chapters);
     }
 
     @Override

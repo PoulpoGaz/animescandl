@@ -36,45 +36,6 @@ public class ScanWriter extends AbstractScanWriter {
     }
 
     @Override
-    public <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chap) throws IOException, JsonException, WebsiteException, InterruptedException {
-        Manga m = chap.getManga();
-        String chapName = chap.getName().orElse(m.getTitle() + " - " + chap.getChapterNumber());
-
-        newScan(chapName);
-
-        if (Utils.contains(s.supportedIterators(), String.class)) {
-            iter(s.getPageIterator(chap, String.class), (url) -> addPage(s, url));
-
-        } else if (Utils.contains(s.supportedIterators(), InputStream.class)) {
-            iter(s.getPageIterator(chap, InputStream.class), this::addPage);
-
-        } else if (Utils.contains(s.supportedIterators(), BufferedImage.class)) {
-            iter(s.getPageIterator(chap, BufferedImage.class), this::addPage);
-        }
-
-        endScan();
-    }
-
-    private <T> void iter(PageIterator<T> iterator, AddPage<T> addPage)
-            throws IOException, WebsiteException, InterruptedException {
-        String max = iterator.nPages()
-                .map(String::valueOf)
-                .orElse("??");
-        int page = 0;
-
-        try {
-            while (iterator.hasNext()) {
-                addPage.addPage(iterator.next());
-                page++;
-
-                LOGGER.info("\r{}/{} pages", page, max);
-            }
-        } finally {
-            LOGGER.newLine();
-        }
-    }
-
-    @Override
     public void newScan(String chapterName) {
         if (document == null) {
             document = new PDDocument();
@@ -168,10 +129,5 @@ public class ScanWriter extends AbstractScanWriter {
             document.close();
             document = null;
         }
-    }
-
-    @FunctionalInterface
-    private interface AddPage<T> {
-        void addPage(T page) throws IOException, InterruptedException;
     }
 }
