@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public abstract class AbstractSimpleScanWebsite<M extends Manga, C extends Chapter>
-        extends AbstractWebsite implements ScanWebsite<M, C>{
+        extends AbstractWebsite implements ScanWebsite<M, C> {
 
     @Override
     public Class<?>[] supportedIterators() {

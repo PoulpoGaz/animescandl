@@ -5,8 +5,10 @@ import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.scan.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-public class Mangadex extends AbstractSimpleScanWebsite<Manga, Chapter> {
+public class Mangadex extends AbstractSimpleScanWebsite<Manga, Chapter> implements SearchWebsite<Manga> {
 
     private String language;
 
@@ -88,7 +90,12 @@ public class Mangadex extends AbstractSimpleScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public List<Manga> search() {
+    public FilterList getSearchFilter() {
+        return null;
+    }
+
+    @Override
+    public List<Manga> search(String search, FilterList filter) {
         return null;
     }
 

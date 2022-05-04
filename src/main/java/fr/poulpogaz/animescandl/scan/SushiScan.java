@@ -5,8 +5,10 @@ import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonObject;
@@ -21,7 +23,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
+public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> implements SearchWebsite<Manga> {
 
     @Override
     public String name() {
@@ -138,10 +140,14 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> {
     }
 
     @Override
-    public List<Manga> search() {
+    public FilterList getSearchFilter() {
         return null;
     }
 
+    @Override
+    public List<Manga> search(String search, FilterList filter) {
+        return null;
+    }
 
     private class StringPageIterator implements PageIterator<String> {
 

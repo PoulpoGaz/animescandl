@@ -1,6 +1,7 @@
 package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.MangaWithChapter;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
@@ -8,8 +9,10 @@ import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.CompletionWaiter;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
@@ -38,7 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapter> {
+public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapter> implements SearchWebsite<MangaWithChapter> {
 
     private static final String MANGA_INDICATOR = "[MANGA]";
     private static final String CHAP_INDICATOR = "[CHAPTER]";
@@ -297,13 +300,18 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
     }
 
     @Override
-    public List<MangaWithChapter> search() {
+    public HttpRequest.Builder standardRequest(String uri) {
+        return super.standardRequest(uri).version(HttpClient.Version.HTTP_1_1);
+    }
+
+    @Override
+    public FilterList getSearchFilter() {
         return null;
     }
 
     @Override
-    public HttpRequest.Builder standardRequest(String uri) {
-        return super.standardRequest(uri).version(HttpClient.Version.HTTP_1_1);
+    public List<MangaWithChapter> search(String search, FilterList filter) {
+        return null;
     }
 
     private class StringPageIterator implements PageIterator<String> {

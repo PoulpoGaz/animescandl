@@ -8,7 +8,9 @@ import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.AbstractWebsite;
 import fr.poulpogaz.animescandl.website.DOMException;
+import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
@@ -26,7 +28,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Episode> {
+public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Episode>, SearchWebsite<Anime> {
 
     private static final Pattern PSTREAM_REGEX = Pattern.compile("'(https://www\\.pstream\\.net.*?)'");
     private static final Pattern VIDEO_LINK_REGEX = Pattern.compile("e\\.parseJSON\\(atob\\(t\\)\\.slice\\(2\\)\\)}\\(\"(.*?)\"");
@@ -272,7 +274,12 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Epi
     }
 
     @Override
-    public List<Anime> search() {
+    public FilterList getSearchFilter() {
+        return null;
+    }
+
+    @Override
+    public List<Anime> search(String search, FilterList filter) {
         return null;
     }
 }

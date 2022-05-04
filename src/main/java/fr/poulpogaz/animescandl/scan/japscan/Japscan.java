@@ -9,8 +9,10 @@ import fr.poulpogaz.animescandl.scan.iterators.InputStreamPageIterator;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.AbstractWebsite;
+import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.json.JsonException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapter> {
+public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapter>, SearchWebsite<Manga> {
 
     @Override
     public String name() {
@@ -187,7 +189,12 @@ public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapt
     }
 
     @Override
-    public List<Manga> search() {
+    public FilterList getSearchFilter() {
+        return null;
+    }
+
+    @Override
+    public List<Manga> search(String search, FilterList filter) {
         return null;
     }
 }

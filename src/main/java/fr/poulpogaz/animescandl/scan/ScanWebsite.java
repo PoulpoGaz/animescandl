@@ -38,6 +38,4 @@ public interface ScanWebsite<M extends Manga, C extends Chapter> extends Website
     default void selectLanguage(String language) {
 
     }
-
-    List<M> search();
 }
