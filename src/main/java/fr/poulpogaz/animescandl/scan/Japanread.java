@@ -1,7 +1,6 @@
 package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.MangaWithChapter;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
@@ -93,6 +92,11 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         Pattern pattern = Pattern.compile("^https://www\\.japanread\\.cc/manga/[^/]*/?$");
 
         return pattern.matcher(url).find();
+    }
+
+    @Override
+    public HttpRequest.Builder standardRequest(String uri) {
+        return super.standardRequest(uri).version(HttpClient.Version.HTTP_1_1);
     }
 
     @Override
@@ -299,21 +303,6 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         return new StringPageIterator(chapter);
     }
 
-    @Override
-    public HttpRequest.Builder standardRequest(String uri) {
-        return super.standardRequest(uri).version(HttpClient.Version.HTTP_1_1);
-    }
-
-    @Override
-    public FilterList getSearchFilter() {
-        return null;
-    }
-
-    @Override
-    public List<MangaWithChapter> search(String search, FilterList filter) {
-        return null;
-    }
-
     private class StringPageIterator implements PageIterator<String> {
 
         private static final CefCookieManager manager = CefCookieManager.getGlobalManager();
@@ -381,5 +370,18 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         public Optional<Integer> nPages() {
             return Optional.of(pages.size());
         }
+    }
+
+
+
+
+    @Override
+    public FilterList getSearchFilter() {
+        return null;
+    }
+
+    @Override
+    public List<MangaWithChapter> search(String search, FilterList filter) {
+        return null;
     }
 }

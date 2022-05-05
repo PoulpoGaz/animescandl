@@ -17,4 +17,8 @@ public class CheckBox extends Filter<Boolean> {
     public void unselect() {
         value = false;
     }
+
+    public boolean isSelected() {
+        return value;
+    }
 }

@@ -3,12 +3,14 @@ package fr.poulpogaz.animescandl.scan;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
+import fr.poulpogaz.animescandl.scan.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
+import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
 import fr.poulpogaz.json.JsonException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -162,16 +164,6 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         return new StringPageIterator(chapter);
     }
 
-    @Override
-    public FilterList getSearchFilter() {
-        return null;
-    }
-
-    @Override
-    public List<Manga> search(String search, FilterList filter) {
-        return null;
-    }
-
     private class StringPageIterator implements PageIterator<String> {
 
         private final Elements elements;
@@ -206,5 +198,34 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         public Optional<Integer> nPages() {
             return Optional.of(elements.size());
         }
+    }
+
+
+    @Override
+    public FilterList getSearchFilter() {
+        return new UrlFilterList.Builder()
+                .group("Genres", "genre")
+                    .checkBox("Action", "a")
+                    .checkBox("Adventure", "b")
+                    .checkBox("Animated", "c")
+                    .checkBox("Anime", "d")
+                    .checkBox("Cartoon", "e")
+                    .checkBox("Comedy", "f")
+                    .checkBox("Comic", "g")
+                    .checkBox("Completed", "h")
+                    .checkBox("Cooking", "i")
+                    .checkBox("Detective", "j")
+                    .checkBox("Dounjinshi", "k")
+                    .build()
+                .select("Genres conditions", "op")
+                    .addVal("and")
+                    .add("or", "1")
+                    .build()
+                .build();
+    }
+
+    @Override
+    public List<Manga> search(String search, FilterList filter) {
+        return null;
     }
 }
