@@ -1,5 +1,7 @@
 package fr.poulpogaz.animescandl.utils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,14 +9,13 @@ import java.util.Map;
 
 public class HttpQueryParameterBuilder {
 
-    private static final Appender DEFAULT = new Appender() {
-        @Override
-        public void append(StringBuilder out, String paramName, String b, int index, int size) {
-            out.append(paramName).append("=").append(b);
+    private static final Appender DEFAULT = (out, paramName, arg, index, size) -> {
+        out.append(URLEncoder.encode(paramName, StandardCharsets.UTF_8))
+                .append("=")
+                .append(URLEncoder.encode(arg, StandardCharsets.UTF_8));
 
-            if (index + 1 < size) {
-                out.append("&");
-            }
+        if (index + 1 < size) {
+            out.append("&");
         }
     };
 
@@ -76,7 +77,7 @@ public class HttpQueryParameterBuilder {
 
         default void before(StringBuilder out, String paramName) {}
 
-        void append(StringBuilder out, String paramName, String b, int index, int size);
+        void append(StringBuilder out, String paramName, String arg, int index, int size);
 
         default void after(StringBuilder out, String paramName) {}
     }

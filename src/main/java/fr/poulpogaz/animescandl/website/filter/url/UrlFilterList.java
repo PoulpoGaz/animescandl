@@ -43,7 +43,7 @@ public class UrlFilterList extends FilterList {
     }
 
     private void addGroup(HttpQueryParameterBuilder b, UrlGroup group) {
-        for (Filter<?> f : getFilters()) {
+        for (Filter<?> f : group.getFilters()) {
             UrlFilter urlFilter = (UrlFilter) f;
             add(b, urlFilter, group.getQueryName());
         }
@@ -65,8 +65,8 @@ public class UrlFilterList extends FilterList {
 
     public static class Builder extends BaseBuilder<Builder> {
 
-        public FilterList build() {
-            return new FilterList(filters);
+        public UrlFilterList build() {
+            return new UrlFilterList(filters);
         }
 
         public GroupBuilder group(String name) {
@@ -135,8 +135,7 @@ public class UrlFilterList extends FilterList {
         protected abstract THIS getTHIS();
 
         public THIS triStateCheckBox(String name) {
-            filters.add(new TriStateCheckBox(name));
-            return getTHIS();
+            return triStateCheckBox(name, null, null, null, null);
         }
 
         public THIS triStateCheckBox(String name, String selected, String excluded) {
@@ -202,16 +201,15 @@ public class UrlFilterList extends FilterList {
         private List<String> arguments;
 
         private SelectBuilder(B ancestor, String name) {
-            this.ancestor = ancestor;
-            this.name = name;
-            values = new ArrayList<>();
-            arguments = new ArrayList<>();
+            this(ancestor, name, null);
         }
 
         public SelectBuilder(B ancestor, String name, String queryName) {
             this.ancestor = ancestor;
             this.name = name;
             this.queryName = queryName;
+            values = new ArrayList<>();
+            arguments = new ArrayList<>();
         }
 
         public SelectBuilder<T, B> addArg(String arg) {
@@ -219,9 +217,13 @@ public class UrlFilterList extends FilterList {
             return this;
         }
 
-        public SelectBuilder<T, B> addVal(T val) {
+        public SelectBuilder<T, B> addVal2(T val) {
             values.add(val);
             return this;
+        }
+
+        public SelectBuilder<T, B> addVal(T val) {
+            return add(val, null);
         }
 
         public SelectBuilder<T, B> add(T val, String arg) {
@@ -267,7 +269,7 @@ public class UrlFilterList extends FilterList {
         }
 
         public B build() {
-            return ancestor.addFilter(new Select<>(name, values));
+            return ancestor.addFilter(new UrlSelect<>(name, values, queryName, arguments));
         }
     }
 }

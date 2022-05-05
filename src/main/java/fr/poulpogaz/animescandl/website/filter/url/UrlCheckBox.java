@@ -5,14 +5,14 @@ import fr.poulpogaz.animescandl.website.filter.CheckBox;
 public class UrlCheckBox extends CheckBox implements UrlFilter {
 
     private final String queryName;
-    private final String valueWhenSelected;
     private final String valueWhenUnselected;
+    private final String valueWhenSelected;
 
-    public UrlCheckBox(String name, String queryName, String valueWhenSelected, String valueWhenUnselected) {
+    public UrlCheckBox(String name, String queryName, String valueWhenUnselected, String valueWhenSelected) {
         super(name);
         this.queryName = queryName;
-        this.valueWhenSelected = valueWhenSelected;
         this.valueWhenUnselected = valueWhenUnselected;
+        this.valueWhenSelected = valueWhenSelected;
     }
 
     @Override

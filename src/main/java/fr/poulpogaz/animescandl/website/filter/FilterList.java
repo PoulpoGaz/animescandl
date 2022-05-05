@@ -17,8 +17,26 @@ public class FilterList {
         this.filters = Collections.unmodifiableList(filters);
     }
 
-    public Filter<?> get(int index) {
+    public Filter<?> getFilter(int index) {
         return filters.get(index);
+    }
+
+    public Filter<?> getFilter(String name) {
+        for (Filter<?> filter : filters) {
+            if (name.equals(filter.getName())) {
+                return filter;
+            }
+
+            if (filter instanceof Group group) {
+                Filter<?> f = group.getFilter(name);
+
+                if (f != null) {
+                    return f;
+                }
+            }
+        }
+
+        return null;
     }
 
     public int getLimit() {

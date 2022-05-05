@@ -26,6 +26,10 @@ public class UrlSelect<V> extends Select<V> implements UrlFilter {
 
     @Override
     public String getQueryArgument() {
-        return arguments.get(getValue());
+        if (value == null) {
+            return null;
+        }
+
+        return arguments.get(value);
     }
 }

@@ -22,4 +22,18 @@ public class Group extends Filter<List<Filter<?>>> {
     public void setValue(List<Filter<?>> value) {
         throw new IllegalStateException();
     }
+
+    public List<Filter<?>> getFilters() {
+        return super.getValue();
+    }
+
+    public Filter<?> getFilter(String name) {
+        for (Filter<?> filter : getFilters()) {
+            if (name.equals(filter.getName())) {
+                return filter;
+            }
+        }
+
+        return null;
+    }
 }

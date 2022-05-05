@@ -5,7 +5,9 @@ import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.utils.HttpQueryParameterBuilder;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.website.DOMException;
 import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
@@ -38,7 +40,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
     @Override
     public String url() {
-        return "https://www.mangaread.org/";
+        return "https://www.mangaread.org";
     }
 
     @Override
@@ -69,7 +71,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
         builder.setAuthor(parseList(doc, ".author-content").collect(Collectors.joining(", ")));
         builder.setArtist(parseList(doc, ".artist-content").collect(Collectors.joining(", ")));
-        builder.setGenres(parseList(doc, ".genres-content").collect(Collectors.toList()));
+        builder.setGenres(parseList(doc, ".genres-content").toList());
         builder.setDescription(getDescription(doc));
 
         // quite angry selector
@@ -95,11 +97,11 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         }
     }
 
-    private Stream<String> parseList(Document document, String selector) {
+    private Stream<String> parseList(Element document, String selector) {
         Elements elements = document.select(selector + " > a");
 
         return elements.stream()
-                .map(Element::html);
+                .map(Element::text);
     }
 
     private String getDescription(Document document) throws WebsiteException {
@@ -204,28 +206,141 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
     @Override
     public FilterList getSearchFilter() {
         return new UrlFilterList.Builder()
-                .group("Genres", "genre")
-                    .checkBox("Action", "a")
-                    .checkBox("Adventure", "b")
-                    .checkBox("Animated", "c")
-                    .checkBox("Anime", "d")
-                    .checkBox("Cartoon", "e")
-                    .checkBox("Comedy", "f")
-                    .checkBox("Comic", "g")
-                    .checkBox("Completed", "h")
-                    .checkBox("Cooking", "i")
-                    .checkBox("Detective", "j")
-                    .checkBox("Dounjinshi", "k")
+                .group("Genres", "genre[]")
+                    .checkBox("Action", "action")
+                    .checkBox("Adventure", "adventure")
+                    .checkBox("Animated", "animated")
+                    .checkBox("Anime", "anime")
+                    .checkBox("Cartoon", "cartoon")
+                    .checkBox("Comedy", "comedy")
+                    .checkBox("Comic", "comic")
+                    .checkBox("Completed", "completed")
+                    .checkBox("Cooking", "cooking")
+                    .checkBox("Detective", "detective")
+                    .checkBox("Drama", "drama")
+                    .checkBox("Ecchi", "ecchi")
+                    .checkBox("Fantasy", "fantasy")
+                    .checkBox("Gender Bender", "gender-bender")
+                    .checkBox("Harem", "harem")
+                    .checkBox("Historical", "historical")
+                    .checkBox("Horror", "horror")
+                    .checkBox("Isekai", "isekai")
+                    .checkBox("Josei", "josei")
+                    .checkBox("Magic", "magic")
+                    .checkBox("Manga", "manga")
+                    .checkBox("Manhua", "manhua")
+                    .checkBox("Manwha", "mawha")
+                    .checkBox("Martial Arts", "martial-arts")
+                    .checkBox("Mature", "mature")
+                    .checkBox("Mecha", "mecha")
+                    .checkBox("Military", "military")
+                    .checkBox("Mistery", "mistery")
+                    .checkBox("One shot", "one-shot")
+                    .checkBox("Psychological", "psycological")
+                    .checkBox("Reincarnation", "reincarnation")
+                    .checkBox("Romance", "romance")
+                    .checkBox("School Life", "school-life")
+                    .checkBox("Sci-fi", "sci-fi")
+                    .checkBox("Seinen", "seinen")
+                    .checkBox("Shoujo", "shouko")
+                    .checkBox("Shoujo Ai", "shoujo-ai")
+                    .checkBox("Slice of Life", "slice-of-life")
+                    .checkBox("Smut", "smut")
+                    .checkBox("Sports", "sports")
+                    .checkBox("Super Power", "super-power")
+                    .checkBox("Supernatural", "supernatural")
+                    .checkBox("Tragedy", "tragedy")
+                    .checkBox("Webtoon", "webtoon")
                     .build()
+
                 .select("Genres conditions", "op")
-                    .addVal("and")
-                    .add("or", "1")
+                    .addVal("OR")
+                    .add("AND", "1")
                     .build()
+
+                .text("Author", "author")
+                .text("Artist", "artist")
+                .text("Year of Released", "release")
+
+                .select("Adult content")
+                    .addVal("All")
+                    .add("None adult content", "0")
+                    .add("Only adult content", "1")
+                .build()
+
+                .group("Status", "status[]")
+                    .checkBox("OnGoing", "on-going")
+                    .checkBox("Completed", "completed")
+                    .checkBox("Canceled", "canceled")
+                    .checkBox("On Hold", "on-hold")
+                    .checkBox("Upcoming", "upcoming")
+                    .build()
+
+                .select("Order", "m_orderby")
+                    .add("Revelance", null)
+                    .add("Lastest", "latest")
+                    .add("A-Z", "alphabet")
+                    .add("Rating", "rating")
+                    .add("Trending", "trending")
+                    .add("Most Views", "views")
+                    .add("New", "new-manga")
+                .build()
                 .build();
     }
 
     @Override
-    public List<Manga> search(String search, FilterList filter) {
-        return null;
+    public List<Manga> search(String search, FilterList filter)
+            throws IOException, InterruptedException, WebsiteException, JsonException {
+        if (filter instanceof UrlFilterList urlFilterList) {
+            List<Manga> mangas = new ArrayList<>();
+
+            int page = 1;
+            int nResult = Integer.MAX_VALUE;
+            while (mangas.size() < Math.min(nResult, filter.getLimit())) {
+                nResult = search(page, search, urlFilterList, mangas);
+                page++;
+            }
+
+            return mangas;
+        }
+
+        return List.of();
+    }
+
+    private int search(int page, String search, UrlFilterList urlFilterList, List<Manga> out)
+            throws IOException, InterruptedException, WebsiteException {
+        HttpQueryParameterBuilder b = new HttpQueryParameterBuilder();
+        b.add("s", Objects.requireNonNullElse(search, ""));
+        b.add("post_type", "wp-manga");
+
+        String url = urlFilterList.createRequest(url() + "/page/" + page + "/", b);
+
+        Document document = getDocument(url);
+        Elements mangas = document.select("[role=tabpanel] > .row.c-tabs-item__content");
+
+        int max = Math.min(mangas.size(), urlFilterList.getLimit() - out.size());
+        for (int i = 0; i < max; i++) {
+            out.add(getMangaFromSearch(mangas.get(i)));
+        }
+
+        Element e = selectNonNull(document, ".c-blog__heading.style-2.font-heading > .h4");
+        String text = Utils.getFirstNonEmptyText(e, true);
+
+        return Utils.getFirstInt(text);
+    }
+
+    private Manga getMangaFromSearch(Element e) throws DOMException {
+        // .col-4.col-12.col-md-2 > .tab-thumb.c-image-hover > a
+        Manga.Builder builder = new Manga.Builder();
+        Element url = selectNonNull(e, ".c-image-hover > a");
+        builder.setUrl(url.attr("href"));
+        builder.setThumbnailURL(selectNonNull(url, "img").attr("data-src"));
+        builder.setTitle(selectNonNull(e, ".h4").text());
+        builder.setAuthor(parseList(e, ".mg_author > .summary-content").collect(Collectors.joining(", ")));
+        builder.setArtist(parseList(e, ".mg_artists > .summary-content").collect(Collectors.joining(", ")));
+        builder.setGenres(parseList(e, ".mg_genres > .summary-content").toList());
+        builder.setStatus(parseStatus(selectNonNull(e, ".mg_status > .summary-content").text()));
+
+        return builder.build();
     }
 }
