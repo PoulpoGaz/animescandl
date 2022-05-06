@@ -5,11 +5,14 @@ import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
+import fr.poulpogaz.animescandl.utils.HttpQueryParameterBuilder;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.website.DOMException;
 import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
+import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonObject;
@@ -33,12 +36,12 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
     @Override
     public String url() {
-        return "https://sushi-scan.su/";
+        return "https://sushi-scan.su";
     }
 
     @Override
     public String version() {
-        return "dev2";
+        return "06.05.2022";
     }
 
     @Override
@@ -140,16 +143,6 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         return new StringPageIterator(chapter);
     }
 
-    @Override
-    public FilterList getSearchFilter() {
-        return null;
-    }
-
-    @Override
-    public List<Manga> search(String search, FilterList filter) {
-        return null;
-    }
-
     private class StringPageIterator implements PageIterator<String> {
 
         private JsonArray images = null;
@@ -219,5 +212,129 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         public Optional<Integer> nPages() {
             return Optional.of(images.size());
         }
+    }
+
+    @Override
+    public FilterList getSearchFilter() {
+        return new UrlFilterList.Builder()
+                .group("Genres", "genre[]")
+                    .checkBox("Action", "3")
+                    .checkBox("Aventure", "12")
+                    .checkBox("Biographique", "165")
+                    .checkBox("Comédie", "13")
+                    .checkBox("Crossover", "267")
+                    .checkBox("Drame", "4")
+                    .checkBox("Ecchi", "43")
+                    .checkBox("Erotique", "96")
+                    .checkBox("Fantastique", "5")
+                    .checkBox("Fantasy", "32")
+                    .checkBox("Histoires courtes", "93")
+                    .checkBox("Historique", "24")
+                    .checkBox("Horreur", "6")
+                    .checkBox("Isekai", "639")
+                    .checkBox("Mature", "7")
+                    .checkBox("Mystère", "8")
+                    .checkBox("Psychologique", "20")
+                    .checkBox("Romance", "26")
+                    .checkBox("School-Life", "16")
+                    .checkBox("Science-Fiction", "37")
+                    .checkBox("Shôjo-aï", "173")
+                    .checkBox("Shônen-aï", "599")
+                    .checkBox("Slice of Life", "28")
+                    .checkBox("Sport", "18")
+                    .checkBox("Surnaturel", "9")
+                    .checkBox("Thriller", "79")
+                    .checkBox("Tournois", "305")
+                    .checkBox("Tragique", "10")
+                    .build()
+
+                .select("Statut", "status")
+                    .addVal("Tout")
+                    .add("En Cours", "ongoing")
+                    .add("Terminé", "completed")
+                    .add("Abandonné", "hiatus")
+                    .add("En Pause", "en pause")
+                    .build()
+
+                .select("Type", "type")
+                    .addVal("Tout")
+                    .add("Manga", "manga")
+                    .add("Manhwa", "manhwa")
+                    .add("Manhua", "manhua")
+                    .add("Comics", "comics")
+                    .add("Novel", "novel")
+                    .add("Manfra", "manfra")
+                    .add("Fanfiction", "fanfiction")
+                    .add("Global-manga", "global-manga")
+                    .build()
+
+                .select("Trier par", "order")
+                    .addVal("Défaut")
+                    .add("A-Z", "name_a-z")
+                    .add("Z-A", "name_z-a")
+                    .add("Mise à jour", "update")
+                    .add("Date d'ajout", "added")
+                    .add("Popularité", "popular")
+                    .build()
+                .build();
+    }
+
+    /**
+     * Using text and filter at the same time doesn't work
+     */
+    @Override
+    public List<Manga> search(String search, FilterList filter)
+            throws IOException, WebsiteException, InterruptedException {
+        if (filter instanceof UrlFilterList urlFilterList) {
+            List<Manga> mangas = new ArrayList<>();
+
+            int page = 1;
+            while (mangas.size() < filter.getLimit()
+                    && search(page, search, urlFilterList, mangas)) {
+                page++;
+            }
+
+            return mangas;
+        }
+
+        return List.of();
+    }
+
+    private boolean search(int page, String search, UrlFilterList urlFilterList, List<Manga> out)
+            throws IOException, InterruptedException, WebsiteException {
+        String url;
+        HttpQueryParameterBuilder b = new HttpQueryParameterBuilder();
+        if (search != null && !search.isEmpty()) {
+            b.add("s", Objects.requireNonNullElse(search, ""));
+            url = urlFilterList.createRequest(url() + "/page/" + page + "/", b);
+        } else {
+            b.add("page", String.valueOf(page));
+            url = urlFilterList.createRequest(url() + "/manga/", b);
+        }
+
+        Document document = getDocument(url);
+        Elements mangas = document.select(".listupd > div > div > a");
+
+        int max = Math.min(mangas.size(), urlFilterList.getLimit() - out.size());
+        for (int i = 0; i < max; i++) {
+            out.add(getMangaFromSearch(mangas.get(i)));
+        }
+
+        return document.select(".next.page-numbers").size() > 0 ||
+                document.select(".hpage > .r").size() > 0;
+    }
+
+    private Manga getMangaFromSearch(Element e) throws DOMException {
+        Manga.Builder builder = new Manga.Builder();
+        builder.setUrl(e.attr("href"));
+        builder.setThumbnailURL(selectNonNull(e, "img").attr("src"));
+        builder.setTitle(selectNonNull(e, ".tt").text());
+
+        Element score = e.selectFirst(".numscore");
+        if (score != null) {
+            builder.setScore(Float.parseFloat(score.text()));
+        }
+
+        return builder.build();
     }
 }

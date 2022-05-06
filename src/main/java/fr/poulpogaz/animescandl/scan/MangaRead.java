@@ -35,7 +35,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
     @Override
     public String version() {
-        return "dev2";
+        return "05.05.2022";
     }
 
     @Override
@@ -330,7 +330,6 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
     }
 
     private Manga getMangaFromSearch(Element e) throws DOMException {
-        // .col-4.col-12.col-md-2 > .tab-thumb.c-image-hover > a
         Manga.Builder builder = new Manga.Builder();
         Element url = selectNonNull(e, ".c-image-hover > a");
         builder.setUrl(url.attr("href"));
@@ -340,6 +339,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         builder.setArtist(parseList(e, ".mg_artists > .summary-content").collect(Collectors.joining(", ")));
         builder.setGenres(parseList(e, ".mg_genres > .summary-content").toList());
         builder.setStatus(parseStatus(selectNonNull(e, ".mg_status > .summary-content").text()));
+        builder.setScore(Float.parseFloat(selectNonNull(e, ".score.font-meta.total_votes").text()));
 
         return builder.build();
     }
