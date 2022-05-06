@@ -45,6 +45,6 @@ public class MangareadTest extends ScanWebsiteBaseTest<Manga, Chapter> {
         List<Manga> mangas = mr.search("a", fl);
 
         System.out.println(mangas.size());
-        mangas.forEach((m) -> System.out.println(m.getTitle()));
+        mangas.forEach(System.out::println);
     }
 }

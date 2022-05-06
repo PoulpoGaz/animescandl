@@ -1,17 +1,19 @@
 package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
+import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.MangaWithChapter;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
-import fr.poulpogaz.animescandl.utils.CEFHelper;
-import fr.poulpogaz.animescandl.utils.CompletionWaiter;
-import fr.poulpogaz.animescandl.utils.HttpHeaders;
-import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.*;
+import fr.poulpogaz.animescandl.website.DOMException;
 import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
+import fr.poulpogaz.animescandl.website.filter.TriStateCheckBox;
+import fr.poulpogaz.animescandl.website.filter.url.UrlFilter;
+import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
@@ -39,8 +41,11 @@ import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapter> implements SearchWebsite<MangaWithChapter> {
+public class Japanread
+        extends AbstractSimpleScanWebsite<Manga, Chapter>
+        implements SearchWebsite<Manga> {
 
     private static final String MANGA_INDICATOR = "[MANGA]";
     private static final String CHAP_INDICATOR = "[CHAPTER]";
@@ -100,12 +105,12 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
     }
 
     @Override
-    public MangaWithChapter getManga(String url)
+    public Manga getManga(String url)
             throws IOException, InterruptedException, WebsiteException, JsonException {
         String mangaURL = getMangaURL(url);
         Document document = getDocument(mangaURL);
 
-        MangaWithChapter.Builder builder = new MangaWithChapter.Builder();
+        Manga.Builder builder = new Manga.Builder();
         builder.setUrl(mangaURL);
 
         Element title = selectNonNull(document, ".text-white");
@@ -130,7 +135,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
                     builder.setArtist(artist);
                 }
-                case "Type - Catégories :" -> {
+                case "Type - Catégories :", "Catégories :" -> {
                     parseCategories(element, builder);
                 }
                 case "Statut :" -> {
@@ -146,12 +151,6 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
             }
         }
 
-        Elements chapters = document.select("a[data-type=chapter]");
-
-        if (chapters.size() > 0) {
-            loadChapters(builder, url() + chapters.get(0).attr("href"));
-        }
-
         return builder.build();
     }
 
@@ -165,7 +164,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         }
     }
 
-    private void parseCategories(Element element, MangaWithChapter.Builder builder) {
+    private void parseCategories(Element element, Manga.Builder builder) {
         Elements elements = element.select("a");
 
         for (Element a : elements) {
@@ -180,7 +179,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         }
     }
 
-    private void parseStatus(Element element, MangaWithChapter.Builder builder) throws WebsiteException {
+    private void parseStatus(Element element, Manga.Builder builder) throws WebsiteException {
         Element e = selectNonNull(element, ".col-xl-10");
         String text = e.html();
 
@@ -193,7 +192,7 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         builder.setStatus(s);
     }
 
-    private void parseDescription(Element element, MangaWithChapter.Builder builder) throws WebsiteException {
+    private void parseDescription(Element element, Manga.Builder builder) throws WebsiteException {
         Element description = selectNonNull(element, ".col-lg-9");
 
         StringBuilder b = new StringBuilder();
@@ -208,10 +207,24 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         builder.setDescription(b.toString());
     }
 
-    private void loadChapters(MangaWithChapter.Builder builder, String chapterURL)
+    @Override
+    public List<Chapter> getChapters(Manga manga)
+            throws IOException, InterruptedException, WebsiteException, JsonException {
+        Document document = getDocument(manga.getUrl());
+        Elements chapterElements = document.select("a[data-type=chapter]");
+
+        List<Chapter> chapters = new ArrayList<>();
+        if (chapterElements.size() > 0) {
+            loadChapters(chapters, manga, url() + chapterElements.get(0).attr("href"));
+        }
+
+        return chapters;
+    }
+
+    private void loadChapters(List<Chapter> chapters, Manga manga, String chapterURL)
             throws JsonException, WebsiteException, IOException, InterruptedException {
-        JsonObject manga = getMangaJson(chapterURL);
-        JsonObject chaptersObj = manga.getAsObject("chapter");
+        JsonObject json = getMangaJson(chapterURL);
+        JsonObject chaptersObj = json.getAsObject("chapter");
 
         for (Map.Entry<String, JsonElement> e : chaptersObj.entrySet()) {
             Chapter.Builder chapBuilder = new Chapter.Builder();
@@ -224,8 +237,9 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
 
             chapBuilder.setChapterNumber(Utils.getFirstInt(chapter));
             chapBuilder.setName(chapter);
+            chapBuilder.setManga(manga);
 
-            builder.addChapter(chapBuilder);
+            chapters.add(chapBuilder.build());
         }
     }
 
@@ -289,12 +303,6 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         }
 
         return builder.toString();
-    }
-
-    @Override
-    public List<Chapter> getChapters(MangaWithChapter manga)
-            throws IOException, InterruptedException, WebsiteException, JsonException {
-        return manga.getChapters();
     }
 
     @Override
@@ -372,16 +380,173 @@ public class Japanread extends AbstractSimpleScanWebsite<MangaWithChapter, Chapt
         }
     }
 
-
-
-
+    // withCategories=1;27&withoutCategories=21;7&withTypes=5&withoutTypes=6&q=c&author_name=a&released_year=b&status=1
     @Override
     public FilterList getSearchFilter() {
-        return null;
+        return new UrlFilterList.Builder()
+                .text("Auteur / Artiste", "author_name")
+                .text("Année de sortie", "released_year")
+                .select("Status", "status")
+                    .addVal("Sélectionner un statut")
+                    .add("En cours", "1")
+                    .add("Terminé", "2")
+                    .build()
+                .group("Type")
+                    .triStateCheckBox("Novel", "withTypes", "5", "withoutTypes", "5")
+                    .triStateCheckBox("Doujinshi", "withTypes", "6", "withoutTypes", "6")
+                    .build()
+                .group("Catégories")
+                .addFilter(new JapanreadTriStateCheckBox("4-koma", "43"))
+                .addFilter(new JapanreadTriStateCheckBox("Action", "1"))
+                .addFilter(new JapanreadTriStateCheckBox("Adulte", "27"))
+                .addFilter(new JapanreadTriStateCheckBox("Amitié", "20"))
+                .addFilter(new JapanreadTriStateCheckBox("Amour", "21"))
+                .addFilter(new JapanreadTriStateCheckBox("Arts martiaux", "7"))
+                .addFilter(new JapanreadTriStateCheckBox("Aventure", "3"))
+                .addFilter(new JapanreadTriStateCheckBox("Boys Love", "44"))
+                .addFilter(new JapanreadTriStateCheckBox("Combat", "6"))
+                .addFilter(new JapanreadTriStateCheckBox("Comédie", "5"))
+                .addFilter(new JapanreadTriStateCheckBox("Drame", "4"))
+                .addFilter(new JapanreadTriStateCheckBox("Ecchi", "12"))
+                .addFilter(new JapanreadTriStateCheckBox("Fantastique", "16"))
+                .addFilter(new JapanreadTriStateCheckBox("Gender Bender", "29"))
+                .addFilter(new JapanreadTriStateCheckBox("Guerre", "8"))
+                .addFilter(new JapanreadTriStateCheckBox("Harem", "22"))
+                .addFilter(new JapanreadTriStateCheckBox("Hentai", "23"))
+                .addFilter(new JapanreadTriStateCheckBox("Historique", "15"))
+                .addFilter(new JapanreadTriStateCheckBox("Horreur", "19"))
+                .addFilter(new JapanreadTriStateCheckBox("Josei", "13"))
+                .addFilter(new JapanreadTriStateCheckBox("Mature", "30"))
+                .addFilter(new JapanreadTriStateCheckBox("Mecha", "18"))
+                .addFilter(new JapanreadTriStateCheckBox("Mystère", "31"))
+                .addFilter(new JapanreadTriStateCheckBox("One Shot", "32"))
+                .addFilter(new JapanreadTriStateCheckBox("Parodie", "42"))
+                .addFilter(new JapanreadTriStateCheckBox("Policier", "17"))
+                .addFilter(new JapanreadTriStateCheckBox("Psychologique", "33"))
+                .addFilter(new JapanreadTriStateCheckBox("Romance", "9"))
+                .addFilter(new JapanreadTriStateCheckBox("Science-fiction", "25"))
+                .addFilter(new JapanreadTriStateCheckBox("Seinen", "11"))
+                .addFilter(new JapanreadTriStateCheckBox("Shojo", "10"))
+                .addFilter(new JapanreadTriStateCheckBox("Shôjo Ai", "26"))
+                .addFilter(new JapanreadTriStateCheckBox("Shônen", "2"))
+                .addFilter(new JapanreadTriStateCheckBox("Shônen Ai", "35"))
+                .addFilter(new JapanreadTriStateCheckBox("Smut", "37"))
+                .addFilter(new JapanreadTriStateCheckBox("Sports", "14"))
+                .addFilter(new JapanreadTriStateCheckBox("Surnaturel", "38"))
+                .addFilter(new JapanreadTriStateCheckBox("Tragédie", "39"))
+                .addFilter(new JapanreadTriStateCheckBox("Tranches de vie", "36"))
+                .addFilter(new JapanreadTriStateCheckBox("Vie scolaire", "34"))
+                .addFilter(new JapanreadTriStateCheckBox("Webtoons", "40"))
+                .addFilter(new JapanreadTriStateCheckBox("Yaoi", "24"))
+                .addFilter(new JapanreadTriStateCheckBox("Yuri", "41"))
+                .build()
+                .build();
     }
 
     @Override
-    public List<MangaWithChapter> search(String search, FilterList filter) {
-        return null;
+    public List<Manga> search(String search, FilterList filter) throws IOException, WebsiteException, InterruptedException {
+        if (filter instanceof UrlFilterList urlFilterList) {
+            List<Manga> mangas = new ArrayList<>();
+
+            int offset = filter.getOffset() % 16;
+            int page = 1 + filter.getOffset() / 16;
+            while (mangas.size() < filter.getLimit() &&
+                    search(page, offset, search, urlFilterList, mangas)) {
+                page++;
+                offset = 0;
+            }
+
+            return mangas;
+        }
+
+        return List.of();
     }
+
+    private boolean search(int page, int offset, String search, UrlFilterList urlFilterList, List<Manga> out)
+            throws IOException, InterruptedException, WebsiteException {
+        HttpQueryParameterBuilder b = new HttpQueryParameterBuilder();
+        b.setAppender(JAPSCAN_APPENDER);
+        b.add("q", Objects.requireNonNullElse(search, ""));
+        b.add("page", String.valueOf(page));
+
+        String url = urlFilterList.createRequest(url() + "/manga-list", b);
+
+        Document document = getDocument(url);
+        Elements mangas = document.select(".row > .col-12.col-lg-6.border-bottom.my-3");
+
+        int max = Math.min(mangas.size(), urlFilterList.getLimit() - out.size());
+        for (int i = offset; i < max; i++) {
+            out.add(getMangaFromSearch(mangas.get(i)));
+        }
+
+        return !document.select("[rel=next]").isEmpty();
+    }
+
+    private Manga getMangaFromSearch(Element e) throws DOMException {
+        Manga.Builder builder = new Manga.Builder();
+
+        Element url = selectNonNull(e, "a[title]");
+        builder.setUrl(url() + url.attr("href"));
+        builder.setTitle(url.text());
+        builder.setThumbnailURL(selectNonNull(e, "img").attr("src"));
+
+        Element scoreElement = selectNonNull(e, ".text-primary");
+        String score = Utils.getFirstNonEmptyText(scoreElement, true);
+        builder.setScore(Utils.getFirstFloat(score));
+
+        builder.setDescription(selectNonNull(e, ".text-muted").text());
+
+        return builder.build();
+    }
+
+
+    private static class JapanreadTriStateCheckBox extends TriStateCheckBox implements UrlFilter {
+
+        private final String id;
+
+        public JapanreadTriStateCheckBox(String name, String id) {
+            super(name);
+            this.id = id;
+        }
+
+        @Override
+        public String getQueryName() {
+            if (value == null) {
+                return null;
+            }
+
+            return switch (value) {
+                case SELECTED -> "withCategories";
+                case EXCLUDE -> "withoutCategories";
+                default -> null;
+            };
+        }
+
+        @Override
+        public String getQueryArgument() {
+            if (value != null && (value == SELECTED || value == EXCLUDE)) {
+                return id;
+            }
+
+            return null;
+        }
+    }
+
+    private static final HttpQueryParameterBuilder.Appender JAPSCAN_APPENDER = new HttpQueryParameterBuilder.Appender() {
+
+        @Override
+        public void before(StringBuilder out, String paramName) {
+            out.append(URLEncoder.encode(paramName, StandardCharsets.UTF_8))
+                    .append("=");
+        }
+
+        @Override
+        public void append(StringBuilder out, String paramName, String arg, int index, int size) {
+            out.append(URLEncoder.encode(arg, StandardCharsets.UTF_8));
+
+            if (index + 1 < size) {
+                out.append(";");
+            }
+        }
+    };
 }

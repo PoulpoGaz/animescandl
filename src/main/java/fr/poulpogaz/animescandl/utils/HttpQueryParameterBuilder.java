@@ -35,11 +35,13 @@ public class HttpQueryParameterBuilder {
             String name = param.getKey();
             List<String> values = param.getValue();
 
-            appender.before(sb, name);
-            for (int j = 0; j < values.size(); j++) {
-                appender.append(sb, name, values.get(j), j, values.size());
+            if (values.size() > 0) {
+                appender.before(sb, name);
+                for (int j = 0; j < values.size(); j++) {
+                    appender.append(sb, name, values.get(j), j, values.size());
+                }
+                appender.after(sb, name);
             }
-            appender.after(sb, name);
 
             if (i + 1 < parameters.size()) {
                 sb.append("&");

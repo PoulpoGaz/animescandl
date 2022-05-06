@@ -44,7 +44,7 @@ public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
         List<Manga> mangas = su.search(null, fl);
 
         System.out.println(mangas.size());
-        mangas.forEach((m) -> System.out.println(m.getTitle()));
+        mangas.forEach(System.out::println);
     }
 
     @Test
@@ -55,6 +55,6 @@ public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
         List<Manga> mangas = su.search("b", fl);
 
         System.out.println(mangas.size());
-        mangas.forEach((m) -> System.out.println(m.getTitle()));
+        mangas.forEach(System.out::println);
     }
 }

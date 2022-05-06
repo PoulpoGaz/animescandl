@@ -135,19 +135,29 @@ public class UrlFilterList extends FilterList {
         protected abstract THIS getTHIS();
 
         public THIS triStateCheckBox(String name) {
-            return triStateCheckBox(name, null, null, null, null);
+            return triStateCheckBox(name, null, null, null, null, null, null);
         }
 
         public THIS triStateCheckBox(String name, String selected, String excluded) {
-            return triStateCheckBox(name, null, null, selected, excluded);
+            return triStateCheckBox(name, null, null, null, selected, null, excluded);
         }
 
         public THIS triStateCheckBox(String name, String queryName, String selected, String excluded) {
-            return triStateCheckBox(name, queryName, null, selected, excluded);
+            return triStateCheckBox(name, queryName, null, queryName, selected, queryName, excluded);
         }
 
-        public THIS triStateCheckBox(String name, String queryName, String unselected, String selected, String excluded) {
-            filters.add(new UrlTriStateCheckBox(name, queryName, unselected, selected, excluded));
+        public THIS triStateCheckBox(String name, String querySelected, String selected, String queryExcluded, String excluded) {
+            return triStateCheckBox(name, null, null, querySelected, selected, queryExcluded, excluded);
+        }
+
+        public THIS triStateCheckBox(String name,
+                                     String queryUnselected, String unselected,
+                                     String querySelected, String selected,
+                                     String queryExcluded, String excluded) {
+            filters.add(new UrlTriStateCheckBox(name,
+                    queryUnselected, unselected,
+                    querySelected, selected,
+                    queryExcluded, excluded));
             return getTHIS();
         }
 
@@ -186,8 +196,12 @@ public class UrlFilterList extends FilterList {
         }
 
         public THIS addFilter(Filter<?> filter) {
-            filters.add(filter);
-            return getTHIS();
+            if (filter instanceof UrlFilter) {
+                filters.add(filter);
+                return getTHIS();
+            } else {
+                throw new IllegalArgumentException("Not an UrlFilter");
+            }
         }
     }
 

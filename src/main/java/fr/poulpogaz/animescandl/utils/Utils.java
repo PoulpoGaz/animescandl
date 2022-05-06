@@ -95,6 +95,10 @@ public class Utils {
         return Integer.parseInt(Utils.getRegexGroup(str, "(\\d+)"));
     }
 
+    public static float getFirstFloat(String str) {
+        return Float.parseFloat(Utils.getRegexGroup(str, "(\\d+\\.\\d+)"));
+    }
+
     public static <T> boolean contains(T[] array, T o) {
         if (o == null) {
             for (T t : array) {
@@ -157,57 +161,6 @@ public class Utils {
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
-    }
-
-    public static int[] parseRange(String range) {
-        if (range == null || range.isEmpty()) {
-            throw new IllegalStateException("Range is null");
-        }
-
-        String[] ranges = range.split(",");
-
-        int nColon = (int) range.chars().filter((c) -> c == ',').count();
-
-        if (nColon + 1 != ranges.length) { // the number of ranges is the number of colon plus one
-            throw new IllegalStateException("Colon problem");
-        }
-
-        Set<Integer> values = new LinkedHashSet<>();
-
-        for (String r : ranges) {
-            if (r.indexOf('-') != r.lastIndexOf('-')) { // multiple hyphen
-                throw new IllegalStateException("Duplicate hyphen");
-            }
-
-            String[] limits = r.split("-");
-
-            if (limits.length == 1) {
-                int val = Integer.parseInt(limits[0]);
-
-                values.add(val);
-            } else if (limits.length == 2) {
-                int min = Integer.parseInt(limits[0]);
-                int max = Integer.parseInt(limits[1]);
-
-                if (min > max) {
-                    throw new IllegalStateException("min can be greater than max");
-                }
-
-                for (; min <= max; min++) {
-                    values.add(min);
-                }
-            }
-        }
-
-        int[] array = new int[values.size()];
-
-        int i = 0;
-        for (Integer v : values) {
-            array[i] = v;
-            i++;
-        }
-
-        return array;
     }
 
     public static String jsonString(JsonElement element) {
