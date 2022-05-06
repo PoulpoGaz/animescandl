@@ -7,6 +7,7 @@ import java.util.List;
 public class FilterList {
 
     protected final List<Filter<?>> filters;
+    protected int offset = 0;
     protected int limit = 10;
 
     public FilterList() {
@@ -39,12 +40,25 @@ public class FilterList {
         return null;
     }
 
+    public int getOffset() {
+        return offset;
+    }
+
+    public FilterList setOffset(int offset) {
+        if (offset >= 0) {
+            this.offset = offset;
+        }
+        return this;
+    }
+
     public int getLimit() {
         return limit;
     }
 
     public FilterList setLimit(int limit) {
-        this.limit = limit;
+        if (limit > 0) {
+            this.limit = limit;
+        }
         return this;
     }
 

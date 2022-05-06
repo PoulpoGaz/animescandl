@@ -35,7 +35,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
     @Override
     public String version() {
-        return "05.05.2022";
+        return "06.05.2022";
     }
 
     @Override
@@ -294,11 +294,13 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         if (filter instanceof UrlFilterList urlFilterList) {
             List<Manga> mangas = new ArrayList<>();
 
-            int page = 1;
+            int offset = filter.getOffset() % 12;
+            int page = 1 + filter.getOffset() / 12;
             int nResult = Integer.MAX_VALUE;
             while (mangas.size() < Math.min(nResult, filter.getLimit())) {
-                nResult = search(page, search, urlFilterList, mangas);
+                nResult = search(page, offset, search, urlFilterList, mangas);
                 page++;
+                offset = 0;
             }
 
             return mangas;
@@ -307,7 +309,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         return List.of();
     }
 
-    private int search(int page, String search, UrlFilterList urlFilterList, List<Manga> out)
+    private int search(int page, int offset, String search, UrlFilterList urlFilterList, List<Manga> out)
             throws IOException, InterruptedException, WebsiteException {
         HttpQueryParameterBuilder b = new HttpQueryParameterBuilder();
         b.add("s", Objects.requireNonNullElse(search, ""));
@@ -319,7 +321,7 @@ public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         Elements mangas = document.select("[role=tabpanel] > .row.c-tabs-item__content");
 
         int max = Math.min(mangas.size(), urlFilterList.getLimit() - out.size());
-        for (int i = 0; i < max; i++) {
+        for (int i = offset; i < max; i++) {
             out.add(getMangaFromSearch(mangas.get(i)));
         }
 

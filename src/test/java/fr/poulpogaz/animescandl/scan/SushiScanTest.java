@@ -31,9 +31,10 @@ public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     }
 
     @Test
-    void search() throws IOException, WebsiteException, InterruptedException {
+    void searchWithFilters() throws IOException, WebsiteException, InterruptedException {
         FilterList fl = su.getSearchFilter();
         fl.setLimit(100);
+        fl.setOffset(22);
         ((CheckBox) fl.getFilter("Action")).select();
         ((CheckBox) fl.getFilter("Aventure")).select();
         ((Select<?>) fl.getFilter("Statut")).setValue(1);
@@ -41,6 +42,17 @@ public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
         ((Select<?>) fl.getFilter("Trier par")).setValue(5);
 
         List<Manga> mangas = su.search(null, fl);
+
+        System.out.println(mangas.size());
+        mangas.forEach((m) -> System.out.println(m.getTitle()));
+    }
+
+    @Test
+    void searchWithText() throws IOException, WebsiteException, InterruptedException {
+        FilterList fl = su.getSearchFilter();
+        fl.setLimit(100);
+        fl.setOffset(16);
+        List<Manga> mangas = su.search("b", fl);
 
         System.out.println(mangas.size());
         mangas.forEach((m) -> System.out.println(m.getTitle()));

@@ -288,10 +288,24 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         if (filter instanceof UrlFilterList urlFilterList) {
             List<Manga> mangas = new ArrayList<>();
 
-            int page = 1;
-            while (mangas.size() < filter.getLimit()
-                    && search(page, search, urlFilterList, mangas)) {
-                page++;
+            if (search == null || search.isBlank()) {
+                int page = 1 + filter.getOffset() / 20;
+                int offset = filter.getOffset() % 20;
+
+                while (mangas.size() < filter.getLimit()
+                        && searchWithFilters(page, offset, urlFilterList, mangas)) {
+                    page++;
+                    offset = 0;
+                }
+            } else {
+                int page = 1 + filter.getOffset() / 10;
+                int offset = filter.getOffset() % 10;
+
+                while (mangas.size() < filter.getLimit()
+                        && searchWithText(page, offset, urlFilterList.getLimit(), search, mangas)) {
+                    page++;
+                    offset = 0;
+                }
             }
 
             return mangas;
@@ -300,28 +314,40 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
         return List.of();
     }
 
-    private boolean search(int page, String search, UrlFilterList urlFilterList, List<Manga> out)
+    private boolean searchWithFilters(int page, int offset, UrlFilterList urlFilterList, List<Manga> out)
             throws IOException, InterruptedException, WebsiteException {
-        String url;
         HttpQueryParameterBuilder b = new HttpQueryParameterBuilder();
-        if (search != null && !search.isEmpty()) {
-            b.add("s", Objects.requireNonNullElse(search, ""));
-            url = urlFilterList.createRequest(url() + "/page/" + page + "/", b);
-        } else {
-            b.add("page", String.valueOf(page));
-            url = urlFilterList.createRequest(url() + "/manga/", b);
-        }
+        b.add("page", String.valueOf(page));
+
+        String url = urlFilterList.createRequest(url() + "/manga/", b);
 
         Document document = getDocument(url);
         Elements mangas = document.select(".listupd > div > div > a");
 
         int max = Math.min(mangas.size(), urlFilterList.getLimit() - out.size());
-        for (int i = 0; i < max; i++) {
+        for (int i = offset; i < max; i++) {
             out.add(getMangaFromSearch(mangas.get(i)));
         }
 
-        return document.select(".next.page-numbers").size() > 0 ||
-                document.select(".hpage > .r").size() > 0;
+        return document.select(".hpage > .r").size() > 0;
+    }
+
+    private boolean searchWithText(int page, int offset, int limit, String search, List<Manga> out)
+            throws IOException, InterruptedException, WebsiteException {
+        HttpQueryParameterBuilder b = new HttpQueryParameterBuilder();
+        b.add("s", Objects.requireNonNullElse(search, ""));
+
+        String url = url() + "/page/" + page + "/?" + b.build();
+
+        Document document = getDocument(url);
+        Elements mangas = document.select(".listupd > div > div > a");
+
+        int max = Math.min(mangas.size(), limit - out.size());
+        for (int i = offset; i < max; i++) {
+            out.add(getMangaFromSearch(mangas.get(i)));
+        }
+
+        return document.select(".next.page-numbers").size() > 0;
     }
 
     private Manga getMangaFromSearch(Element e) throws DOMException {

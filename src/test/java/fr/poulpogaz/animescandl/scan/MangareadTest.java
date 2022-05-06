@@ -35,7 +35,8 @@ public class MangareadTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     @Test
     void search() throws JsonException, IOException, WebsiteException, InterruptedException {
         FilterList fl = mr.getSearchFilter();
-        fl.setLimit(100);
+        fl.setLimit(20);
+        fl.setOffset(15);
 
         ((Select<?>) fl.getFilter("Order")).setValue(2);
         ((CheckBox) fl.getFilter("Action")).select();
