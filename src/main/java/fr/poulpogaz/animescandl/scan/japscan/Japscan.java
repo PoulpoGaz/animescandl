@@ -13,7 +13,11 @@ import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
+import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
 import fr.poulpogaz.json.JsonException;
+import fr.poulpogaz.json.tree.JsonArray;
+import fr.poulpogaz.json.tree.JsonElement;
+import fr.poulpogaz.json.tree.JsonObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -21,6 +25,7 @@ import org.jsoup.select.Elements;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -190,11 +195,35 @@ public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapt
 
     @Override
     public FilterList getSearchFilter() {
-        return null;
+        return new UrlFilterList();
     }
 
     @Override
-    public List<Manga> search(String search, FilterList filter) {
-        return null;
+    public List<Manga> search(String search, FilterList filter)
+            throws JsonException, IOException, InterruptedException {
+        HttpRequest r = standardRequest(url() + "/live-search/")
+                .header("x-requested-with", "XMLHttpRequest")
+                .header("content-type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString("search=" + search + "&limit=1"))
+                .build();
+
+        JsonArray array = (JsonArray) getJson(r);
+
+        Manga.Builder builder = new Manga.Builder();
+        List<Manga> titles = new ArrayList<>();
+        for (JsonElement e : array) {
+            JsonObject o = (JsonObject) e;
+
+            builder.setUrl(url() + o.getAsString("url"));
+            builder.setTitle(o.getAsString("name"));
+
+            String author = o.getOptionalString("mangakas").orElse(null);
+            builder.setAuthor(author);
+            builder.setArtist(author);
+
+            titles.add(builder.build());
+        }
+
+        return titles;
     }
 }
