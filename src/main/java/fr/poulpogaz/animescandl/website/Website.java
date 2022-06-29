@@ -14,6 +14,6 @@ public interface Website extends IRequestSender, IDocumentCache {
     boolean isSupported(String url);
 
     default boolean needCEF() {
-        return true;
+        return false;
     }
 }

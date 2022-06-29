@@ -49,7 +49,7 @@ public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapt
 
     @Override
     public boolean needCEF() {
-        return false;
+        return true;
     }
 
     // https://www.japscan.ws/manga/owari-no-seraph/
