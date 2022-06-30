@@ -33,7 +33,9 @@ public abstract class AbstractWebsite implements Website {
     }
 
     protected HttpClient createClient() {
-        return HttpClient.newHttpClient();
+        return HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build();
     }
 
     @Override

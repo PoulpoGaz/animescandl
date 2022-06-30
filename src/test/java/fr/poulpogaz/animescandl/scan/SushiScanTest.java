@@ -17,12 +17,12 @@ public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
 
     @Override
     protected String getManga() {
-        return "https://sushi-scan.su/manga/berserk/";
+        return "https://sushiscan.su/manga/berserk/";
     }
 
     @Override
     protected String getChapter() {
-        return "https://sushi-scan.su/berserk-volume-1/";
+        return "https://sushiscan.su/berserk-volume-1/";
     }
 
     @Override

@@ -36,12 +36,12 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
     @Override
     public String url() {
-        return "https://sushi-scan.su";
+        return "https://sushiscan.su";
     }
 
     @Override
     public String version() {
-        return "06.05.2022";
+        return "30.06.2022";
     }
 
     @Override
