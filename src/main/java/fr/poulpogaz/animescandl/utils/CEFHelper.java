@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.website.WebsiteException;
 import me.friwi.jcefmaven.CefAppBuilder;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
@@ -7,10 +8,16 @@ import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.CefSettings;
 import org.cef.browser.CefBrowser;
+import org.cef.network.CefCookie;
+import org.cef.network.CefCookieManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 public class CEFHelper extends JFrame {
 
@@ -64,6 +71,7 @@ public class CEFHelper extends JFrame {
     private final CefClient client;
     private CefBrowser browser;
     private Component browserUI;
+    private String userAgent;
 
     private CEFHelper() {
         if (!isInitialized) {
@@ -113,6 +121,72 @@ public class CEFHelper extends JFrame {
         }
         browser = null;
         browserUI = null;
+    }
+
+    public static CefCookie getCookie(String url, String name) throws WebsiteException, InterruptedException {
+        CefCookieManager manager = CefCookieManager.getGlobalManager();
+
+        if (manager == null) {
+            return null;
+        }
+
+        AtomicReference<CefCookie> c = new AtomicReference<>();
+        CompletionWaiter<Void> waiter = new CompletionWaiter<>();
+
+        manager.visitUrlCookies(url, true,
+                (cookie, count, total, delete) -> {
+            if (name.equals(cookie.name)) {
+                c.set(cookie);
+                waiter.complete();
+                return false;
+            }
+
+            if (count + 1 == total) {
+                waiter.complete();
+            }
+
+            return true;
+        });
+
+        waiter.waitUntilCompletion(-1);
+
+        return c.get();
+    }
+
+
+    public static Map<String, CefCookie> getCookies(String url) throws WebsiteException, InterruptedException {
+        return getCookies(url, null);
+    }
+
+    public static Map<String, CefCookie> getCookies(String url, String regex) throws WebsiteException, InterruptedException {
+        CefCookieManager manager = CefCookieManager.getGlobalManager();
+
+        if (manager == null) {
+            return Map.of();
+        }
+
+        Pattern pattern = regex != null ? Pattern.compile(regex) : null;
+
+        Map<String, CefCookie> cookies = new HashMap<>();
+        CompletionWaiter<Void> waiter = new CompletionWaiter<>();
+
+        manager.visitUrlCookies(url, true,
+                (cookie, count, total, delete) -> {
+
+            if (pattern == null || pattern.matcher(cookie.name).find()) {
+                cookies.put(cookie.name, cookie);
+            }
+
+            if (count + 1 == total) {
+                waiter.complete();
+            }
+
+            return true;
+        });
+
+        waiter.waitUntilCompletion(-1);
+
+        return cookies;
     }
 
     public static CefApp getCefApp() {

@@ -54,4 +54,12 @@ public class HttpHeaders {
 
         return builder;
     }
+
+    public boolean isEmpty() {
+        return headers.isEmpty();
+    }
+
+    public int size() {
+        return headers.size();
+    }
 }

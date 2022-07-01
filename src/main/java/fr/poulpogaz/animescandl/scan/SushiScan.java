@@ -46,14 +46,14 @@ public class SushiScan extends AbstractSimpleScanWebsite<Manga, Chapter> impleme
 
     @Override
     public boolean isChapterURL(String url) {
-        Pattern pattern = Pattern.compile("^https://sushi-scan\\.su/.+/$");
+        Pattern pattern = Pattern.compile("^https://sushiscan\\.su/.+/$");
 
         return pattern.matcher(url).find() && !isMangaURL(url);
     }
 
     @Override
     public boolean isMangaURL(String url) {
-        Pattern pattern = Pattern.compile("sushi-scan\\.su/manga/\\S*/");
+        Pattern pattern = Pattern.compile("sushiscan\\.su/manga/\\S*/");
 
         return pattern.matcher(url).find();
     }

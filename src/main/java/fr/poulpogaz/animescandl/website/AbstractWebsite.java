@@ -81,7 +81,7 @@ public abstract class AbstractWebsite implements Website {
     }
 
     protected Element child(Element element, int n) throws WebsiteException {
-        if (n < 0 ) {
+        if (n < 0) {
             throw new IndexOutOfBoundsException("Negative index");
         } else if (n >= element.childrenSize()) {
             throw new WebsiteException("Index out of bounds: " + n + " >= " + element.childrenSize());
@@ -107,6 +107,8 @@ public abstract class AbstractWebsite implements Website {
 
         Document doc = Website.super.getDocument(url);
         DOCUMENT_CACHE.put(url, doc);
+
+        LOGGER.debugln(doc.html());
 
         return doc;
     }

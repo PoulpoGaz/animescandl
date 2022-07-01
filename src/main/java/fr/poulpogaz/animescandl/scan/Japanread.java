@@ -2,10 +2,11 @@ package fr.poulpogaz.animescandl.scan;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.model.MangaWithChapter;
 import fr.poulpogaz.animescandl.model.Status;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.*;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.website.DOMException;
 import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
@@ -19,13 +20,17 @@ import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cef.CefClient;
 import org.cef.CefSettings;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
-import org.cef.handler.CefDisplayHandlerAdapter;
-import org.cef.handler.CefLoadHandlerAdapter;
-import org.cef.network.CefCookieManager;
+import org.cef.handler.*;
+import org.cef.misc.BoolRef;
+import org.cef.network.CefCookie;
+import org.cef.network.CefRequest;
+import org.cef.network.CefResponse;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -41,11 +46,12 @@ import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Japanread
         extends AbstractSimpleScanWebsite<Manga, Chapter>
         implements SearchWebsite<Manga> {
+
+    private static final ASDLLogger LOGGER = Loggers.getLogger(Japanread.class);
 
     private static final String MANGA_INDICATOR = "[MANGA]";
     private static final String CHAP_INDICATOR = "[CHAPTER]";
@@ -100,8 +106,8 @@ public class Japanread
     }
 
     @Override
-    public HttpRequest.Builder standardRequest(String uri) {
-        return super.standardRequest(uri).version(HttpClient.Version.HTTP_1_1);
+    public HttpHeaders standardHeaders() {
+        return super.standardHeaders();
     }
 
     @Override
@@ -313,8 +319,6 @@ public class Japanread
 
     private class StringPageIterator implements PageIterator<String> {
 
-        private static final CefCookieManager manager = CefCookieManager.getGlobalManager();
-
         private final String baseURL;
         private final JsonArray pages;
         private int index;
@@ -326,32 +330,14 @@ public class Japanread
                     .header("referer", chapter.getManga().getUrl())
                     .header("x-requested-with", "XMLHttpRequest");
 
-            setCookies(headers);
+            CefCookie cookie = CEFHelper.getCookie("https://www.japanread.cc/", "PHPSESSID");
+            if (cookie != null) {
+                headers.header("cookie", cookie.name + "=" + cookie.value);
+            }
 
             JsonObject object = (JsonObject) getJson(chapter.getUrl(), headers);
             baseURL = url() + object.getAsString("baseImagesUrl") + "/";
             pages = object.getAsArray("page_array");
-        }
-
-        private void setCookies(HttpHeaders headers) throws WebsiteException, InterruptedException {
-            CompletionWaiter<Void> waiter = new CompletionWaiter<>();
-
-            manager.visitUrlCookies("https://www.japanread.cc/", true,
-                (cookie, count, total, delete) -> {
-                    if ("PHPSESSID".equals(cookie.name)) {
-                        headers.header("cookie", cookie.name + "=" + cookie.value);
-                        waiter.complete();
-                        return false;
-                    }
-
-                    if (count + 1 == total) {
-                        waiter.complete();
-                    }
-
-                    return true;
-                });
-
-            waiter.waitUntilCompletion(-1);
         }
 
         @Override
@@ -378,6 +364,94 @@ public class Japanread
         public Optional<Integer> nPages() {
             return Optional.of(pages.size());
         }
+    }
+
+    @Override
+    public Document getDocument(String url) throws IOException, InterruptedException {
+        try {
+            return getDocument(url, standardHeaders(), true);
+        } catch (WebsiteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Document getDocument(String url, HttpHeaders headers) throws IOException, InterruptedException {
+        try {
+            return getDocument(url, headers, false);
+        } catch (WebsiteException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected Document getDocument(String url, HttpHeaders headers, boolean standardHeaders)
+            throws WebsiteException, IOException, InterruptedException {
+        if (standardHeaders) {
+            Document cached = getCachedDocument(url);
+
+            if (cached != null) {
+                return cached;
+            }
+        }
+
+        Map<String, CefCookie> cookies = CEFHelper.getCookies(url(), "cf_.*");
+
+        if (cookies.size() == 0) {
+            bypassCloudflare(url);
+            cookies = CEFHelper.getCookies(url(), "cf_.*");
+        }
+
+        for (CefCookie cookie : cookies.values()) {
+            headers.header("cookie", cookie.name + "=" + cookie.value);
+        }
+
+        Document document = super.getDocument(url, headers);
+
+        if (standardHeaders && document != null) {
+            DOCUMENT_CACHE.put(url, document);
+        }
+
+        return document;
+    }
+
+    protected void bypassCloudflare(String url) throws WebsiteException, InterruptedException {
+        CompletionWaiter<Void> waiter = new CompletionWaiter<>();
+
+        CEFHelper helper = CEFHelper.getInstance();
+        helper.loadURL(url);
+
+        CefCookieAccessFilter filter = new CefCookieAccessFilterAdapter() {
+            @Override
+            public boolean canSaveCookie(CefBrowser browser, CefFrame frame, CefRequest request, CefResponse response, CefCookie cookie) {
+                LOGGER.debugln("{} = {}", cookie.name, cookie.value);
+                if (cookie.name.equals("cf_clearance")) {
+                    waiter.complete();
+                }
+
+                return true;
+            }
+        };
+
+        helper.getClient().addRequestHandler(createRequestHandler(filter));
+        helper.setVisible(true);
+        waiter.waitUntilCompletion(60000);
+    }
+
+    protected CefRequestHandlerAdapter createRequestHandler(CefCookieAccessFilter cookieAccessFilter) {
+        CefResourceRequestHandler resourceHandler = new CefResourceRequestHandlerAdapter() {
+            @Override
+            public CefCookieAccessFilter getCookieAccessFilter(CefBrowser browser, CefFrame frame, CefRequest request) {
+                return cookieAccessFilter;
+            }
+        };
+
+        return new CefRequestHandlerAdapter() {
+            @Override
+            public CefResourceRequestHandler getResourceRequestHandler(CefBrowser browser, CefFrame frame, CefRequest request, boolean isNavigation, boolean isDownload, String requestInitiator, BoolRef disableDefaultHandling) {
+                CEFHelper.getInstance().setUserAgent(request.getHeaderByName("user-agent"));
+                return resourceHandler;
+            }
+        };
     }
 
     // withCategories=1;27&withoutCategories=21;7&withTypes=5&withoutTypes=6&q=c&author_name=a&released_year=b&status=1

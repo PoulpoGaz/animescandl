@@ -11,6 +11,7 @@ import fr.poulpogaz.animescandl.scan.mangadex.Mangadex;
 import fr.poulpogaz.animescandl.scan.MangaRead;
 import fr.poulpogaz.animescandl.scan.SushiScan;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
+import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
