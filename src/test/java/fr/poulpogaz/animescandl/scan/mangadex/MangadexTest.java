@@ -2,8 +2,16 @@ package fr.poulpogaz.animescandl.scan.mangadex;
 
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.scan.Japanread;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.scan.ScanWebsiteBaseTest;
+import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.*;
+import fr.poulpogaz.json.JsonException;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.List;
 
 public class MangadexTest extends ScanWebsiteBaseTest<Manga, Chapter> {
 
@@ -22,5 +30,26 @@ public class MangadexTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     @Override
     protected ScanWebsite<Manga, Chapter> getScanWebsite() {
         return md;
+    }
+
+    @Test
+    void search() throws JsonException, IOException, WebsiteException, InterruptedException {
+        FilterList fl = md.getSearchFilter();
+        fl.setLimit(10);
+        fl.setOffset(1);
+
+        ((CheckBox) fl.getFilter("Shounen")).select();
+        ((CheckBox) fl.getFilter("Ongoing")).select();
+        ((TriStateCheckBox) fl.getFilter("Sexual Violence")).exclude();
+        ((TriStateCheckBox) fl.getFilter("Slice of Life")).select();
+        ((TriStateCheckBox) fl.getFilter("Harem")).select();
+        ((TriStateCheckBox) fl.getFilter("Incest")).exclude();
+        ((CheckBox) fl.getFilter("Japanese")).select();
+        ((Select<?>) fl.getFilter("Sort By")).setValue(1);
+
+        List<Manga> mangas = md.search("a", fl);
+
+        System.out.println(mangas.size());
+        mangas.forEach(System.out::println);
     }
 }

@@ -13,6 +13,7 @@ import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.animescandl.website.filter.TriStateCheckBox;
+import fr.poulpogaz.animescandl.website.filter.url.ListTriStateCheckBox;
 import fr.poulpogaz.animescandl.website.filter.url.UrlFilter;
 import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
 import fr.poulpogaz.json.JsonException;
@@ -448,7 +449,6 @@ public class Japanread
         return new CefRequestHandlerAdapter() {
             @Override
             public CefResourceRequestHandler getResourceRequestHandler(CefBrowser browser, CefFrame frame, CefRequest request, boolean isNavigation, boolean isDownload, String requestInitiator, BoolRef disableDefaultHandling) {
-                CEFHelper.getInstance().setUserAgent(request.getHeaderByName("user-agent"));
                 return resourceHandler;
             }
         };
@@ -470,51 +470,55 @@ public class Japanread
                     .triStateCheckBox("Doujinshi", "withTypes", "6", "withoutTypes", "6")
                     .build()
                 .group("Catégories")
-                .addFilter(new JapanreadTriStateCheckBox("4-koma", "43"))
-                .addFilter(new JapanreadTriStateCheckBox("Action", "1"))
-                .addFilter(new JapanreadTriStateCheckBox("Adulte", "27"))
-                .addFilter(new JapanreadTriStateCheckBox("Amitié", "20"))
-                .addFilter(new JapanreadTriStateCheckBox("Amour", "21"))
-                .addFilter(new JapanreadTriStateCheckBox("Arts martiaux", "7"))
-                .addFilter(new JapanreadTriStateCheckBox("Aventure", "3"))
-                .addFilter(new JapanreadTriStateCheckBox("Boys Love", "44"))
-                .addFilter(new JapanreadTriStateCheckBox("Combat", "6"))
-                .addFilter(new JapanreadTriStateCheckBox("Comédie", "5"))
-                .addFilter(new JapanreadTriStateCheckBox("Drame", "4"))
-                .addFilter(new JapanreadTriStateCheckBox("Ecchi", "12"))
-                .addFilter(new JapanreadTriStateCheckBox("Fantastique", "16"))
-                .addFilter(new JapanreadTriStateCheckBox("Gender Bender", "29"))
-                .addFilter(new JapanreadTriStateCheckBox("Guerre", "8"))
-                .addFilter(new JapanreadTriStateCheckBox("Harem", "22"))
-                .addFilter(new JapanreadTriStateCheckBox("Hentai", "23"))
-                .addFilter(new JapanreadTriStateCheckBox("Historique", "15"))
-                .addFilter(new JapanreadTriStateCheckBox("Horreur", "19"))
-                .addFilter(new JapanreadTriStateCheckBox("Josei", "13"))
-                .addFilter(new JapanreadTriStateCheckBox("Mature", "30"))
-                .addFilter(new JapanreadTriStateCheckBox("Mecha", "18"))
-                .addFilter(new JapanreadTriStateCheckBox("Mystère", "31"))
-                .addFilter(new JapanreadTriStateCheckBox("One Shot", "32"))
-                .addFilter(new JapanreadTriStateCheckBox("Parodie", "42"))
-                .addFilter(new JapanreadTriStateCheckBox("Policier", "17"))
-                .addFilter(new JapanreadTriStateCheckBox("Psychologique", "33"))
-                .addFilter(new JapanreadTriStateCheckBox("Romance", "9"))
-                .addFilter(new JapanreadTriStateCheckBox("Science-fiction", "25"))
-                .addFilter(new JapanreadTriStateCheckBox("Seinen", "11"))
-                .addFilter(new JapanreadTriStateCheckBox("Shojo", "10"))
-                .addFilter(new JapanreadTriStateCheckBox("Shôjo Ai", "26"))
-                .addFilter(new JapanreadTriStateCheckBox("Shônen", "2"))
-                .addFilter(new JapanreadTriStateCheckBox("Shônen Ai", "35"))
-                .addFilter(new JapanreadTriStateCheckBox("Smut", "37"))
-                .addFilter(new JapanreadTriStateCheckBox("Sports", "14"))
-                .addFilter(new JapanreadTriStateCheckBox("Surnaturel", "38"))
-                .addFilter(new JapanreadTriStateCheckBox("Tragédie", "39"))
-                .addFilter(new JapanreadTriStateCheckBox("Tranches de vie", "36"))
-                .addFilter(new JapanreadTriStateCheckBox("Vie scolaire", "34"))
-                .addFilter(new JapanreadTriStateCheckBox("Webtoons", "40"))
-                .addFilter(new JapanreadTriStateCheckBox("Yaoi", "24"))
-                .addFilter(new JapanreadTriStateCheckBox("Yuri", "41"))
+                .addFilter(newTriStateCheckBox("4-koma", "43"))
+                .addFilter(newTriStateCheckBox("Action", "1"))
+                .addFilter(newTriStateCheckBox("Adulte", "27"))
+                .addFilter(newTriStateCheckBox("Amitié", "20"))
+                .addFilter(newTriStateCheckBox("Amour", "21"))
+                .addFilter(newTriStateCheckBox("Arts martiaux", "7"))
+                .addFilter(newTriStateCheckBox("Aventure", "3"))
+                .addFilter(newTriStateCheckBox("Boys Love", "44"))
+                .addFilter(newTriStateCheckBox("Combat", "6"))
+                .addFilter(newTriStateCheckBox("Comédie", "5"))
+                .addFilter(newTriStateCheckBox("Drame", "4"))
+                .addFilter(newTriStateCheckBox("Ecchi", "12"))
+                .addFilter(newTriStateCheckBox("Fantastique", "16"))
+                .addFilter(newTriStateCheckBox("Gender Bender", "29"))
+                .addFilter(newTriStateCheckBox("Guerre", "8"))
+                .addFilter(newTriStateCheckBox("Harem", "22"))
+                .addFilter(newTriStateCheckBox("Hentai", "23"))
+                .addFilter(newTriStateCheckBox("Historique", "15"))
+                .addFilter(newTriStateCheckBox("Horreur", "19"))
+                .addFilter(newTriStateCheckBox("Josei", "13"))
+                .addFilter(newTriStateCheckBox("Mature", "30"))
+                .addFilter(newTriStateCheckBox("Mecha", "18"))
+                .addFilter(newTriStateCheckBox("Mystère", "31"))
+                .addFilter(newTriStateCheckBox("One Shot", "32"))
+                .addFilter(newTriStateCheckBox("Parodie", "42"))
+                .addFilter(newTriStateCheckBox("Policier", "17"))
+                .addFilter(newTriStateCheckBox("Psychologique", "33"))
+                .addFilter(newTriStateCheckBox("Romance", "9"))
+                .addFilter(newTriStateCheckBox("Science-fiction", "25"))
+                .addFilter(newTriStateCheckBox("Seinen", "11"))
+                .addFilter(newTriStateCheckBox("Shojo", "10"))
+                .addFilter(newTriStateCheckBox("Shôjo Ai", "26"))
+                .addFilter(newTriStateCheckBox("Shônen", "2"))
+                .addFilter(newTriStateCheckBox("Shônen Ai", "35"))
+                .addFilter(newTriStateCheckBox("Smut", "37"))
+                .addFilter(newTriStateCheckBox("Sports", "14"))
+                .addFilter(newTriStateCheckBox("Surnaturel", "38"))
+                .addFilter(newTriStateCheckBox("Tragédie", "39"))
+                .addFilter(newTriStateCheckBox("Tranches de vie", "36"))
+                .addFilter(newTriStateCheckBox("Vie scolaire", "34"))
+                .addFilter(newTriStateCheckBox("Webtoons", "40"))
+                .addFilter(newTriStateCheckBox("Yaoi", "24"))
+                .addFilter(newTriStateCheckBox("Yuri", "41"))
                 .build()
                 .build();
+    }
+
+    private ListTriStateCheckBox newTriStateCheckBox(String name, String id) {
+        return new ListTriStateCheckBox(name, "withCategories", "withoutCategories", id);
     }
 
     @Override
@@ -571,39 +575,6 @@ public class Japanread
         builder.setDescription(selectNonNull(e, ".text-muted").text());
 
         return builder.build();
-    }
-
-
-    private static class JapanreadTriStateCheckBox extends TriStateCheckBox implements UrlFilter {
-
-        private final String id;
-
-        public JapanreadTriStateCheckBox(String name, String id) {
-            super(name);
-            this.id = id;
-        }
-
-        @Override
-        public String getQueryName() {
-            if (value == null) {
-                return null;
-            }
-
-            return switch (value) {
-                case SELECTED -> "withCategories";
-                case EXCLUDE -> "withoutCategories";
-                default -> null;
-            };
-        }
-
-        @Override
-        public String getQueryArgument() {
-            if (value != null && (value == SELECTED || value == EXCLUDE)) {
-                return id;
-            }
-
-            return null;
-        }
     }
 
     private static final HttpQueryParameterBuilder.Appender JAPSCAN_APPENDER = new HttpQueryParameterBuilder.Appender() {
