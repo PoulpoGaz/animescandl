@@ -42,7 +42,7 @@ public abstract class AbstractScanWriter {
         this.out = out;
     }
 
-    public <C extends Chapter> void newScan(ScanWebsite<?, C> s, C chap) throws IOException, JsonException, WebsiteException, InterruptedException {
+    public void newScan(ScanWebsite s, Chapter chap) throws IOException, JsonException, WebsiteException, InterruptedException {
         Manga m = chap.getManga();
         String chapName = chap.getName().orElse(m.getTitle() + " - " + chap.getChapterNumber());
 

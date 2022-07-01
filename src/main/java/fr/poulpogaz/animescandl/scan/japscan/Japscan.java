@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Japscan extends AbstractWebsite implements ScanWebsite<Manga, Chapter>, SearchWebsite<Manga> {
+public class Japscan extends AbstractWebsite implements ScanWebsite, SearchWebsite<Manga> {
 
     @Override
     public String name() {

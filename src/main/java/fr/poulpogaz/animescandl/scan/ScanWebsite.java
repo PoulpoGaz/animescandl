@@ -10,7 +10,7 @@ import fr.poulpogaz.json.JsonException;
 import java.io.IOException;
 import java.util.List;
 
-public interface ScanWebsite<M extends Manga, C extends Chapter> extends Website {
+public interface ScanWebsite extends Website {
 
     boolean isChapterURL(String url);
 
@@ -20,15 +20,15 @@ public interface ScanWebsite<M extends Manga, C extends Chapter> extends Website
         return isChapterURL(url) || isMangaURL(url);
     }
 
-    M getManga(String url)
+    Manga getManga(String url)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
-    List<C> getChapters(M manga)
+    List<Chapter> getChapters(Manga manga)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
     Class<?>[] supportedIterators();
 
-    <P> PageIterator<P> getPageIterator(C chapter, Class<P> out)
+    <P> PageIterator<P> getPageIterator(Chapter chapter, Class<P> out)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
     default boolean supportLanguage() {

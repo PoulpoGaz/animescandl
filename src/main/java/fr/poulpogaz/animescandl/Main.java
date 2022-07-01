@@ -4,7 +4,6 @@ import fr.poulpogaz.animescandl.args.*;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.utils.Updater;
-import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Log4j2Setup;
 import fr.poulpogaz.animescandl.utils.log.Loggers;

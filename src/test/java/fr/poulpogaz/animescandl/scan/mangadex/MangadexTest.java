@@ -1,19 +1,20 @@
 package fr.poulpogaz.animescandl.scan.mangadex;
 
-import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.scan.Japanread;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.scan.ScanWebsiteBaseTest;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.filter.*;
+import fr.poulpogaz.animescandl.website.filter.CheckBox;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
+import fr.poulpogaz.animescandl.website.filter.Select;
+import fr.poulpogaz.animescandl.website.filter.TriStateCheckBox;
 import fr.poulpogaz.json.JsonException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MangadexTest extends ScanWebsiteBaseTest<Manga, Chapter> {
+public class MangadexTest extends ScanWebsiteBaseTest {
 
     private static final Mangadex md = new Mangadex();
 
@@ -28,7 +29,7 @@ public class MangadexTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     }
 
     @Override
-    protected ScanWebsite<Manga, Chapter> getScanWebsite() {
+    protected ScanWebsite getScanWebsite() {
         return md;
     }
 

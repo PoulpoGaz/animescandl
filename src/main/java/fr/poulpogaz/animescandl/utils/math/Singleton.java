@@ -1,7 +1,5 @@
 package fr.poulpogaz.animescandl.utils.math;
 
-import java.util.List;
-
 public record Singleton(float value) implements Set {
 
     public Singleton {

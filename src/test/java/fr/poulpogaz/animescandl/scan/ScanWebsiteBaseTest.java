@@ -24,12 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * or the iterator returns valid url.
  * It only aims at not throwing exceptions.
  */
-public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
+public abstract class ScanWebsiteBaseTest {
 
     protected void test(String baseURL)
             throws WebsiteException, IOException, InterruptedException,
             JsonException, UnsupportedPlatformException, CefInitializationException {
-        ScanWebsite<M, C> sw = getScanWebsite();
+        ScanWebsite sw = getScanWebsite();
 
         if (GraphicsEnvironment.isHeadless() && !sw.needCEF()) {
             throw new WebsiteException("Test can't be run because "
@@ -40,9 +40,9 @@ public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
             CEFHelper.initialize();
         }
 
-        M m = sw.getManga(baseURL);
+        Manga m = sw.getManga(baseURL);
 
-        List<C> chapters = sw.getChapters(m);
+        List<Chapter> chapters = sw.getChapters(m);
         assertFalse(chapters.isEmpty());
 
         PageIterator<String> iterator = sw.getPageIterator(chapters.get(0), String.class);
@@ -78,5 +78,5 @@ public abstract class ScanWebsiteBaseTest<M extends Manga, C extends Chapter> {
         CEFHelper.shutdown();
     }*/
 
-    protected abstract ScanWebsite<M, C> getScanWebsite();
+    protected abstract ScanWebsite getScanWebsite();
 }

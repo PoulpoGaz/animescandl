@@ -10,7 +10,7 @@ import fr.poulpogaz.json.JsonException;
 import java.io.IOException;
 import java.util.List;
 
-public interface AnimeWebsite<A extends Anime, E extends Episode> extends Website {
+public interface AnimeWebsite extends Website {
 
     boolean isEpisodeURL(String url);
 
@@ -20,11 +20,11 @@ public interface AnimeWebsite<A extends Anime, E extends Episode> extends Websit
         return isEpisodeURL(url) || isAnimeURL(url);
     }
 
-    A getAnime(String url)
+    Anime getAnime(String url)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
-    List<E> getEpisodes(A anime)
+    List<Episode> getEpisodes(Anime anime)
             throws IOException, InterruptedException, WebsiteException, JsonException;
 
-    List<Source> getSources(E episode) throws IOException, InterruptedException, JsonException, WebsiteException;
+    List<Source> getSources(Episode episode) throws IOException, InterruptedException, JsonException, WebsiteException;
 }

@@ -1,6 +1,5 @@
 package fr.poulpogaz.animescandl.scan.japscan;
 
-import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.scan.ScanWebsiteBaseTest;
@@ -10,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 
-public class JapscanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
+public class JapscanTest extends ScanWebsiteBaseTest {
 
     private static final Japscan js = new Japscan();
 
@@ -25,7 +24,7 @@ public class JapscanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     }
 
     @Override
-    protected ScanWebsite<Manga, Chapter> getScanWebsite() {
+    protected ScanWebsite getScanWebsite() {
         return js;
     }
 

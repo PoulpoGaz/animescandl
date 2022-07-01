@@ -3,7 +3,6 @@ package fr.poulpogaz.animescandl.scan;
 import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.model.Status;
-import fr.poulpogaz.animescandl.scan.AbstractSimpleScanWebsite;
 import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.HttpQueryParameterBuilder;
 import fr.poulpogaz.animescandl.utils.Utils;
@@ -26,7 +25,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MangaRead extends AbstractSimpleScanWebsite<Manga, Chapter> implements SearchWebsite<Manga> {
+public class MangaRead extends AbstractSimpleScanWebsite
+        implements SearchWebsite<Manga> {
 
     @Override
     public String name() {

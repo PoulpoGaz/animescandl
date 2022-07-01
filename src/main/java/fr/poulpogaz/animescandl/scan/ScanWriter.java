@@ -1,14 +1,8 @@
 package fr.poulpogaz.animescandl.scan;
 
-import fr.poulpogaz.animescandl.model.Chapter;
-import fr.poulpogaz.animescandl.model.Manga;
-import fr.poulpogaz.animescandl.scan.iterators.PageIterator;
 import fr.poulpogaz.animescandl.utils.IRequestSender;
-import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
-import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.json.JsonException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;

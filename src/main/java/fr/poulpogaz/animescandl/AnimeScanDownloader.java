@@ -5,13 +5,9 @@ import fr.poulpogaz.animescandl.anime.Nekosama;
 import fr.poulpogaz.animescandl.anime.VideoDownloader;
 import fr.poulpogaz.animescandl.model.*;
 import fr.poulpogaz.animescandl.scan.*;
-import fr.poulpogaz.animescandl.scan.Japanread;
 import fr.poulpogaz.animescandl.scan.japscan.Japscan;
 import fr.poulpogaz.animescandl.scan.mangadex.Mangadex;
-import fr.poulpogaz.animescandl.scan.MangaRead;
-import fr.poulpogaz.animescandl.scan.SushiScan;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
-import fr.poulpogaz.animescandl.utils.FakeUserAgent;
 import fr.poulpogaz.animescandl.utils.HttpUtils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
@@ -74,16 +70,16 @@ public class AnimeScanDownloader {
             CEFHelper.initialize();
         }
 
-        if (w instanceof ScanWebsite<?, ?> s) {
+        if (w instanceof ScanWebsite s) {
             downloadScan(s, url, settings, createChapterFilter(settings, url, s));
-        } else if (w instanceof AnimeWebsite<?, ?> a) {
+        } else if (w instanceof AnimeWebsite a) {
             downloadAnime(a, url, settings, createEpisodeFilter(settings, url, a));
         } else {
             throw new IllegalStateException("Unknown website type");
         }
     }
 
-    private Predicate<Chapter> createChapterFilter(Settings settings, String url, ScanWebsite<?, ?> w) {
+    private Predicate<Chapter> createChapterFilter(Settings settings, String url, ScanWebsite w) {
         if (w.isChapterURL(url) && settings.range() == null) {
             return (c) -> c.getUrl().equals(url); // may not work for all websites. eg: mangadex
         } else {
@@ -91,7 +87,7 @@ public class AnimeScanDownloader {
         }
     }
 
-    private Predicate<Episode> createEpisodeFilter(Settings settings, String url, AnimeWebsite<?, ?> w) {
+    private Predicate<Episode> createEpisodeFilter(Settings settings, String url, AnimeWebsite w) {
         if (w.isEpisodeURL(url) && settings.range() == null) {
             return (e) -> e.getUrl().equals(url);
         } else {
@@ -109,20 +105,19 @@ public class AnimeScanDownloader {
         throw new WebsiteException("No website found for " + url);
     }
 
-    protected <M extends Manga, C extends Chapter>
-    void downloadScan(ScanWebsite<M, C> s, String url, Settings settings, Predicate<Chapter> filter)
+    protected void downloadScan(ScanWebsite s, String url, Settings settings, Predicate<Chapter> filter)
             throws IOException, WebsiteException, InterruptedException, JsonException {
         if (s.supportLanguage()) {
             s.selectLanguage(settings.language());
         }
 
-        M manga = s.getManga(url);
-        List<C> chapters = new ArrayList<>(s.getChapters(manga));
+        Manga manga = s.getManga(url);
+        List<Chapter> chapters = new ArrayList<>(s.getChapters(manga));
         chapters.sort(Comparator.comparingDouble(Chapter::getChapterNumber));
 
         AbstractScanWriter sw = AbstractScanWriter.newWriter(manga.getTitle(), settings.concatenateAll(), settings.out());
 
-        for (C chap : chapters) {
+        for (Chapter chap : chapters) {
             if (!filter.test(chap)) {
                 continue;
             }
@@ -143,13 +138,12 @@ public class AnimeScanDownloader {
         sw.endAll();
     }
 
-    protected <A extends Anime, E extends Episode>
-    void downloadAnime(AnimeWebsite<A, E> a, String url, Settings settings, Predicate<Episode> filter)
+    protected void downloadAnime(AnimeWebsite a, String url, Settings settings, Predicate<Episode> filter)
             throws IOException, WebsiteException, InterruptedException, JsonException {
-        A anime = a.getAnime(url);
-        List<E> episodes = a.getEpisodes(anime);
+        Anime anime = a.getAnime(url);
+        List<Episode> episodes = a.getEpisodes(anime);
 
-        for (E episode : episodes) {
+        for (Episode episode : episodes) {
             if (!filter.test(episode)) {
                 continue;
             }

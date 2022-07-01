@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Nekosama extends AbstractWebsite implements AnimeWebsite<Anime, Episode>, SearchWebsite<Anime> {
+public class Nekosama extends AbstractWebsite implements AnimeWebsite, SearchWebsite<Anime> {
 
     private static final Pattern PSTREAM_REGEX = Pattern.compile("'(https://www\\.pstream\\.net.*?)'");
     private static final Pattern VIDEO_LINK_REGEX = Pattern.compile("e\\.parseJSON\\(atob\\(t\\)\\.slice\\(2\\)\\)}\\(\"(.*?)\"");

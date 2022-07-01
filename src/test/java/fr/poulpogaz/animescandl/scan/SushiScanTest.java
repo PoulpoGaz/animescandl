@@ -1,6 +1,5 @@
 package fr.poulpogaz.animescandl.scan;
 
-import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.CheckBox;
@@ -11,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 
-public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
+public class SushiScanTest extends ScanWebsiteBaseTest {
 
     private static final SushiScan su = new SushiScan();
 
@@ -26,7 +25,7 @@ public class SushiScanTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     }
 
     @Override
-    protected ScanWebsite<Manga, Chapter> getScanWebsite() {
+    protected ScanWebsite getScanWebsite() {
         return su;
     }
 

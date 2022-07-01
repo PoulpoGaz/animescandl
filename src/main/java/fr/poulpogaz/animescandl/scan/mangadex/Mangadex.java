@@ -14,13 +14,13 @@ import fr.poulpogaz.animescandl.website.filter.Select;
 import fr.poulpogaz.animescandl.website.filter.url.ListTriStateCheckBox;
 import fr.poulpogaz.animescandl.website.filter.url.UrlFilter;
 import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
-import fr.poulpogaz.animescandl.website.filter.url.UrlTriStateCheckBox;
 import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;
 import java.util.*;
 
-public class Mangadex extends AbstractSimpleScanWebsite<Manga, Chapter> implements SearchWebsite<Manga> {
+public class Mangadex extends AbstractSimpleScanWebsite
+        implements SearchWebsite<Manga> {
 
     private String language;
 

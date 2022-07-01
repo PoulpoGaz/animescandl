@@ -3,7 +3,6 @@ package fr.poulpogaz.animescandl.utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;

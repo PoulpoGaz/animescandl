@@ -1,19 +1,17 @@
 package fr.poulpogaz.animescandl.scan;
 
-import fr.poulpogaz.animescandl.model.Chapter;
 import fr.poulpogaz.animescandl.model.Manga;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.CheckBox;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.animescandl.website.filter.Select;
-import fr.poulpogaz.animescandl.website.filter.Text;
 import fr.poulpogaz.json.JsonException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MangareadTest extends ScanWebsiteBaseTest<Manga, Chapter> {
+public class MangareadTest extends ScanWebsiteBaseTest {
 
     private static final MangaRead mr = new MangaRead();
 
@@ -28,7 +26,7 @@ public class MangareadTest extends ScanWebsiteBaseTest<Manga, Chapter> {
     }
 
     @Override
-    protected ScanWebsite<Manga, Chapter> getScanWebsite() {
+    protected ScanWebsite getScanWebsite() {
         return mr;
     }
 

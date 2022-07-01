@@ -1,7 +1,8 @@
 package fr.poulpogaz.animescandl.website.filter.url;
 
 import fr.poulpogaz.animescandl.utils.HttpQueryParameterBuilder;
-import fr.poulpogaz.animescandl.website.filter.*;
+import fr.poulpogaz.animescandl.website.filter.Filter;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 
 import java.util.ArrayList;
 import java.util.List;

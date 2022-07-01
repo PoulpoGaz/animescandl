@@ -12,17 +12,13 @@ import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.UnsupportedURLException;
 import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
-import fr.poulpogaz.animescandl.website.filter.TriStateCheckBox;
 import fr.poulpogaz.animescandl.website.filter.url.ListTriStateCheckBox;
-import fr.poulpogaz.animescandl.website.filter.url.UrlFilter;
 import fr.poulpogaz.animescandl.website.filter.url.UrlFilterList;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeReader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.cef.CefClient;
 import org.cef.CefSettings;
 import org.cef.browser.CefBrowser;
@@ -42,14 +38,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class Japanread
-        extends AbstractSimpleScanWebsite<Manga, Chapter>
+public class Japanread extends AbstractSimpleScanWebsite
         implements SearchWebsite<Manga> {
 
     private static final ASDLLogger LOGGER = Loggers.getLogger(Japanread.class);

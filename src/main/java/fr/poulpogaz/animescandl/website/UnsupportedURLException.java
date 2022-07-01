@@ -1,14 +1,12 @@
 package fr.poulpogaz.animescandl.website;
 
-import fr.poulpogaz.animescandl.scan.ScanWebsite;
-
 public class UnsupportedURLException extends WebsiteException {
 
-    public UnsupportedURLException(ScanWebsite<?, ?> w, String url, String... validURL) {
+    public UnsupportedURLException(Website w, String url, String... validURL) {
         super(createErrorMessage(w, url, validURL));
     }
 
-    private static String createErrorMessage(ScanWebsite<?,?> w, String url, String[] supportedURLs) {
+    private static String createErrorMessage(Website w, String url, String[] supportedURLs) {
         StringBuilder b = new StringBuilder();
         b.append(w.name()).append(" doesn't support this url: ");
         b.append(url);
