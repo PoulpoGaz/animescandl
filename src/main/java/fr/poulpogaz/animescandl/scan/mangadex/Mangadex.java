@@ -77,6 +77,25 @@ public class Mangadex extends AbstractSimpleScanWebsite
     }
 
     @Override
+    public Chapter getChapter(List<Chapter> allChapters, String url)
+            throws IOException, InterruptedException, WebsiteException, JsonException {
+
+        Optional<String> idOpt = Utils.getRegexGroupOrNull(url, "https://mangadex\\.org/chapter/(\\S*)/");
+
+        if (idOpt.isPresent()) {
+            String id = idOpt.get();
+
+            for (Chapter c : allChapters) {
+                if (c.getUrl().equals(id)) {
+                    return c;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     protected PageIterator<String> createStringPageIterator(Chapter chapter)
             throws IOException, InterruptedException, WebsiteException, JsonException {
         return new StringPageIterator(chapter);

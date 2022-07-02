@@ -25,6 +25,8 @@ import org.jsoup.select.Elements;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Collections;

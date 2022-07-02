@@ -40,6 +40,7 @@ import java.io.StringReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Japanread extends AbstractSimpleScanWebsite
@@ -158,7 +159,7 @@ public class Japanread extends AbstractSimpleScanWebsite
         if (isMangaURL(url)) {
             return url;
         } else if (isChapterURL(url)) {
-            return Utils.getRegexGroup(url, "^(https://www\\.japanread\\.cc/manga/[^/]*)/\\d*$");
+            return Utils.getRegexGroup(url, "^(https://www\\.japanread\\.cc/manga/[^/]*/\\d*$");
         } else {
             throw new UnsupportedURLException(this, url);
         }
@@ -303,6 +304,24 @@ public class Japanread extends AbstractSimpleScanWebsite
         }
 
         return builder.toString();
+    }
+
+    @Override
+    public Chapter getChapter(List<Chapter> allChapters, String url) throws IOException, InterruptedException, WebsiteException, JsonException {
+        Pattern pattern = Pattern.compile("^https://www\\.japanread\\.cc/manga/[^/]*/(\\d*)$");
+        Matcher matcher = pattern.matcher(url);
+
+        if (matcher.matches()) {
+            int index = Utils.getFirstInt(matcher.group(1));
+
+            for (Chapter c : allChapters) {
+                if (c.getChapterNumber() == index) {
+                    return c;
+                }
+            }
+        }
+
+        return null;
     }
 
     @Override

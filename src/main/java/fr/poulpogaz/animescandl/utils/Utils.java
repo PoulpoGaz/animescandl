@@ -81,14 +81,18 @@ public class Utils {
     }
 
     public static String getRegexGroup(String text, String regex) {
+        return getRegexGroupOrNull(text, regex).orElseThrow();
+    }
+
+    public static Optional<String> getRegexGroupOrNull(String text, String regex) {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(text);
 
         if (matcher.find()) {
-            return matcher.group(1);
+            return Optional.of(matcher.group(1));
+        } else {
+            return Optional.empty();
         }
-
-        throw new IllegalStateException();
     }
 
     public static int getFirstInt(String str) {

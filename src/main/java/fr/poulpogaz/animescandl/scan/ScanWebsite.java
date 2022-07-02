@@ -8,6 +8,8 @@ import fr.poulpogaz.animescandl.website.WebsiteException;
 import fr.poulpogaz.json.JsonException;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public interface ScanWebsite extends Website {
@@ -25,6 +27,28 @@ public interface ScanWebsite extends Website {
 
     List<Chapter> getChapters(Manga manga)
             throws IOException, InterruptedException, WebsiteException, JsonException;
+
+    /**
+     * @return the chapter in the list that refer to the url
+     */
+    default Chapter getChapter(List<Chapter> allChapters, String url)
+            throws IOException, InterruptedException, WebsiteException, JsonException {
+        try {
+            URI uri = new URI(url);
+
+            for (Chapter chapter : allChapters) {
+                URI uri2 = new URI(chapter.getUrl());
+
+                if (uri.equals(uri2)) {
+                    return chapter;
+                }
+            }
+
+            return null;
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
 
     Class<?>[] supportedIterators();
 

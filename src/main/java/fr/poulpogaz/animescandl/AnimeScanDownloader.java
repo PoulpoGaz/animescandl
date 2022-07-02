@@ -71,27 +71,11 @@ public class AnimeScanDownloader {
         }
 
         if (w instanceof ScanWebsite s) {
-            downloadScan(s, url, settings, createChapterFilter(settings, url, s));
+            downloadScan(s, url, settings);
         } else if (w instanceof AnimeWebsite a) {
-            downloadAnime(a, url, settings, createEpisodeFilter(settings, url, a));
+            downloadAnime(a, url, settings);
         } else {
             throw new IllegalStateException("Unknown website type");
-        }
-    }
-
-    private Predicate<Chapter> createChapterFilter(Settings settings, String url, ScanWebsite w) {
-        if (w.isChapterURL(url) && settings.range() == null) {
-            return (c) -> c.getUrl().equals(url); // may not work for all websites. eg: mangadex
-        } else {
-            return (c) -> settings.rangeContains((int) c.getChapterNumber());
-        }
-    }
-
-    private Predicate<Episode> createEpisodeFilter(Settings settings, String url, AnimeWebsite w) {
-        if (w.isEpisodeURL(url) && settings.range() == null) {
-            return (e) -> e.getUrl().equals(url);
-        } else {
-            return (e) -> settings.rangeContains(e.getEpisode());
         }
     }
 
@@ -105,7 +89,7 @@ public class AnimeScanDownloader {
         throw new WebsiteException("No website found for " + url);
     }
 
-    protected void downloadScan(ScanWebsite s, String url, Settings settings, Predicate<Chapter> filter)
+    protected void downloadScan(ScanWebsite s, String url, Settings settings)
             throws IOException, WebsiteException, InterruptedException, JsonException {
         if (s.supportLanguage()) {
             s.selectLanguage(settings.language());
@@ -115,61 +99,92 @@ public class AnimeScanDownloader {
         List<Chapter> chapters = new ArrayList<>(s.getChapters(manga));
         chapters.sort(Comparator.comparingDouble(Chapter::getChapterNumber));
 
-        AbstractScanWriter sw = AbstractScanWriter.newWriter(manga.getTitle(), settings.concatenateAll(), settings.out());
+        AbstractScanWriter sw;
 
-        for (Chapter chap : chapters) {
-            if (!filter.test(chap)) {
-                continue;
+        if (s.isChapterURL(url) && settings.range() == null) {
+
+            Chapter chapter = s.getChapter(chapters, url);
+            sw = AbstractScanWriter.newWriter(getChapterName(chapter), settings.concatenateAll(), settings.out());
+
+            downloadChapter(sw, s, chapter, settings);
+        } else {
+            sw = AbstractScanWriter.newWriter(manga.getTitle(), settings.concatenateAll(), settings.out());
+
+            for (Chapter chap : chapters) {
+                if (!settings.rangeContains(chap.getChapterNumber())) {
+                    continue;
+                }
+
+                downloadChapter(sw, s, chap, settings);
             }
-
-            String chapName = chap.getName().orElse(manga.getTitle() + " - " + chap.getChapterNumber());
-            String filename = chapName + ".pdf";
-            Path out = settings.out().resolve(filename);
-
-            if (Main.noOverwrites.isPresent() && Files.exists(out)) {
-                LOGGER.infoln("{} already exists", filename);
-                continue;
-            }
-
-            LOGGER.infoln("Downloading {}", chapName);
-            sw.newScan(s, chap);
         }
 
         sw.endAll();
     }
 
-    protected void downloadAnime(AnimeWebsite a, String url, Settings settings, Predicate<Episode> filter)
+    protected void downloadChapter(AbstractScanWriter sw, ScanWebsite s, Chapter chapter, Settings settings)
+            throws JsonException, IOException, WebsiteException, InterruptedException {
+        String chapName = getChapterName(chapter);
+        String filename = chapName + ".pdf";
+        Path out = settings.out().resolve(filename);
+
+        if (Main.noOverwrites.isPresent() && Files.exists(out)) {
+            LOGGER.infoln("{} already exists", filename);
+            return;
+        }
+
+        LOGGER.infoln("Downloading {}", chapName);
+        sw.newScan(s, chapter);
+    }
+
+    protected String getChapterName(Chapter chapter) {
+        return chapter.getName().orElse(chapter.getManga().getTitle() + " - " + chapter.getChapterNumber());
+    }
+
+    protected void downloadAnime(AnimeWebsite a, String url, Settings settings)
             throws IOException, WebsiteException, InterruptedException, JsonException {
         Anime anime = a.getAnime(url);
         List<Episode> episodes = a.getEpisodes(anime);
 
-        for (Episode episode : episodes) {
-            if (!filter.test(episode)) {
-                continue;
+        if (a.isEpisodeURL(url) && settings.range() == null) {
+
+            Episode episode = a.getEpisode(episodes, url);
+            downloadEpisode(a, episode, settings);
+
+        } else {
+            for (Episode episode : episodes) {
+                if (!settings.rangeContains(episode.getEpisode())) {
+                    continue;
+                }
+
+                downloadEpisode(a, episode, settings);
             }
-
-            List<Source> sources = a.getSources(episode);
-            Source best = getBestSource(sources);
-
-            if (best == null) {
-                LOGGER.warnln("No anime found for {}", url);
-                return;
-            }
-
-            String epName = episode.getName()
-                    .orElseGet(() -> episode.getAnime().getTitle() + " - " + episode.getEpisode());
-
-            String filename = epName + ".mp4";
-            Path out = settings.out().resolve(filename);
-
-            if (Main.noOverwrites.isPresent() && Files.exists(out)) {
-                LOGGER.infoln("{} already exists", filename);
-                continue;
-            }
-
-            LOGGER.infoln("Downloading {}", epName);
-            VideoDownloader.download(episode, best, out);
         }
+    }
+
+    protected void downloadEpisode(AnimeWebsite a, Episode episode, Settings settings)
+            throws JsonException, IOException, WebsiteException, InterruptedException {
+        List<Source> sources = a.getSources(episode);
+        Source best = getBestSource(sources);
+
+        if (best == null) {
+            LOGGER.warnln("No anime found for {}", episode.getUrl());
+            return;
+        }
+
+        String epName = episode.getName()
+                .orElseGet(() -> episode.getAnime().getTitle() + " - " + episode.getEpisode());
+
+        String filename = epName + ".mp4";
+        Path out = settings.out().resolve(filename);
+
+        if (Main.noOverwrites.isPresent() && Files.exists(out)) {
+            LOGGER.infoln("{} already exists", filename);
+            return;
+        }
+
+        LOGGER.infoln("Downloading {}", epName);
+        VideoDownloader.download(episode, best, out);
     }
 
     protected Source getBestSource(List<Source> sources) {
@@ -181,11 +196,6 @@ public class AnimeScanDownloader {
         int quality = -2;
         for (Source curr : sources) {
             int currQuality = curr.getQuality().orElse(-1);
-
-            // for testing
-            if (currQuality == 480) {
-                return curr;
-            }
 
             if (currQuality > quality) {
                 best = curr;

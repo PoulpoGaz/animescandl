@@ -11,6 +11,9 @@ import fr.poulpogaz.json.JsonException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 public abstract class AbstractSimpleScanWebsite extends AbstractWebsite implements ScanWebsite {
 
