@@ -25,6 +25,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -452,7 +453,16 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite, SearchWeb
             animeStream = sortFilter.filter(animeStream);
         }
 
-        return animeStream.toList();
+        animeStream = animeStream.dropWhile(new Predicate<>() {
+            private int index = 0;
+
+            @Override
+            public boolean test(Anime anime) {
+                return index++ < filterList.getOffset();
+            }
+        });
+
+        return animeStream.limit(filterList.getLimit()).toList();
     }
 
     private void loadAnimeSearchJson() throws JsonException, IOException, InterruptedException {

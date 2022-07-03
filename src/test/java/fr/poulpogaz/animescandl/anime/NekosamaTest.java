@@ -17,6 +17,7 @@ public class NekosamaTest {
         Nekosama ns = new Nekosama();
 
         FilterList filterList = ns.getSearchFilter();
+        filterList.setOffset(5);
         ((Select<?>) filterList.getFilter("Ordre")).setValue(4);
         ((CheckBox) filterList.getFilter("Action")).select();
         ((CheckBox) filterList.getFilter("Ecchi")).select();
