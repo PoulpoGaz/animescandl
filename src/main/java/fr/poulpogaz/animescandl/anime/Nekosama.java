@@ -1,39 +1,66 @@
 package fr.poulpogaz.animescandl.anime;
 
-import fr.poulpogaz.animescandl.model.Anime;
-import fr.poulpogaz.animescandl.model.Episode;
-import fr.poulpogaz.animescandl.model.Source;
-import fr.poulpogaz.animescandl.model.Status;
+import fr.poulpogaz.animescandl.model.*;
 import fr.poulpogaz.animescandl.utils.HttpHeaders;
 import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.website.AbstractWebsite;
 import fr.poulpogaz.animescandl.website.DOMException;
 import fr.poulpogaz.animescandl.website.SearchWebsite;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.animescandl.website.filter.FilterList;
+import fr.poulpogaz.animescandl.website.filter.*;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeReader;
+import org.apache.logging.log4j.core.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class Nekosama extends AbstractWebsite implements AnimeWebsite, SearchWebsite<Anime> {
+
+    private static final ASDLLogger LOGGER = Loggers.getLogger(Nekosama.class);
 
     private static final Pattern PSTREAM_REGEX = Pattern.compile("'(https://www\\.pstream\\.net.*?)'");
     private static final Pattern VIDEO_LINK_REGEX = Pattern.compile("e\\.parseJSON\\(atob\\(t\\)\\.slice\\(2\\)\\)}\\(\"(.*?)\"");
     // 27.12.2021 old version= "e\.parseJSON\(atob\(t\)\)}\("(.*?)""
     // e\.parseJSON\(atob\(t\)\.slice\(1\)\)}\("(.*?)
+
+
+    private static final String SEARCH_URL = "/animes-search-vostfr.json?203457a80220e5bc1408b774c035099d";
+    private static List<Anime> ANIME_SEARCH;
+
+    private static final String ACTION        = "Action";
+    private static final String ADVENTURE     = "Aventure";
+    private static final String COMEDY        = "Comédie";
+    private static final String DRAMA         = "Drama";
+    private static final String ECCHI         = "Ecchi";
+    private static final String FANTASY       = "Fantastique";
+    private static final String HENTAI        = "Hentai";
+    private static final String HORROR        = "Horreur";
+    private static final String MAGICAL_GIRL  = "Magical Girl";
+    private static final String MECHA         = "Mecha";
+    private static final String MUSIC         = "Music";
+    private static final String MYSTERY       = "Mystery";
+    private static final String PSYCHOLOGICAL = "Psychologique";
+    private static final String ROMANCE       = "Romance";
+    private static final String SCI_FI        = "Sci-Fi";
+    private static final String SLICE_OF_LIFE = "Tranche de vie";
+    private static final String SPORTS        = "Sports";
+    private static final String SUPERNATURAL  = "Surnaturel";
+    private static final String THRILLER      = "Suspense";
 
     @Override
     public String name() {
@@ -103,6 +130,11 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite, SearchWeb
 
                     builder.setNEpisode(Integer.parseInt(s));
                 }
+                case "Format" -> {
+                    String s = Utils.getFirstNonEmptyText(child, true);
+
+                    builder.setType(parseType(s));
+                }
             }
         }
 
@@ -153,8 +185,18 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite, SearchWeb
 
     protected Status parseStatus(String s) {
         return switch (s) {
-            case "Terminé" -> Status.COMPLETED;
-            case "En cours", "Pas encore commencé" -> Status.ONGOING;
+            case "Terminé", "2" -> Status.COMPLETED;
+            case "En cours", "Pas encore commencé", "1" -> Status.ONGOING;
+            default -> null;
+        };
+    }
+
+    protected Type parseType(String s) {
+        return switch (s) {
+            case "movie", "m0v1e" -> Type.MOVIE;
+            case "tv" -> Type.TV;
+            case "ova" -> Type.OVA;
+            case "special" -> Type.SPECIAL;
             default -> null;
         };
     }
@@ -275,11 +317,252 @@ public class Nekosama extends AbstractWebsite implements AnimeWebsite, SearchWeb
 
     @Override
     public FilterList getSearchFilter() {
-        return null;
+        return new FilterList.Builder()
+                .addFilter(createSortFilter())
+                .addFilter(createStatusFilter())
+                .addFilter(createTypeFilter())
+                .addFilter(createGenreFilter())
+                .build();
+    }
+
+    private Filter<?> createTypeFilter() {
+        return new NekosamaSelect("Format",
+                List.of("Tous", "Film", "OAV", "Special", "TV")) {
+
+            private static final Type[] TYPES = new Type[] {Type.MOVIE, Type.OVA, Type.SPECIAL, Type.TV};
+
+            @Override
+            public Stream<Anime> filter(Stream<Anime> stream) {
+                if (value == null || value == 0) {
+                    return stream;
+                }
+
+                Type expected = TYPES[value - 1];
+
+                return stream.filter((a) -> {
+                    Type current = a.getType().orElse(null);
+
+                    return current != null && current == expected;
+                });
+            }
+        };
+    }
+
+    private Filter<?> createStatusFilter() {
+        return new NekosamaSelect("Status",
+                List.of("Tous", "Terminé", "En cours")) {
+
+            @Override
+            public Stream<Anime> filter(Stream<Anime> stream) {
+                if (value == null || value == 0) {
+                    return stream;
+                }
+
+                Status expected = value == 1 ? Status.COMPLETED : Status.ONGOING;
+
+                return stream.filter((a) -> {
+                    Status current = a.getStatus().orElse(null);
+
+                    return current != null && current == expected;
+                });
+            }
+        };
+    }
+
+    private Filter<?> createSortFilter() {
+        return new NekosamaSelect("Ordre",
+                List.of("Aucun", "Score (+ AU -)", "Score (- AU +)", "Titre (A-Z)", "Titre (Z-A)")) {
+
+            @Override
+            public Stream<Anime> filter(Stream<Anime> stream) {
+                if (value == null || value == 0) {
+                    return stream;
+                }
+
+                return switch (value) {
+                    case 1 -> stream.sorted((a, b) -> compareScore(a, b));
+                    case 2 -> stream.sorted((a, b) -> compareScore(b, a));
+                    case 3 -> stream.sorted(Comparator.comparing(Anime::getTitle));
+                    case 4 -> stream.sorted(Comparator.comparing(Anime::getTitle).reversed());
+                    default -> stream;
+                };
+            }
+        };
+    }
+
+    private int compareScore(Anime a, Anime b) {
+        Optional<Float> scoreA = a.getScore();
+        Optional<Float> scoreB = b.getScore();
+
+        if (scoreA.isPresent() && scoreB.isPresent()) {
+            return Float.compare(scoreA.get(), scoreB.get());
+        } else if (scoreA.isPresent()) {
+            return 1;
+        } else if (scoreB.isPresent()) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    private Filter<?> createGenreFilter() {
+        List<Filter<?>> filters = new ArrayList<>();
+        filters.add(new GenreCheckBox(ACTION));
+        filters.add(new GenreCheckBox(ADVENTURE));
+        filters.add(new GenreCheckBox(COMEDY));
+        filters.add(new GenreCheckBox(DRAMA));
+        filters.add(new GenreCheckBox(ECCHI));
+        filters.add(new GenreCheckBox(FANTASY));
+        filters.add(new GenreCheckBox(HENTAI));
+        filters.add(new GenreCheckBox(HORROR));
+        filters.add(new GenreCheckBox(MAGICAL_GIRL));
+        filters.add(new GenreCheckBox(MECHA));
+        filters.add(new GenreCheckBox(MUSIC));
+        filters.add(new GenreCheckBox(MYSTERY));
+        filters.add(new GenreCheckBox(PSYCHOLOGICAL));
+        filters.add(new GenreCheckBox(ROMANCE));
+        filters.add(new GenreCheckBox(SCI_FI));
+        filters.add(new GenreCheckBox(SLICE_OF_LIFE));
+        filters.add(new GenreCheckBox(SPORTS));
+        filters.add(new GenreCheckBox(SUPERNATURAL));
+        filters.add(new GenreCheckBox(THRILLER));
+
+        return new NekosamaGroup("Genres", filters);
     }
 
     @Override
-    public List<Anime> search(String search, FilterList filter) {
-        return null;
+    public List<Anime> search(String search, FilterList filterList) throws JsonException, IOException, InterruptedException {
+        loadAnimeSearchJson();
+
+        // sort after filtering for best performance
+        NekosamaFilter sortFilter = null;
+
+        Stream<Anime> animeStream = ANIME_SEARCH.stream();
+        for (Filter<?> filter : filterList.getFilters()) {
+            if (filter instanceof NekosamaFilter nFilter) {
+                if (filter.getName().equals("Ordre")) {
+                    sortFilter = nFilter;
+                } else {
+                    animeStream = nFilter.filter(animeStream);
+                }
+            }
+        }
+
+        if (sortFilter != null) {
+            animeStream = sortFilter.filter(animeStream);
+        }
+
+        return animeStream.toList();
+    }
+
+    private void loadAnimeSearchJson() throws JsonException, IOException, InterruptedException {
+        if (ANIME_SEARCH != null) {
+            return;
+        }
+
+        List<Anime> animes = new ArrayList<>();
+
+        JsonArray array = (JsonArray) getJson(url() + SEARCH_URL);
+        for (JsonElement e : array) {
+            JsonObject object = (JsonObject) e;
+
+            Anime.Builder builder = new Anime.Builder();
+            builder.setTitle(object.getAsString("title"));
+            builder.setType(parseType(object.getAsString("type")));
+            builder.setUrl(url() + object.getAsString("url"));
+
+            JsonArray genres = object.getAsArray("genres");
+            for (JsonElement g : genres) {
+                builder.addGenre(parseGenre(g.getAsString()));
+            }
+
+            builder.setStatus(parseStatus(object.getAsString("status")));
+            builder.setThumbnailURL(object.getAsString("url_image"));
+            builder.setScore(Utils.parseFloat(object.getAsString("score")).orElse(-1f));
+
+            if (builder.getType() != Type.MOVIE) {
+                builder.setNEpisode(Utils.getFirstInteger(object.getAsString("nb_eps")).orElse(-1));
+            } else {
+                builder.setNEpisode(1);
+            }
+
+            animes.add(builder.build());
+        }
+
+        ANIME_SEARCH = animes;
+    }
+
+    private String parseGenre(String genre) {
+        return switch (genre) {
+            case "action"        -> ACTION;
+            case "adventure"     -> ADVENTURE;
+            case "c0m1dy"        -> COMEDY;
+            case "drama"         -> DRAMA;
+            case "ecchi"         -> ECCHI;
+            case "fantasy"       -> FANTASY;
+            case "hentai"        -> HENTAI;
+            case "horror"        -> HORROR;
+            case "mahou shoujo"  -> MAGICAL_GIRL;
+            case "mecha"         -> MECHA;
+            case "music"         -> MUSIC;
+            case "mystery"       -> MYSTERY;
+            case "psychological" -> PSYCHOLOGICAL;
+            case "romance"       -> ROMANCE;
+            case "sci-fi"        -> SCI_FI;
+            case "slice of life" -> SLICE_OF_LIFE;
+            case "sports"        -> SPORTS;
+            case "supernatural"  -> SUPERNATURAL;
+            case "thriller"      -> THRILLER;
+            default -> null;
+        };
+    }
+
+    private static class GenreCheckBox extends CheckBox implements NekosamaFilter {
+
+        public GenreCheckBox(String genre) {
+            super(genre);
+        }
+
+        @Override
+        public Stream<Anime> filter(Stream<Anime> stream) {
+            return stream.filter((a) -> {
+                if (isSelected()) {
+                    return a.getGenres().contains(getName());
+                } else {
+                    return true;
+                }
+            });
+        }
+    }
+
+    private static abstract class NekosamaSelect extends Select<String> implements NekosamaFilter {
+
+        public NekosamaSelect(String name, List<String> acceptedValues) {
+            super(name, acceptedValues);
+        }
+    }
+
+    private static class NekosamaGroup extends Group implements NekosamaFilter {
+
+        public NekosamaGroup(String name, List<Filter<?>> filters) {
+            super(name, filters);
+        }
+
+        @Override
+        public Stream<Anime> filter(Stream<Anime> stream) {
+            Stream<Anime> s = stream;
+            for (Filter<?> filter : getFilters()) {
+                if (filter instanceof NekosamaFilter nfilter) {
+                    s = nfilter.filter(s);
+                }
+            }
+
+            return s;
+        }
+    }
+
+    private interface NekosamaFilter {
+
+        Stream<Anime> filter(Stream<Anime> stream);
     }
 }

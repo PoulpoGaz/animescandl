@@ -1,5 +1,6 @@
 package fr.poulpogaz.animescandl.utils;
 
+import fr.poulpogaz.animescandl.args.Option;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.json.JsonException;
@@ -97,6 +98,20 @@ public class Utils {
 
     public static int getFirstInt(String str) {
         return Integer.parseInt(Utils.getRegexGroup(str, "(\\d+)"));
+    }
+
+    public static Optional<Integer> getFirstInteger(String str) {
+        Optional<String> s = Utils.getRegexGroupOrNull(str, "(\\d+)");
+
+        if (s.isPresent()) {
+            try {
+                return Optional.of(Integer.parseInt(s.get()));
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static float getFirstFloat(String str) {

@@ -12,6 +12,7 @@ public class Anime {
     private final int nEpisode;
     private final List<String> studios;
     private final List<String> genres;
+    private final Type type;
     private final Status status;
     private final String thumbnailURL;
     private final float score;
@@ -22,6 +23,7 @@ public class Anime {
                  int nEpisode,
                  List<String> studios,
                  List<String> genres,
+                 Type type,
                  Status status,
                  String thumbnailURL,
                  float score) {
@@ -31,6 +33,7 @@ public class Anime {
         this.nEpisode = nEpisode;
         this.studios = studios == null ? List.of() : Collections.unmodifiableList(studios);
         this.genres = genres == null ? List.of() : Collections.unmodifiableList(genres);
+        this.type = type;
         this.status = status;
         this.thumbnailURL = thumbnailURL;
         this.score = score;
@@ -60,6 +63,10 @@ public class Anime {
         return genres;
     }
 
+    public Optional<Type> getType() {
+        return Optional.ofNullable(type);
+    }
+
     public Optional<Status> getStatus() {
         return Optional.ofNullable(status);
     }
@@ -81,6 +88,7 @@ public class Anime {
                 ", nEpisode=" + nEpisode +
                 ", studios=" + studios +
                 ", genres=" + genres +
+                ", type=" + type +
                 ", status=" + status +
                 ", thumbnailURL='" + thumbnailURL + '\'' +
                 ", score=" + score +
@@ -95,6 +103,7 @@ public class Anime {
         private int nEpisode;
         private List<String> studios = new ArrayList<>();
         private List<String> genres = new ArrayList<>();
+        private Type type;
         private Status status;
         private String thumbnailURL;
         private float score;
@@ -108,7 +117,7 @@ public class Anime {
                 throw new BuilderException("title is null");
             }
 
-            return new Anime(url, title, description, nEpisode, studios, genres, status, thumbnailURL, score);
+            return new Anime(url, title, description, nEpisode, studios, genres, type, status, thumbnailURL, score);
         }
 
         public String getUrl() {
@@ -172,6 +181,15 @@ public class Anime {
 
         public Builder addGenre(String genre) {
             genres.add(genre);
+            return this;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public Builder setType(Type type) {
+            this.type = type;
             return this;
         }
 
