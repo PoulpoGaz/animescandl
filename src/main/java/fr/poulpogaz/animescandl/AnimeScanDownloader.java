@@ -31,17 +31,24 @@ public class AnimeScanDownloader {
 
     private static final ASDLLogger LOGGER = Loggers.getLogger(AnimeScanDownloader.class);
 
-    public static AnimeScanDownloader createDefault() throws IOException {
-        AnimeScanDownloader a = new AnimeScanDownloader();
-        a.addWebsite(new SushiScan());
-        a.addWebsite(new Japanread());
-        a.addWebsite(new MangaRead());
-        a.addWebsite(new Mangadex());
-        a.addWebsite(new Japscan());
+    public static final AnimeScanDownloader DEFAULT;
 
-        a.addWebsite(new Nekosama());
+    static {
+        DEFAULT = new AnimeScanDownloader();
+        DEFAULT.addWebsite(new SushiScan());
 
-        return a;
+        try {
+            DEFAULT.addWebsite(new Japanread());
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+
+        DEFAULT.addWebsite(new MangaRead());
+        DEFAULT.addWebsite(new Mangadex());
+        DEFAULT.addWebsite(new Japscan());
+
+        DEFAULT.addWebsite(new Nekosama());
     }
 
     private final List<Website> websites = new ArrayList<>();
@@ -50,16 +57,16 @@ public class AnimeScanDownloader {
 
     }
 
-    public void process(String url, Settings settings)
+    public void process(Task task)
             throws WebsiteException, JsonException, IOException,
             InterruptedException, UnsupportedPlatformException, CefInitializationException {
-        if (!HttpUtils.isValidURL(url)) {
-            throw new WebsiteException("Not an url: " + url);
+        if (!HttpUtils.isValidURL(task.name())) {
+            throw new WebsiteException("Not an url: " + task.name());
         }
 
-        LOGGER.infoln("Processing: {}", url);
+        LOGGER.infoln("Processing: {}", task.name());
 
-        Website w = getWebsiteFor(url);
+        Website w = getWebsiteFor(task.name());
         LOGGER.debugln("Website: " + w.name());
 
         if (w.needCEF()) {
@@ -71,9 +78,9 @@ public class AnimeScanDownloader {
         }
 
         if (w instanceof ScanWebsite s) {
-            downloadScan(s, url, settings);
+            downloadScan(s, task);
         } else if (w instanceof AnimeWebsite a) {
-            downloadAnime(a, url, settings);
+            downloadAnime(a, task);
         } else {
             throw new IllegalStateException("Unknown website type");
         }
@@ -89,44 +96,44 @@ public class AnimeScanDownloader {
         throw new WebsiteException("No website found for " + url);
     }
 
-    protected void downloadScan(ScanWebsite s, String url, Settings settings)
+    protected void downloadScan(ScanWebsite s, Task task)
             throws IOException, WebsiteException, InterruptedException, JsonException {
         if (s.supportLanguage()) {
-            s.selectLanguage(settings.language());
+            s.selectLanguage(task.language());
         }
 
-        Manga manga = s.getManga(url);
+        Manga manga = s.getManga(task.name());
         List<Chapter> chapters = new ArrayList<>(s.getChapters(manga));
         chapters.sort(Comparator.comparingDouble(Chapter::getChapterNumber));
 
         AbstractScanWriter sw;
 
-        if (s.isChapterURL(url) && settings.range() == null) {
+        if (s.isChapterURL(task.name()) && task.range() == null) {
 
-            Chapter chapter = s.getChapter(chapters, url);
-            sw = AbstractScanWriter.newWriter(getChapterName(chapter), settings.concatenateAll(), settings.out());
+            Chapter chapter = s.getChapter(chapters, task.name());
+            sw = AbstractScanWriter.newWriter(getChapterName(chapter), task.concatenateAll(), task.out());
 
-            downloadChapter(sw, s, chapter, settings);
+            downloadChapter(sw, s, chapter, task);
         } else {
-            sw = AbstractScanWriter.newWriter(manga.getTitle(), settings.concatenateAll(), settings.out());
+            sw = AbstractScanWriter.newWriter(manga.getTitle(), task.concatenateAll(), task.out());
 
             for (Chapter chap : chapters) {
-                if (!settings.rangeContains(chap.getChapterNumber())) {
+                if (task.notInRange(chap.getChapterNumber())) {
                     continue;
                 }
 
-                downloadChapter(sw, s, chap, settings);
+                downloadChapter(sw, s, chap, task);
             }
         }
 
         sw.endAll();
     }
 
-    protected void downloadChapter(AbstractScanWriter sw, ScanWebsite s, Chapter chapter, Settings settings)
+    protected void downloadChapter(AbstractScanWriter sw, ScanWebsite s, Chapter chapter, Task task)
             throws JsonException, IOException, WebsiteException, InterruptedException {
         String chapName = getChapterName(chapter);
         String filename = chapName + ".pdf";
-        Path out = settings.out().resolve(filename);
+        Path out = task.out().resolve(filename);
 
         if (Main.noOverwrites.isPresent() && Files.exists(out)) {
             LOGGER.infoln("{} already exists", filename);
@@ -141,28 +148,28 @@ public class AnimeScanDownloader {
         return chapter.getName().orElse(chapter.getManga().getTitle() + " - " + chapter.getChapterNumber());
     }
 
-    protected void downloadAnime(AnimeWebsite a, String url, Settings settings)
+    protected void downloadAnime(AnimeWebsite a, Task task)
             throws IOException, WebsiteException, InterruptedException, JsonException {
-        Anime anime = a.getAnime(url);
+        Anime anime = a.getAnime(task.name());
         List<Episode> episodes = a.getEpisodes(anime);
 
-        if (a.isEpisodeURL(url) && settings.range() == null) {
+        if (a.isEpisodeURL(task.name()) && task.range() == null) {
 
-            Episode episode = a.getEpisode(episodes, url);
-            downloadEpisode(a, episode, settings);
+            Episode episode = a.getEpisode(episodes, task.name());
+            downloadEpisode(a, episode, task);
 
         } else {
             for (Episode episode : episodes) {
-                if (!settings.rangeContains(episode.getEpisode())) {
+                if (task.notInRange(episode.getEpisode())) {
                     continue;
                 }
 
-                downloadEpisode(a, episode, settings);
+                downloadEpisode(a, episode, task);
             }
         }
     }
 
-    protected void downloadEpisode(AnimeWebsite a, Episode episode, Settings settings)
+    protected void downloadEpisode(AnimeWebsite a, Episode episode, Task task)
             throws JsonException, IOException, WebsiteException, InterruptedException {
         List<Source> sources = a.getSources(episode);
         Source best = getBestSource(sources);
@@ -176,7 +183,7 @@ public class AnimeScanDownloader {
                 .orElseGet(() -> episode.getAnime().getTitle() + " - " + episode.getEpisode());
 
         String filename = epName + ".mp4";
-        Path out = settings.out().resolve(filename);
+        Path out = task.out().resolve(filename);
 
         if (Main.noOverwrites.isPresent() && Files.exists(out)) {
             LOGGER.infoln("{} already exists", filename);

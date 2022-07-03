@@ -1,29 +1,30 @@
 package fr.poulpogaz.animescandl;
 
-import fr.poulpogaz.animescandl.args.*;
-import fr.poulpogaz.animescandl.utils.CEFHelper;
-import fr.poulpogaz.animescandl.utils.Pair;
+import fr.poulpogaz.animescandl.args.HelpFormatter;
+import fr.poulpogaz.animescandl.args.Option;
+import fr.poulpogaz.animescandl.args.OptionBuilder;
+import fr.poulpogaz.animescandl.args.Options;
+import fr.poulpogaz.animescandl.utils.ParseException;
 import fr.poulpogaz.animescandl.utils.Updater;
+import fr.poulpogaz.animescandl.utils.Utils;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Log4j2Setup;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
-import fr.poulpogaz.animescandl.utils.math.Interval;
-import fr.poulpogaz.animescandl.utils.math.SetParser;
 import fr.poulpogaz.animescandl.website.Website;
 import fr.poulpogaz.animescandl.website.WebsiteException;
-import fr.poulpogaz.json.IJsonReader;
 import fr.poulpogaz.json.JsonException;
-import fr.poulpogaz.json.JsonReader;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
-import org.apache.logging.log4j.Level;
+import org.apache.fontbox.ttf.CmapSubtable;
+import org.fusesource.jansi.AnsiConsole;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
+import static org.fusesource.jansi.Ansi.Color.BLUE;
+import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.Ansi.setEnabled;
 
 public class Main {
 
@@ -71,6 +72,9 @@ public class Main {
     public static final Option writeLog;
     public static final Option simulate;
     public static final Option writeWebPages;
+
+    public static final Option enableAnsi;
+    public static final Option disableAnsi;
 
     static {
         supportedWebsite = new OptionBuilder()
@@ -126,11 +130,84 @@ public class Main {
                 .shortName("ww")
                 .desc("Write all webpages to disk")
                 .build();
+
+        // OTHER
+        enableAnsi = new OptionBuilder()
+                .name("enable-ansi")
+                .desc("Enable ansi code")
+                .build();
+        disableAnsi = new OptionBuilder()
+                .name("disable-ansi")
+                .desc("Disable ansi code")
+                .build();
     }
 
 
 
     public static void main(String[] args) {
+        try {
+            AnsiConsole.systemInstall();
+            mainImpl(args);
+        } finally {
+            AnsiConsole.systemUninstall();
+        }
+    }
+
+    private static void mainImpl(String[] args) {
+        Options options = createOptions();
+
+        // parsing
+        String result = options.parse(args);
+
+        if (enableAnsi.isPresent() && !disableAnsi.isPresent()) {
+            setEnabled(true);
+        } else if (disableAnsi.isPresent() && !enableAnsi.isPresent()) {
+            setEnabled(false);
+        }
+
+        // START!
+        Log4j2Setup.setup(verbose.isPresent(), writeLog.isPresent());
+        LOGGER.debugln("================================ AnimeScanDL ================================");
+
+        // options that terminate the program after
+        if (help.isPresent()) {
+            LOGGER.infoln(HelpFormatter.helpString(USAGE, options));
+            return;
+        }
+
+        if (version.isPresent()) {
+            System.out.println(VERSION);
+            return;
+        }
+
+        if (supportedWebsite.isPresent()) {
+            for (Website website : AnimeScanDownloader.DEFAULT.getWebsites()) {
+                LOGGER.infoln("{} [{}]", website.name(), website.version());
+            }
+
+            return;
+        }
+
+        // check for parsing errors
+        if (result != null) {
+            System.err.println(result);
+            return;
+        }
+
+        if (update.isPresent()) {
+            Updater.update();
+        } else {
+
+            if (Files.notExists(CONFIG_PATH)) {
+                LOGGER.fatalln("Config file not found");
+                return;
+            }
+
+            run();
+        }
+    }
+
+    private static Options createOptions() {
         Options options = new Options();
         options.addOption(version)
                 .addOption(help)
@@ -145,116 +222,89 @@ public class Main {
                 .addOption("Debug", simulate)
                 .addOption("Debug", writeWebPages);
 
-        try {
-            options.parse(args);
-        } catch (ParseException e) {
-            e.printStackTrace();
+        options.addOption("Other", disableAnsi)
+                .addOption("Other", enableAnsi);
 
-            HelpFormatter.printHelp(USAGE, options);
-            return;
-        }
-
-        Log4j2Setup.setup(verbose.isPresent(), writeLog.isPresent());
-        LOGGER.debugln("================================ AnimeScanDL ================================");
-
-        AnimeScanDownloader a;
-        try {
-            a = AnimeScanDownloader.createDefault();
-        } catch (IOException e) {
-            LOGGER.fatalln("Failed to initialize websites or CEF.", e);
-            return;
-        }
-
-        if (help.isPresent()) {
-            HelpFormatter.printHelp(USAGE, options);
-            return;
-        }
-        if (version.isPresent()) {
-            LOGGER.infoln(VERSION);
-            return;
-        }
-        if (supportedWebsite.isPresent()) {
-            for (Website website : a.getWebsites()) {
-                LOGGER.infoln("{} [{}]", website.name(), website.version());
-            }
-
-            return;
-        }
-
-        run(a);
-        CEFHelper.shutdown();
+        return options;
     }
 
+    private static void run() {
+        Configuration configuration = new Configuration();
 
-    private static void run(AnimeScanDownloader a) {
-        if (update.isPresent()) {
-            Updater.update();
-        } else {
+        try {
+            configuration.load(CONFIG_PATH);
+        } catch (IOException | JsonException e) {
+            LOGGER.fatalln(e);
+            return;
+        } catch (ParseException e) {
+            LOGGER.fatalln(e.getMessage());
+            return;
+        }
+
+        int maxLength = 50;
+
+        for (Task task : configuration) {
+            if (task.name() == null) {
+                maxLength = Math.max(maxLength, 7 + Utils.stringLength(maxLength));
+            } else {
+                maxLength = Math.max(maxLength, task.name().length());
+            }
+        }
+
+        maxLength += 4;
+
+        for (Task task : configuration) {
+            if (task.name() == null) {
+                LOGGER.infoln(centered("Task n°" + task.number, maxLength, '*', ' '));
+            } else {
+                LOGGER.infoln(centered(task.name(), maxLength, '*', ' '));
+            }
+
+            if (!task.isValid()) {
+                LOGGER.errorln("Invalid task: {}", task.error());
+                continue;
+            }
 
             try {
-                for (Pair<String, Settings> p : loadConfig()) {
-                    a.process(p.left(), p.right());
-                }
-
-            } catch (WebsiteException | JsonException | IOException | InterruptedException | ParseException e) {
-                LOGGER.throwing(Level.FATAL, e);
-            } catch (UnsupportedPlatformException e) {
-                LOGGER.fatalln("Sorry. Your platform isn't supported by CEF", e);
-            } catch (CefInitializationException e) {
-                LOGGER.fatalln("Failed to initialize CEF");
+                AnimeScanDownloader.DEFAULT.process(task);
+            } catch (WebsiteException | JsonException | IOException | InterruptedException |
+                     UnsupportedPlatformException | CefInitializationException e) {
+                throw new RuntimeException(e);
             }
         }
     }
 
+    private static String centered(String str, int width, char outer, char border) {
 
-    private static List<Pair<String, Settings>> loadConfig() throws JsonException, IOException, ParseException {
-        List<Pair<String, Settings>> settings = new ArrayList<>();
+        if (width >= str.length()) {
+            StringBuilder sb = new StringBuilder();
 
-        SetParser parser = new SetParser();
-        parser.setIntervalCreator((a, b) -> Interval.closedOpen(a, b + 1));
-        parser.setSingletonCreator((a) -> Interval.closedOpen(a, a + 1));
+            int x = (width - str.length()) / 2;
 
-        IJsonReader jr = new JsonReader(Files.newBufferedReader(CONFIG_PATH));
-        jr.beginArray();
-
-        while (!jr.isArrayEnd()) {
-            jr.beginObject();
-
-            Pair<String, Settings> target = parseTarget(jr, parser);
-
-            settings.add(target);
-
-            jr.endObject();
-        }
-
-        jr.endArray();
-        jr.close();
-
-        return settings;
-    }
-
-    private static Pair<String, Settings> parseTarget(IJsonReader jr, SetParser parser)
-            throws IOException, JsonException, ParseException {
-        String url = null;
-        Settings.Builder builder = new Settings.Builder();
-
-        while (!jr.isObjectEnd()) {
-            String key = jr.nextKey();
-
-            switch (key) {
-                case "name" -> url = jr.nextString();
-                case "concatenateAll" -> builder.setConcatenateAll(jr.nextBoolean());
-                case "range" -> builder.setRange(parser.parse(jr.nextString()));
-                case "language" -> builder.setLanguage(jr.nextString());
-                case "out" -> builder.setOut(Path.of(jr.nextString()));
-                default -> throw new IOException("Unknown attribute: " + key);
+            for (int i = 0; i < x - 1; i++) {
+                sb.append(outer);
             }
-        }
 
-        if (url == null) {
-            throw new IOException("URL is null");
-        }
+            if (x > 0) {
+                sb.append(border);
+            }
 
-        return new Pair<>(url, builder.build());
+            sb.append(str);
+
+            int x2 = width - (x + str.length());
+
+            if (x2 > 0) {
+                sb.append(border);
+            }
+
+            for (int i = 0; i < x2 - 1; i++) {
+                sb.append(outer);
+            }
+
+            return sb.toString();
+
+        } else {
+            return str;
+        }
     }
 }

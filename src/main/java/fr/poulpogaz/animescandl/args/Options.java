@@ -10,7 +10,7 @@ public class Options {
         options = new LinkedHashMap<>();
     }
 
-    public void parse(String[] args) throws ParseException {
+    public String parse(String[] args) {
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
 
@@ -23,11 +23,11 @@ public class Options {
             }
 
             if (option == null) {
-                throw new ParseException("Unrecognized parameter: " + arg);
+                return "Unrecognized parameter: " + arg;
             }
 
             if (option.isPresent() && !option.allowMultipleValues()) {
-                throw new ParseException("Duplicate parameter: " + option.getName());
+                return "Duplicate parameter: " + option.getName();
             }
 
             if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
@@ -35,10 +35,10 @@ public class Options {
                     i++;
                     option.addArguments(args[i]);
                 } else {
-                    throw new ParseException("Option %s doesn't require a parameter".formatted(arg));
+                    return "Option %s doesn't require a parameter".formatted(arg);
                 }
             } else if (option.hasArgument()) {
-                throw new ParseException("Option %s require a parameter".formatted(arg));
+                return "Option %s require a parameter".formatted(arg);
             }
 
             option.markPresent();
@@ -47,10 +47,12 @@ public class Options {
         for (OptionGroup group : options.values()) {
             for (Option option : group.getOptions()) {
                 if (!option.isOptional() && !option.isPresent()) {
-                    throw new ParseException(option.getName() + " is required");
+                    return option.getName() + " is required";
                 }
             }
         }
+
+        return null;
     }
 
     protected Option findOptionByName(String name) {

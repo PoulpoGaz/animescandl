@@ -8,6 +8,9 @@ import fr.poulpogaz.animescandl.utils.log.Loggers;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.fusesource.jansi.Ansi.Color.MAGENTA;
+import static org.fusesource.jansi.Ansi.ansi;
+
 /**
  * A cool ASCII progress bar for ffmpeg
  *
@@ -111,7 +114,7 @@ public class ProgressBar {
         double ratio = (double) times.tail() / videoDuration;
         int length = (int) (Math.round(progressBarLength * ratio));
 
-        b.append(Utils.colorStart(Utils.ANSI_PURPLE));
+        b.append(ansi().fg(MAGENTA));
         b.append('[');
         if (length - 1 > 0) {
             b.append("=".repeat(length - 1));
@@ -125,7 +128,7 @@ public class ProgressBar {
         }
 
         b.append(']');
-        b.append(Utils.colorEnd());
+        b.append(ansi().reset());
 
         int percent = (int) (Math.round(100 * ratio));
         b.append(" ").append(percent).append("%");

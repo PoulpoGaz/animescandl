@@ -1,4 +1,4 @@
-package fr.poulpogaz.animescandl.args;
+package fr.poulpogaz.animescandl.utils;
 
 public class ParseException extends Exception {
 

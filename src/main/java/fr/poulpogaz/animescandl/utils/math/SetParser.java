@@ -1,6 +1,6 @@
 package fr.poulpogaz.animescandl.utils.math;
 
-import fr.poulpogaz.animescandl.args.ParseException;
+import fr.poulpogaz.animescandl.utils.ParseException;
 
 import java.util.Objects;
 import java.util.function.BiFunction;

@@ -1,6 +1,5 @@
 package fr.poulpogaz.animescandl.utils;
 
-import fr.poulpogaz.animescandl.args.Option;
 import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
 import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.json.JsonException;
@@ -20,36 +19,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
-    public static String FFMPEG_PATH = "ffmpeg";
     private static final ASDLLogger LOGGER = Loggers.getLogger(Utils.class);
-
-    public static final String ANSI_BLUE = "36";
-    public static final String ANSI_GREEN = "32";
-    public static final String ANSI_PURPLE = "35";
-
-    public static String blue(String str) {
-        return color(str, ANSI_BLUE);
-    }
-
-    public static String green(String str) {
-        return color(str, ANSI_GREEN);
-    }
-
-    public static String purple(String str) {
-        return color(str, ANSI_PURPLE);
-    }
-
-    public static String color(String str, String color) {
-        return "%s[%sm%s%s[0m".formatted((char) 27, color, str, (char) 27);
-    }
-
-    public static String colorStart(String color) {
-        return "%s[%sm".formatted((char) 27, color);
-    }
-
-    public static String colorEnd() {
-        return (char) 27 + "[0m";
-    }
 
     public static String bytesHumanReadable(long totalSize, int precision) {
         if (totalSize < 1024L) {
@@ -219,5 +189,15 @@ public class Utils {
         int c = comparator.compare(o1, o2);
 
         return (c > 0) ? o1 : o2;
+    }
+
+    public static int stringLength(int number) {
+        if (number == 0) {
+            return 1;
+        } else if (number < 0) {
+            return (int) (2 + Math.log10(number));
+        } else {
+            return (int) (1 + Math.log10(number));
+        }
     }
 }

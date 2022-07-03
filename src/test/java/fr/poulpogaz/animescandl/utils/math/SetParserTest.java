@@ -1,6 +1,6 @@
 package fr.poulpogaz.animescandl.utils.math;
 
-import fr.poulpogaz.animescandl.args.ParseException;
+import fr.poulpogaz.animescandl.utils.ParseException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

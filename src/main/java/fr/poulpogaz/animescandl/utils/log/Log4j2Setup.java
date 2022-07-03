@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.builder.api.*;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.fusesource.jansi.Ansi;
 
 public class Log4j2Setup {
 
@@ -47,7 +48,7 @@ public class Log4j2Setup {
 
     private static void createVerboseConsole(ConfigurationBuilder<BuiltConfiguration> builder) {
         LayoutComponentBuilder layout = builder.newLayout("PatternLayout")
-                .addAttribute("pattern", VERBOSE_PATTERN);
+                .addAttribute("pattern", wrapLevelInHighlight(VERBOSE_PATTERN));
 
         builder.add(
                 builder.newAppender(CONSOLE, "Console")
@@ -57,10 +58,10 @@ public class Log4j2Setup {
 
     private static void createConsole(ConfigurationBuilder<BuiltConfiguration> builder) {
         ComponentBuilder<?> v = builder.newComponent("LevelPatternSelector");
-        v.addComponent(patternMatch(builder, "INFO", "%m%throwable{short}"));
-        v.addComponent(patternMatch(builder, "WARN", "[%-5level] %m%throwable{short}"));
-        v.addComponent(patternMatch(builder, "ERROR", "[%-5level] %m%throwable{short}"));
-        v.addComponent(patternMatch(builder, "FATAL", "[%-5level] %m%throwable{short}"));
+        v.addComponent(patternMatch(builder, "INFO", wrapLevelInHighlight("%m%throwable{short}")));
+        v.addComponent(patternMatch(builder, "WARN", wrapLevelInHighlight("[%-5level] %m%throwable{short}")));
+        v.addComponent(patternMatch(builder, "ERROR", wrapLevelInHighlight("[%-5level] %m%throwable{short}")));
+        v.addComponent(patternMatch(builder, "FATAL", wrapLevelInHighlight("[%-5level] %m%throwable{short}")));
 
         LayoutComponentBuilder layout = builder.newLayout("PatternLayout")
                 .addComponent(v);
@@ -69,6 +70,14 @@ public class Log4j2Setup {
                 builder.newAppender(CONSOLE, "Console")
                         .add(layout)
         );
+    }
+
+    private static String wrapLevelInHighlight(String str) {
+        if (Ansi.isEnabled()) {
+            return str.replace("%-5level", "%highlight{%-5level}");
+        } else {
+            return str;
+        }
     }
 
     private static ComponentBuilder<?> patternMatch(ConfigurationBuilder<BuiltConfiguration> builder, String key, String pattern) {
