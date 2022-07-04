@@ -1,11 +1,16 @@
 package fr.poulpogaz.animescandl;
 
+import fr.poulpogaz.animescandl.anime.AnimeWebsite;
+import fr.poulpogaz.animescandl.model.Anime;
+import fr.poulpogaz.animescandl.model.Manga;
+import fr.poulpogaz.animescandl.scan.ScanWebsite;
 import fr.poulpogaz.animescandl.utils.math.Set;
 import fr.poulpogaz.animescandl.website.Website;
 import fr.poulpogaz.animescandl.website.filter.FilterList;
 import fr.poulpogaz.animescandl.website.filter.InvalidValueException;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class SearchResultTask extends Task {
 
@@ -13,10 +18,32 @@ public class SearchResultTask extends Task {
     private final Object toDownload;
 
     public SearchResultTask(Task from, Object toDownload, Website website) {
-        super(from.number());
+        super(Objects.requireNonNull(from).number());
         this.from = from;
-        this.website = website;
-        this.toDownload = toDownload;
+        this.website = Objects.requireNonNull(website);
+        this.toDownload = Objects.requireNonNull(toDownload);
+
+        if (website instanceof AnimeWebsite && toDownload instanceof Manga) {
+            throw new IllegalArgumentException("Can't download a manga from an anime website");
+        }
+
+        if (website instanceof ScanWebsite && toDownload instanceof Anime) {
+            throw new IllegalArgumentException("Can't download an anime from a scan website");
+        }
+
+        if (!(toDownload instanceof Manga) && !(toDownload instanceof Anime)) {
+            throw new IllegalArgumentException("toDownload must be an Anime or a Manga");
+        }
+    }
+
+    @Override
+    protected Manga getManga(ScanWebsite website) {
+        return (Manga) toDownload;
+    }
+
+    @Override
+    protected Anime getAnime(AnimeWebsite website) {
+        return (Anime) toDownload;
     }
 
     @Override

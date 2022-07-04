@@ -64,10 +64,10 @@ public class ComplexTask extends Task {
                         return Path.of(s);
                     } catch (InvalidPathException e) {
                         error = "Invalid path";
-                        return null;
+                        return Path.of("");
                     }
                 })
-                .orElse(null);
+                .orElse(Path.of(""));
 
         filters = object.getAsObject("filters");
     }

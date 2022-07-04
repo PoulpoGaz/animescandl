@@ -16,6 +16,7 @@ import fr.poulpogaz.json.JsonException;
 import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
 import org.apache.fontbox.ttf.CmapSubtable;
+import org.apache.logging.log4j.Level;
 import org.fusesource.jansi.AnsiConsole;
 
 import java.io.IOException;
@@ -181,7 +182,7 @@ public class Main {
         }
 
         if (supportedWebsite.isPresent()) {
-            for (Website website : AnimeScanDownloader.DEFAULT.getWebsites()) {
+            for (Website website : Websites.getWebsites()) {
                 LOGGER.infoln("{} [{}]", website.name(), website.version());
             }
 
@@ -241,7 +242,13 @@ public class Main {
             return;
         }
 
-        configuration.search();
-        configuration.download();
+        try {
+            configuration.search();
+            configuration.download();
+        } catch (UnsupportedPlatformException | CefInitializationException e) {
+            LOGGER.fatalln("Failed to initialize CEF", e);
+        } catch (InterruptedException e) {
+            LOGGER.throwing(Level.INFO, e);
+        }
     }
 }

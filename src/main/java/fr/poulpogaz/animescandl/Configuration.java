@@ -11,6 +11,8 @@ import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeReader;
+import me.friwi.jcefmaven.CefInitializationException;
+import me.friwi.jcefmaven.UnsupportedPlatformException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -74,7 +76,7 @@ public class Configuration implements Iterable<Task> {
         }
     }
 
-    public void search() {
+    public void search() throws UnsupportedPlatformException, CefInitializationException, InterruptedException {
         if (!hasSearchTask) {
             return;
         }
@@ -92,14 +94,14 @@ public class Configuration implements Iterable<Task> {
                 SearchResultTask result = null;
                 try {
                     result = task.search();
-                } catch (JsonException | IOException | WebsiteException | InterruptedException e) {
+                } catch (JsonException | IOException | WebsiteException e) {
                     LOGGER.throwing(e);
                 } catch (InvalidValueException e) {
                     LOGGER.errorln(e.getMessage());
                 }
 
                 if (result != null) {
-                    afterSearch.add(task);
+                    afterSearch.add(result);
                 }
 
             } else {
@@ -108,15 +110,20 @@ public class Configuration implements Iterable<Task> {
         }
     }
 
-    public void download() {
+    public void download() throws InterruptedException, UnsupportedPlatformException, CefInitializationException {
         int maxLength = getMaxLength();
 
         LOGGER.infoln(Utils.centered("Downloading", maxLength, '*', ' '));
 
+        List<Task> tasks = afterSearch == null ? this.tasks : afterSearch;
         for (Task task : tasks) {
             printTask(task, maxLength);
 
-            task.download();
+            try {
+                task.download();
+            } catch (JsonException | IOException | WebsiteException e) {
+                LOGGER.throwing(e);
+            }
         }
     }
 
