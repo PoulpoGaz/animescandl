@@ -1,5 +1,7 @@
 package fr.poulpogaz.animescandl.website.filter;
 
+import fr.poulpogaz.json.tree.JsonElement;
+
 public class TriStateCheckBox extends Filter<Integer> {
 
     public static final int UNSELECTED = 0;
@@ -8,6 +10,24 @@ public class TriStateCheckBox extends Filter<Integer> {
 
     public TriStateCheckBox(String name) {
         super(name);
+    }
+
+    @Override
+    public void setValue(JsonElement value) throws InvalidValueException {
+        int v;
+
+        if (value.isBoolean() || value.isNumber() || value.isString()) {
+            v = value.optionalInt().orElse(-1);
+
+        } else {
+            throw new InvalidValueException(name + ": Expecting boolean or int or string");
+        }
+
+        if (v < 0 || v >= 2) {
+            throw new InvalidValueException(name + ": Invalid value: " + value.getAsString());
+        }
+
+        this.value = v;
     }
 
     @Override

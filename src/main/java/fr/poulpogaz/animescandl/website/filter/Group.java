@@ -1,5 +1,7 @@
 package fr.poulpogaz.animescandl.website.filter;
 
+import fr.poulpogaz.json.tree.JsonElement;
+
 import java.util.List;
 
 public class Group extends Filter<List<Filter<?>>> {
@@ -16,6 +18,11 @@ public class Group extends Filter<List<Filter<?>>> {
                 throw new IllegalArgumentException("A group can't contains a group");
             }
         }
+    }
+
+    @Override
+    public void setValue(JsonElement value) throws InvalidValueException {
+        throw new InvalidValueException("Can't set a value to a group");
     }
 
     @Override

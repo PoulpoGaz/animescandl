@@ -2,6 +2,7 @@ package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.utils.math.Interval;
 import fr.poulpogaz.animescandl.utils.math.Set;
+import fr.poulpogaz.animescandl.website.filter.FilterList;
 
 import java.nio.file.Path;
 
@@ -47,5 +48,10 @@ public class SimpleTask extends Task {
     @Override
     public Path out() {
         return null;
+    }
+
+    @Override
+    protected void applyFilters(FilterList filter) {
+        
     }
 }

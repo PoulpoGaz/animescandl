@@ -108,8 +108,6 @@ public abstract class AbstractWebsite implements Website {
         Document doc = Website.super.getDocument(url);
         DOCUMENT_CACHE.put(url, doc);
 
-        LOGGER.debugln(doc.html());
-
         return doc;
     }
 

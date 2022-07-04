@@ -31,7 +31,7 @@ public class SushiScan extends AbstractSimpleScanWebsite
 
     @Override
     public String name() {
-        return "Sushi-Scan";
+        return "sushiscan";
     }
 
     @Override

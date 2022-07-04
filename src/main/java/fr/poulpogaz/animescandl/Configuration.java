@@ -1,6 +1,11 @@
 package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.utils.ParseException;
+import fr.poulpogaz.animescandl.utils.Utils;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
+import fr.poulpogaz.animescandl.website.WebsiteException;
+import fr.poulpogaz.animescandl.website.filter.InvalidValueException;
 import fr.poulpogaz.json.JsonException;
 import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
@@ -17,7 +22,13 @@ import java.util.List;
 
 public class Configuration implements Iterable<Task> {
 
+    private static final ASDLLogger LOGGER = Loggers.getLogger(Configuration.class);
+
     private final List<Task> tasks;
+
+    // old tasks and SearchResultTask
+    private List<Task> afterSearch;
+    private boolean hasSearchTask;
 
     public Configuration() {
         tasks = new ArrayList<>();
@@ -37,17 +48,98 @@ public class Configuration implements Iterable<Task> {
 
             int number = 1;
             for (JsonElement e : array) {
+                Task task;
+
                 if (e.isObject()) {
-                    tasks.add(new ComplexTask((JsonObject) e, number));
+                    task = new ComplexTask((JsonObject) e, number);
                 } else if (e.isString()) {
-                    tasks.add(new SimpleTask(e.getAsString(), number));
+                    task = new SimpleTask(e.getAsString(), number);
                 } else {
                     throw new ParseException("A target must be a string or an object");
                 }
 
+                if (!task.isValid()) {
+                    LOGGER.warnln("Invalid task: {}", task.error());
+                    continue;
+                }
+
+                if (task.isSearchTask()) {
+                    hasSearchTask = true;
+                }
+
+                tasks.add(task);
+
                 number++;
             }
         }
+    }
+
+    public void search() {
+        if (!hasSearchTask) {
+            return;
+        }
+
+        int maxLength = getMaxLength();
+
+        LOGGER.infoln(Utils.centered("Searching", maxLength, '*', ' '));
+
+        afterSearch = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task.isSearchTask()) {
+                printTask(task, maxLength);
+
+                SearchResultTask result = null;
+                try {
+                    result = task.search();
+                } catch (JsonException | IOException | WebsiteException | InterruptedException e) {
+                    LOGGER.throwing(e);
+                } catch (InvalidValueException e) {
+                    LOGGER.errorln(e.getMessage());
+                }
+
+                if (result != null) {
+                    afterSearch.add(task);
+                }
+
+            } else {
+                afterSearch.add(task);
+            }
+        }
+    }
+
+    public void download() {
+        int maxLength = getMaxLength();
+
+        LOGGER.infoln(Utils.centered("Downloading", maxLength, '*', ' '));
+
+        for (Task task : tasks) {
+            printTask(task, maxLength);
+
+            task.download();
+        }
+    }
+
+    private void printTask(Task task, int maxLength) {
+        if (task.name() == null) {
+            LOGGER.infoln(Utils.centered("Task n°" + task.number, maxLength, '*', ' '));
+        } else {
+            LOGGER.infoln(Utils.centered(task.name(), maxLength, '*', ' '));
+        }
+    }
+
+    private int getMaxLength() {
+        int maxLength = 50;
+
+        for (Task task : tasks) {
+            if (task.name() == null) {
+                maxLength = Math.max(maxLength, 7 + Utils.stringLength(maxLength));
+            } else {
+                maxLength = Math.max(maxLength, task.name().length());
+            }
+        }
+
+        return maxLength + 4;
     }
 
     @Override

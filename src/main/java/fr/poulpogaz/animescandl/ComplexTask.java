@@ -1,16 +1,23 @@
 package fr.poulpogaz.animescandl;
 
 import fr.poulpogaz.animescandl.utils.ParseException;
+import fr.poulpogaz.animescandl.utils.log.ASDLLogger;
+import fr.poulpogaz.animescandl.utils.log.Loggers;
 import fr.poulpogaz.animescandl.utils.math.Interval;
 import fr.poulpogaz.animescandl.utils.math.Set;
 import fr.poulpogaz.animescandl.utils.math.SetParser;
+import fr.poulpogaz.animescandl.website.filter.*;
+import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 public class ComplexTask extends Task {
+
+    private static final ASDLLogger LOGGER = Loggers.getLogger(ComplexTask.class);
 
     private static final SetParser PARSER;
 
@@ -26,6 +33,7 @@ public class ComplexTask extends Task {
     private Set range;
     private String language;
     private Path out;
+    private JsonObject filters;
 
     public ComplexTask(JsonObject object, int number) {
         super(number);
@@ -60,6 +68,8 @@ public class ComplexTask extends Task {
                     }
                 })
                 .orElse(null);
+
+        filters = object.getAsObject("filters");
     }
 
     @Override
@@ -95,5 +105,26 @@ public class ComplexTask extends Task {
     @Override
     public Path out() {
         return out;
+    }
+
+    @Override
+    protected void applyFilters(FilterList filterList) throws InvalidValueException {
+        if (filters == null) {
+            return;
+        }
+
+        for (Map.Entry<String, JsonElement> filter : filters.entrySet()) {
+            String name = filter.getKey();
+            JsonElement value = filter.getValue();
+
+            Filter<?> f = filterList.getFilter(name);
+
+            if (f == null) {
+                LOGGER.warnln("{}: no such filter", name);
+                continue;
+            }
+
+            f.setValue(value);
+        }
     }
 }

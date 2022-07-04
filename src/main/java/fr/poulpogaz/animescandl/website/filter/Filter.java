@@ -1,5 +1,7 @@
 package fr.poulpogaz.animescandl.website.filter;
 
+import fr.poulpogaz.json.tree.JsonElement;
+
 public abstract class Filter<T> {
 
     protected final String name;
@@ -13,6 +15,8 @@ public abstract class Filter<T> {
         this.name = name;
         this.value = value;
     }
+
+    public abstract void setValue(JsonElement value) throws InvalidValueException;
 
     public String getName() {
         return name;

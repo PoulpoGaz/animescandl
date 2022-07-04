@@ -177,6 +177,10 @@ public class API {
             }
         }
 
+        if (builders.size() == 0) {
+            return List.of();
+        }
+
         Manga[] mangas = new Manga[builders.size()];
 
         float[] scores = getScore(ids);
@@ -286,6 +290,9 @@ public class API {
 
     static float[] getScore(List<String> mangaID)
             throws JsonException, WebsiteException, IOException, InterruptedException {
+        if (mangaID == null || mangaID.isEmpty()) {
+            return new float[0];
+        }
 
         HttpQueryParameterBuilder builder = new HttpQueryParameterBuilder();
 

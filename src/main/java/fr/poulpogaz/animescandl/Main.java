@@ -241,70 +241,7 @@ public class Main {
             return;
         }
 
-        int maxLength = 50;
-
-        for (Task task : configuration) {
-            if (task.name() == null) {
-                maxLength = Math.max(maxLength, 7 + Utils.stringLength(maxLength));
-            } else {
-                maxLength = Math.max(maxLength, task.name().length());
-            }
-        }
-
-        maxLength += 4;
-
-        for (Task task : configuration) {
-            if (task.name() == null) {
-                LOGGER.infoln(centered("Task n°" + task.number, maxLength, '*', ' '));
-            } else {
-                LOGGER.infoln(centered(task.name(), maxLength, '*', ' '));
-            }
-
-            if (!task.isValid()) {
-                LOGGER.errorln("Invalid task: {}", task.error());
-                continue;
-            }
-
-            try {
-                AnimeScanDownloader.DEFAULT.process(task);
-            } catch (WebsiteException | JsonException | IOException | InterruptedException |
-                     UnsupportedPlatformException | CefInitializationException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private static String centered(String str, int width, char outer, char border) {
-
-        if (width >= str.length()) {
-            StringBuilder sb = new StringBuilder();
-
-            int x = (width - str.length()) / 2;
-
-            for (int i = 0; i < x - 1; i++) {
-                sb.append(outer);
-            }
-
-            if (x > 0) {
-                sb.append(border);
-            }
-
-            sb.append(str);
-
-            int x2 = width - (x + str.length());
-
-            if (x2 > 0) {
-                sb.append(border);
-            }
-
-            for (int i = 0; i < x2 - 1; i++) {
-                sb.append(outer);
-            }
-
-            return sb.toString();
-
-        } else {
-            return str;
-        }
+        configuration.search();
+        configuration.download();
     }
 }

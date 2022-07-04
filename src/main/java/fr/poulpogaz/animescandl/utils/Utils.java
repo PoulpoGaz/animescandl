@@ -74,11 +74,7 @@ public class Utils {
         Optional<String> s = Utils.getRegexGroupOrNull(str, "(\\d+)");
 
         if (s.isPresent()) {
-            try {
-                return Optional.of(Integer.parseInt(s.get()));
-            } catch (NumberFormatException e) {
-                return Optional.empty();
-            }
+            return parseInt(s.get());
         } else {
             return Optional.empty();
         }
@@ -144,6 +140,14 @@ public class Utils {
         return value;
     }
 
+    public static Optional<Integer> parseInt(String str) {
+        try {
+            return Optional.of(Integer.parseInt(str));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
     public static Optional<Float> parseFloat(String str) {
         try {
             return Optional.of(Float.parseFloat(str));
@@ -198,6 +202,39 @@ public class Utils {
             return (int) (2 + Math.log10(number));
         } else {
             return (int) (1 + Math.log10(number));
+        }
+    }
+
+    public static String centered(String str, int width, char outer, char border) {
+        if (width >= str.length()) {
+            StringBuilder sb = new StringBuilder();
+
+            int x = (width - str.length()) / 2;
+
+            for (int i = 0; i < x - 1; i++) {
+                sb.append(outer);
+            }
+
+            if (x > 0) {
+                sb.append(border);
+            }
+
+            sb.append(str);
+
+            int x2 = width - (x + str.length());
+
+            if (x2 > 0) {
+                sb.append(border);
+            }
+
+            for (int i = 0; i < x2 - 1; i++) {
+                sb.append(outer);
+            }
+
+            return sb.toString();
+
+        } else {
+            return str;
         }
     }
 }

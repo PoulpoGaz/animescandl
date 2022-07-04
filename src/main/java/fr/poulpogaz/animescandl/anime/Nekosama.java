@@ -15,13 +15,11 @@ import fr.poulpogaz.json.tree.JsonArray;
 import fr.poulpogaz.json.tree.JsonElement;
 import fr.poulpogaz.json.tree.JsonObject;
 import fr.poulpogaz.json.tree.JsonTreeReader;
-import org.apache.logging.log4j.core.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;

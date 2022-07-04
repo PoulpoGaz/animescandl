@@ -292,6 +292,10 @@ public class Mangadex extends AbstractSimpleScanWebsite
 
         @Override
         public String getQueryArgument() {
+            if (value == null) {
+                return null;
+            }
+
             if (value % 2 == 0) {
                 return "asc";
             } else {
