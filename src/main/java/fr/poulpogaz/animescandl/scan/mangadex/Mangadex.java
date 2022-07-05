@@ -68,7 +68,7 @@ public class Mangadex extends AbstractSimpleScanWebsite
     public List<Chapter> getChapters(Manga manga)
             throws IOException, InterruptedException, WebsiteException, JsonException {
 
-        if (language != null && manga.getLanguages().contains(language)) {
+        if (language != null && !manga.getLanguages().contains(language)) {
             throw new WebsiteException("The manga %s isn't translated in %s"
                     .formatted(manga.getTitle(), language));
         }

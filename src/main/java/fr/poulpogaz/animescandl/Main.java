@@ -4,6 +4,7 @@ import fr.poulpogaz.animescandl.args.HelpFormatter;
 import fr.poulpogaz.animescandl.args.Option;
 import fr.poulpogaz.animescandl.args.OptionBuilder;
 import fr.poulpogaz.animescandl.args.Options;
+import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.ParseException;
 import fr.poulpogaz.animescandl.utils.Updater;
 import fr.poulpogaz.animescandl.utils.Utils;
@@ -150,6 +151,7 @@ public class Main {
             AnsiConsole.systemInstall();
             mainImpl(args);
         } finally {
+            CEFHelper.shutdowgin();
             AnsiConsole.systemUninstall();
         }
     }

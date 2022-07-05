@@ -56,7 +56,9 @@ public abstract class BaseIterator<T> implements PageIterator<T> {
         StringBuilder builder = new StringBuilder();
         builder.append("https://cdn.statically.io/img/c.japscan.ws/");
 
-        for (int i = 21; i < encrypted.length() - 4; i++) {
+        int end = encrypted.lastIndexOf('.');
+
+        for (int i = 21; i < end; i++) {
             if (encrypted.charAt(i) != '/') {
                 builder.append(map.get(encrypted.charAt(i)));
             } else {
