@@ -18,7 +18,10 @@ import me.friwi.jcefmaven.CefInitializationException;
 import me.friwi.jcefmaven.UnsupportedPlatformException;
 import org.apache.fontbox.ttf.CmapSubtable;
 import org.apache.logging.log4j.Level;
+import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,7 +29,6 @@ import java.nio.file.Path;
 
 import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.Ansi.setEnabled;
 
 public class Main {
 
@@ -69,6 +71,7 @@ public class Main {
 
     public static final Option ffmpeg;
     public static final Option noOverwrites;
+    public static final Option continueDownload;
 
     public static final Option verbose;
     public static final Option writeLog;
@@ -110,6 +113,11 @@ public class Main {
                 .shortName("w")
                 .desc("Do not overwrite files")
                 .build();
+        continueDownload = new OptionBuilder()
+                .name("continue")
+                .shortName("c")
+                .desc("Continue downloads")
+                .build();
 
         // DEBUG
         verbose = new OptionBuilder()
@@ -147,11 +155,15 @@ public class Main {
 
 
     public static void main(String[] args) {
+        Thread mainThread = Thread.currentThread();
+
+        Signal.handle(new Signal("INT"), sig -> mainThread.interrupt());
+
         try {
             AnsiConsole.systemInstall();
             mainImpl(args);
         } finally {
-            CEFHelper.shutdowgin();
+            CEFHelper.shutdown();
             AnsiConsole.systemUninstall();
         }
     }
@@ -163,9 +175,9 @@ public class Main {
         String result = options.parse(args);
 
         if (enableAnsi.isPresent() && !disableAnsi.isPresent()) {
-            setEnabled(true);
+            Ansi.setEnabled(true);
         } else if (disableAnsi.isPresent() && !enableAnsi.isPresent()) {
-            setEnabled(false);
+            Ansi.setEnabled(false);
         }
 
         // START!
@@ -218,7 +230,8 @@ public class Main {
                 .addOption(update);
 
         options.addOption("System", ffmpeg)
-                .addOption("System", noOverwrites);
+                .addOption("System", noOverwrites)
+                .addOption("System", continueDownload);
 
         options.addOption("Debug", verbose)
                 .addOption("Debug", writeLog)

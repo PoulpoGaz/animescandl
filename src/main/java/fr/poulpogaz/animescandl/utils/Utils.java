@@ -10,6 +10,8 @@ import org.jsoup.nodes.TextNode;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -235,6 +237,14 @@ public class Utils {
 
         } else {
             return str;
+        }
+    }
+
+    public static void deleteSilently(Path path) {
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            // ignored
         }
     }
 }

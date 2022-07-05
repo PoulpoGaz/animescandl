@@ -3,8 +3,9 @@ package fr.poulpogaz.animescandl;
 import fr.poulpogaz.animescandl.anime.AnimeWebsite;
 import fr.poulpogaz.animescandl.anime.VideoDownloader;
 import fr.poulpogaz.animescandl.model.*;
-import fr.poulpogaz.animescandl.scan.AbstractScanWriter;
 import fr.poulpogaz.animescandl.scan.ScanWebsite;
+import fr.poulpogaz.animescandl.scan.writers.IScanWriter;
+import fr.poulpogaz.animescandl.scan.writers.ScanWriters;
 import fr.poulpogaz.animescandl.utils.CEFHelper;
 import fr.poulpogaz.animescandl.utils.Pair;
 import fr.poulpogaz.animescandl.utils.Utils;
@@ -24,8 +25,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public abstract class Task {
 
@@ -226,17 +227,29 @@ public abstract class Task {
         List<Chapter> chapters = new ArrayList<>(s.getChapters(manga));
         chapters.sort(Comparator.comparingDouble(Chapter::getChapterNumber));
 
-        AbstractScanWriter sw;
+        IScanWriter sw = ScanWriters.newWriter(manga, Main.continueDownload.isPresent());
 
         if (s.isChapterURL(name()) && range() == null) {
-
             Chapter chapter = s.getChapter(chapters, name());
-            sw = AbstractScanWriter.newWriter(getChapterName(chapter), concatenateAll(), out());
-
             downloadChapter(sw, s, chapter);
-        } else {
-            sw = AbstractScanWriter.newWriter(manga.getTitle(), concatenateAll(), out());
 
+        } else if (concatenateAll()) {
+            List<Chapter> toDownload = chapters.stream()
+                    .filter((c) -> inRange(c.getChapterNumber()))
+                    .toList();
+
+            Path out = out().resolve(manga.getTitle() + ".pdf");
+
+            if (Main.noOverwrites.isPresent() && Files.exists(out)) {
+                LOGGER.infoln("{} already exists", out.getFileName());
+                return;
+            }
+
+            LOGGER.infoln("Downloading {}", out.getFileName());
+
+            sw.writeScans(s, toDownload, out);
+
+        } else {
             for (Chapter chap : chapters) {
                 if (notInRange(chap.getChapterNumber())) {
                     continue;
@@ -245,15 +258,13 @@ public abstract class Task {
                 downloadChapter(sw, s, chap);
             }
         }
-
-        sw.endAll();
     }
 
     protected Manga getManga(ScanWebsite website) throws JsonException, IOException, WebsiteException, InterruptedException {
         return website.getManga(name());
     }
 
-    protected void downloadChapter(AbstractScanWriter sw, ScanWebsite s, Chapter chapter)
+    protected void downloadChapter(IScanWriter sw, ScanWebsite s, Chapter chapter)
             throws JsonException, IOException, WebsiteException, InterruptedException {
         String chapName = getChapterName(chapter);
         String filename = chapName + ".pdf";
@@ -265,7 +276,7 @@ public abstract class Task {
         }
 
         LOGGER.infoln("Downloading {}", chapName);
-        sw.newScan(s, chapter);
+        sw.writeScan(s, chapter, out);
     }
 
     protected String getChapterName(Chapter chapter) {
