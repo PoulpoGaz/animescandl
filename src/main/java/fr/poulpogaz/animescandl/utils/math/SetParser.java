@@ -2,10 +2,6 @@ package fr.poulpogaz.animescandl.utils.math;
 
 import fr.poulpogaz.animescandl.utils.ParseException;
 
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 /**
  * Allow only positive values.
  *
@@ -16,7 +12,7 @@ import java.util.function.Function;
 public class SetParser {
 
     // start of interval/singleton
-    private static final int EXPECT_NUMBER = 0;
+    private static final int INTERVAL_SINGLETON_START = 0;
 
     // after start
     private static final int EXPECT_COMMA_OR_HYPHEN = 1;
@@ -27,9 +23,7 @@ public class SetParser {
     // after interval end, expecting comma
     private static final int EXPECT_COMMA = 3;
 
-    private BiFunction<Float, Float, Set> intervalCreator = Interval::closed;
-    private Function<Float, Set> singletonCreator = Singleton::new;
-
+    private SetFactory setFactory = new DefaultFactory();
 
     private String str;
     private int status;
@@ -44,7 +38,7 @@ public class SetParser {
 
     public Set parse(String str) throws ParseException {
         this.str = str;
-        status = EXPECT_NUMBER;
+        status = INTERVAL_SINGLETON_START;
         pos = 0;
         output = Empty.INSTANCE;
         start = 0;
@@ -60,24 +54,44 @@ public class SetParser {
         }
 
         if (status == EXPECT_COMMA_OR_HYPHEN) {
-            output = output.union(singletonCreator.apply(start));
+            if (start == Float.NEGATIVE_INFINITY) {
+                throw new RuntimeException();
+            } else {
+                return output.union(setFactory.singleton(start));
+            }
 
-        } if (status == INTERVAL_END || status == EXPECT_NUMBER) {
-            throw new ParseException("Expecting number but EOS");
+        } else if (status == INTERVAL_END) {
+            if (start == Float.NEGATIVE_INFINITY) {
+                return setFactory.all();
+            } else {
+                return output.union(setFactory.greaterThan(start));
+            }
+        } else if (start == INTERVAL_SINGLETON_START) {
+            throw new ParseException("Expecting interval but EOS");
         }
 
         return output;
     }
 
     private void parseChar(char c) throws ParseException {
-        if (status == EXPECT_NUMBER) {
-            start = nextNumber();
-            status = EXPECT_COMMA_OR_HYPHEN;
+        if (status == INTERVAL_SINGLETON_START) {
+            if (c == '-') {
+                start = Float.NEGATIVE_INFINITY;
+                status = INTERVAL_END;
+            } else {
+                start = nextNumber();
+                status = EXPECT_COMMA_OR_HYPHEN;
+            }
 
         } else if (status == EXPECT_COMMA_OR_HYPHEN) {
             if (c == ',') {
-                output = output.union(singletonCreator.apply(start));
-                status = EXPECT_NUMBER;
+                if (start == Float.NEGATIVE_INFINITY) {
+                    throw new RuntimeException();
+                } else {
+                    output = output.union(setFactory.singleton(start));
+                }
+
+                status = INTERVAL_SINGLETON_START;
             } else if (c == '-') {
                 status = INTERVAL_END;
             } else {
@@ -85,20 +99,32 @@ public class SetParser {
             }
 
         } else if (status == INTERVAL_END) {
-            float end = nextNumber();
-
-            if (start > end) {
-                throw new ParseException("Invalid range: " + start + "-" + end);
-            } else if (start == end) {
-                output = output.union(singletonCreator.apply(start));
+            if (c == ',') {
+                if (start == Float.NEGATIVE_INFINITY) {
+                    output = Interval.all();
+                } else {
+                    output = output.union(setFactory.greaterThan(start));
+                }
+                status = INTERVAL_SINGLETON_START;
             } else {
-                output = output.union(intervalCreator.apply(start, end));
+                float end = nextNumber();
+
+                if (start == Float.NEGATIVE_INFINITY) {
+                    output = output.union(setFactory.lessThan(end));
+                } else if (start > end) {
+                    throw new ParseException("Invalid range: " + start + "-" + end);
+                } else if (start == end) {
+                    output = output.union(setFactory.singleton(start));
+                } else {
+                    output = output.union(setFactory.interval(start, end));
+                }
+
+                status = EXPECT_COMMA;
             }
 
-            status = EXPECT_COMMA;
         } else if (status == EXPECT_COMMA) {
             if (c == ',') {
-                status = EXPECT_NUMBER;
+                status = INTERVAL_SINGLETON_START;
             } else {
                 throw new ParseException("Expecting comma after interval");
             }
@@ -129,11 +155,48 @@ public class SetParser {
         }
     }
 
-    public void setIntervalCreator(BiFunction<Float, Float, Set> intervalCreator) {
-        this.intervalCreator = Objects.requireNonNull(intervalCreator);
+    public void setSetFactory(SetFactory setFactory) {
+        this.setFactory = setFactory;
     }
 
-    public void setSingletonCreator(Function<Float, Set> singletonCreator) {
-        this.singletonCreator = Objects.requireNonNull(singletonCreator);
+    public static class DefaultFactory implements SetFactory {
+
+        @Override
+        public Set singleton(float value) {
+            return new Singleton(value);
+        }
+
+        @Override
+        public Set interval(float min, float max) {
+            return Interval.closed(min, max);
+        }
+
+        @Override
+        public Set lessThan(float value) {
+            return Interval.lessThan(value);
+        }
+
+        @Override
+        public Set greaterThan(float value) {
+            return Interval.greaterThan(value);
+        }
+
+        @Override
+        public Set all() {
+            return Interval.all();
+        }
+    }
+
+    public interface SetFactory {
+
+        Set singleton(float value);
+
+        Set interval(float min, float max);
+
+        Set lessThan(float value);
+
+        Set greaterThan(float value);
+
+        Set all();
     }
 }

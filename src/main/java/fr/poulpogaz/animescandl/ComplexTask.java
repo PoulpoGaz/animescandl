@@ -23,8 +23,17 @@ public class ComplexTask extends Task {
 
     static {
         PARSER = new SetParser();
-        PARSER.setIntervalCreator((a, b) -> Interval.closedOpen(a, b + 1));
-        PARSER.setSingletonCreator((a) -> Interval.closedOpen(a, a + 1));
+        PARSER.setSetFactory(new SetParser.DefaultFactory() {
+            @Override
+            public Set singleton(float a) {
+                return Interval.closedOpen(a, a + 1);
+            }
+
+            @Override
+            public Set interval(float min, float max) {
+                return Interval.closedOpen(min, max + 1);
+            }
+        });
     }
 
     private String error;
