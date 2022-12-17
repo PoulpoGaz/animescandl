@@ -41,12 +41,12 @@ public class Japscan extends AbstractWebsite implements ScanWebsite, SearchWebsi
 
     @Override
     public String version() {
-        return "dev1";
+        return "dev2";
     }
 
     @Override
     public String url() {
-        return "https://www.japscan.ws";
+        return "https://www.japscan.me";
     }
 
     @Override
@@ -54,16 +54,16 @@ public class Japscan extends AbstractWebsite implements ScanWebsite, SearchWebsi
         return true;
     }
 
-    // https://www.japscan.ws/manga/owari-no-seraph/
+    // https://www.japscan.me/manga/owari-no-seraph/
     @Override
     public boolean isChapterURL(String url) {
-        return url.contains("japscan.ws/lecture-en-ligne/");
+        return url.contains("japscan.me/lecture-en-ligne/");
     }
 
-    // https://www.japscan.ws/lecture-en-ligne/owari-no-seraph/1/5.html
+    // https://www.japscan.me/lecture-en-ligne/owari-no-seraph/1/5.html
     @Override
     public boolean isMangaURL(String url) {
-        return url.contains("japscan.ws/manga/");
+        return url.contains("japscan.me/manga/");
     }
 
     @Override
@@ -178,7 +178,7 @@ public class Japscan extends AbstractWebsite implements ScanWebsite, SearchWebsi
     @Override
     @SuppressWarnings("unchecked")
     public <P> PageIterator<P> getPageIterator(Chapter chapter, Class<P> out)
-            throws IOException, InterruptedException, WebsiteException {
+            throws IOException, InterruptedException, WebsiteException, JsonException {
         if (out == String.class) {
             PageIterator<String> iterator = new StringPageIterator(this, chapter);
 

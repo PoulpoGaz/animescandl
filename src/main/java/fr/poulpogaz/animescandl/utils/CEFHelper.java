@@ -71,7 +71,6 @@ public class CEFHelper extends JFrame {
     private final CefClient client;
     private CefBrowser browser;
     private Component browserUI;
-    private String userAgent;
 
     private CEFHelper() {
         if (!isInitialized) {
@@ -94,7 +93,11 @@ public class CEFHelper extends JFrame {
             setSize(1024, 576);
         } else {
             removeAllHandler();
-            browser.loadURL(url);
+            if (browser.getURL().equals(url)) {
+                browser.reload();
+            } else {
+                browser.loadURL(url);
+            }
         }
     }
 

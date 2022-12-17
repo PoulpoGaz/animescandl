@@ -114,7 +114,7 @@ public class API {
             for (JsonElement e2 : jsonChapters.values()) {
                 JsonObject chapter = (JsonObject) e2;
 
-                builder.setChapterNumber(chapter.getAsFloat("chapter"));
+                builder.setChapterNumber(chapter.getOptionalFloat("chapter").orElse(-1f));
                 builder.setUrl(chapter.getAsString("id"));
 
                 chapters.add(builder.build());
